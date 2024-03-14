@@ -1,21 +1,18 @@
 {
-    "compilerOptions": {
-        "module": "ES6",
-        "target": "ES6",
-        "moduleResolution": "node",
-        "strict": true,
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "preserveConstEnums": true,
-        "sourceMap": true,
-        "rootDir": "./src",
-        "esModuleInterop": true,
-        "allowJs": true,
-        "forceConsistentCasingInFileNames": true,
-    },
+  "compilerOptions": {
+    "target": "es6",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "noResolve": false,
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "preserveConstEnums":true,
+    "lib": [
+        "dom",
+        "es6"
+    ],
+    "rootDir": "src"
+  },
     "exclude": [
         "node_modules/**/*",
         "dist/**/*",
