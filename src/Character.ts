@@ -172,11 +172,13 @@ class Character {
     characterMesh.scaling = new Vector3(20, 20, 20);
 
     this._mesh = characterMesh;
-    
-    // Add character to the scene
-    this._scene.addMesh(characterMesh);
 
     return this;
+  }
+
+  // Move the character
+  public moveCharacterMeshDirection(direction: Vector3): void {
+    this._mesh.moveWithCollisions(direction);
   }
 }
 

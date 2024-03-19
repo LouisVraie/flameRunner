@@ -1,4 +1,4 @@
-import { Scene, SceneLoader, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
+import { Quaternion, Scene, SceneLoader, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 import Character from "./Character";
 import Controller from "./Controller";
 import Modifier from "./Modifier";
@@ -7,6 +7,7 @@ import Group from "./Group";
 
 class Player {
   private _scene: Scene;
+  private _deltaTime: number;
 
   private _identifier: string;
   private _score: number;
@@ -97,12 +98,9 @@ class Player {
   //////////////////////////////////////////////////////////
 
   // Add character to the scene
-  public addCharacter(name: string, group: Group): void {
+  public async addCharacterAsync(name: string, group: Group): Promise<void> {
     const character = new Character(this._scene, name);
-
-    character.createCharacter(group).then((character: Character) => {
-      this._character = character;
-    });
+    this._character = await character.createCharacter(group);
   }
 
   // Attach controller to the player
@@ -110,6 +108,44 @@ class Player {
     this._controller = new Controller(this._scene, true);
   }
 
+  // Attach camera to the player
+  public attachCamera(): void {
+    this._camera = new UniversalCamera("camera", new Vector3(0, 1, -10), this._scene);
+    this._camera.attachControl(this._scene.getEngine().getRenderingCanvas(), true);
+  }
+
+  // Move character using the controller horizontal and vertical inputs
+  private _updateFromControls(): void {
+    this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
+    const direction = new Vector3(
+      this._controller.getHorizontal(),
+      0,
+      this._controller.getVertical()
+    );
+
+    // Apply the rotation to the character
+    //rotation based on input & the camera angle
+    const angle = Math.atan2(this._controller.getHorizontalAxis(), this._controller.getVerticalAxis());
+    // angle += this._camRoot.rotation.y;
+    const targ = Quaternion.FromEulerAngles(0, angle, 0);
+    this._character.getMesh().rotationQuaternion = Quaternion.Slerp(this._character.getMesh().rotationQuaternion, targ, 10 * this._deltaTime);
+
+    this._character.moveCharacterMeshDirection(direction);
+  }
+
+  //--GAME UPDATES--
+  private _beforeRenderUpdate(): void {
+    this._updateFromControls();
+    // this._updateGroundDetection();
+    // this._animatePlayer();
+  }
+
+  // Update player
+  public updatePlayer(): void {
+    this._scene.registerBeforeRender(() => {
+      this._beforeRenderUpdate();
+    })
+  }
 }
 
 export default Player;

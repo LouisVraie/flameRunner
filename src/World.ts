@@ -53,8 +53,10 @@ class World{
 
     addPlayer(identifier: string): void {
         const player = new Player(this._scene, identifier);
-        player.addCharacter("Wall-E", Group.getSprinter());
-        this._players.push(player);
+        player.addCharacterAsync("Wall-E", Group.getSprinter()).then(() => {
+            player.updatePlayer();
+            this._players.push(player);
+        });
     }
 
     moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {
