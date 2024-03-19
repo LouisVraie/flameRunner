@@ -1,9 +1,12 @@
 import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Scene, Vector3 } from "@babylonjs/core";
+import Player from "./Player";
+import Group from "./Group";
 
 class World{
     private _scene: Scene;
     private _worldMesh: AbstractMesh;
     private _physicsPlugin: HavokPlugin;
+    private _players: Player[] = [];
 
     constructor(scene: Scene) {
         this._scene = scene;
@@ -48,11 +51,10 @@ class World{
         light.diffuse = color;
     }
 
-    addCharacter(characterMesh: AbstractMesh): void {
-        // Add character to the scene
-        this._scene.addMesh(characterMesh);
-        // Apply physics to the character
-        characterMesh.physicsImpostor = new PhysicsImpostor(characterMesh, PhysicsImpostor.MeshImpostor, { mass: 1, restitution: 0.1 }, this._scene);
+    addPlayer(identifier: string): void {
+        const player = new Player(this._scene, identifier);
+        player.addCharacter("Wall-E", Group.getSprinter());
+        this._players.push(player);
     }
 
     moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {

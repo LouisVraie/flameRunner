@@ -1,5 +1,7 @@
-import { AnimationGroup, Mesh, Scene, TransformNode, Vector3 } from "@babylonjs/core";
+import { AnimationGroup, Mesh, PhysicsImpostor, Scene, SceneLoader, TransformNode, Vector3 } from "@babylonjs/core";
 import Group from "./Group";
+
+import player1 from "../assets/models/player1.glb";
 
 class Character {
 
@@ -37,23 +39,17 @@ class Character {
 
   private _mesh: Mesh;
 
-  constructor(assets: any, scene: Scene, name: string, group: Group, health: number, stamina: number, staminaRegen: number, transform: TransformNode, position: Vector3, speed: Vector3) {
+  constructor(scene: Scene, name: string) {
     this._scene = scene;
     
     this._name = name || "No name";
-    this._group = group || null;
-    this._health = health || 100;
-    this._stamina = stamina || 100;
-    this._staminaRegen = staminaRegen || 1;
+    this._health = 100;
+    this._stamina = 100;
+    this._staminaRegen = 1;
 
-    // Animations
-    this._setAnimations(assets);
-
-    this._transform = transform || null;
-    this._position = position || Vector3.Zero();
-    this._speed = speed || Vector3.Zero();
-
-    this._mesh = assets.mesh;
+    this._transform =  null;
+    this._position = Vector3.Zero();
+    this._speed = new Vector3(1, 1, 1);
   }
 
   //////////////////////////////////////////////////////////
@@ -155,7 +151,33 @@ class Character {
     this._mesh = mesh;
   }
 
+  //////////////////////////////////////////////////////////
+  // Methods
+  //////////////////////////////////////////////////////////
 
+  public async createCharacter(group: Group): Promise<Character> {
+
+    this._group = group;
+
+    const assets = await SceneLoader.ImportMeshAsync("", "", player1, this._scene);
+
+    const characterMesh = assets.meshes[0] as Mesh;
+
+    // Animations
+    this._setAnimations(assets);
+
+    // Apply physics to the character
+    characterMesh.physicsImpostor = new PhysicsImpostor(characterMesh, PhysicsImpostor.MeshImpostor, { mass: 1, restitution: 0.1 }, this._scene);
+    characterMesh.position = new Vector3(0, 5, 0);
+    characterMesh.scaling = new Vector3(20, 20, 20);
+
+    this._mesh = characterMesh;
+    
+    // Add character to the scene
+    this._scene.addMesh(characterMesh);
+
+    return this;
+  }
 }
 
 export default Character;

@@ -8,7 +8,7 @@ import Game from "./game";
 import World from "./World";
 
 import map from "../assets/models/world.glb";
-import player from "../assets/models/player.glb";
+import player1 from "../assets/models/player1.glb";
 
 
 async function createScene(engine){
@@ -20,15 +20,17 @@ async function createScene(engine){
     world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
     world.addFreeCamera("freeCamera1", new Vector3(0, 5, -40), true);
 
-    const havokInstance = await HavokPhysics();
-    const havokPlugin = new HavokPlugin(true, havokInstance);    
-    world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
+    // const havokInstance = await HavokPhysics();
+    // const havokPlugin = new HavokPlugin(true, havokInstance);    
+    // world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
     
     // Load the world mesh
     SceneLoader.ImportMesh("", "", map, scene, function(meshes) {
         const worldMesh = meshes[0];
         world.createWorld(worldMesh);
     });
+
+    world.addPlayer("player1");
     
     //Load the character mesh
     // SceneLoader.ImportMesh("", "", player, scene, function(meshes) {

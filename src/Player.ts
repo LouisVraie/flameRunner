@@ -1,9 +1,13 @@
-import { UniversalCamera } from "@babylonjs/core";
+import { Scene, SceneLoader, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 import Character from "./Character";
 import Controller from "./Controller";
 import Modifier from "./Modifier";
 
+import Group from "./Group";
+
 class Player {
+  private _scene: Scene;
+
   private _identifier: string;
   private _score: number;
 
@@ -15,21 +19,17 @@ class Player {
   private _life: number;
 
   constructor(
+    scene: Scene,
     identifier: string,
-    score: number,
-    controller: Controller,
-    character: Character,
-    camera: UniversalCamera,
-    modifier: Modifier,
-    life: number
   ) {
-    this._identifier = identifier;
-    this._score = score;
-    this._controller = controller;
-    this._character = character;
-    this._camera = camera;
-    this._modifier = modifier;
-    this._life = life;
+    this._scene = scene;
+    this._identifier = identifier || "No identifier";
+    this._score = 0;
+
+    this._attachController();
+
+    this._modifier = null;
+    this._life = 3;
   }
 
   //////////////////////////////////////////////////////////
@@ -91,6 +91,25 @@ class Player {
   public setLife(life: number): void {
     this._life = life;
   }
+
+  //////////////////////////////////////////////////////////
+  // Methods
+  //////////////////////////////////////////////////////////
+
+  // Add character to the scene
+  public addCharacter(name: string, group: Group): void {
+    const character = new Character(this._scene, name);
+
+    character.createCharacter(group).then((character: Character) => {
+      this._character = character;
+    });
+  }
+
+  // Attach controller to the player
+  private _attachController(): void {
+    this._controller = new Controller(this._scene, true);
+  }
+
 }
 
 export default Player;

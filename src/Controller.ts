@@ -16,7 +16,9 @@ class Controller {
   private _modifier: string;
   private _capacity: string;
 
-  constructor(isPlayer1: boolean) {
+  constructor(scene: Scene, isPlayer1: boolean) {
+    this._scene = scene;
+    
     // set up the default keys of the keyboard for AZERTY
     this._setDefaultKeys(isPlayer1);
 
