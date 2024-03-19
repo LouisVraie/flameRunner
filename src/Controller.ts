@@ -12,7 +12,7 @@ class Controller {
   private _capacity: string;
 
   constructor(isPlayer1: boolean) {
-    // Set up the default keys of the keyboard for AZERTY
+    // set up the default keys of the keyboard for AZERTY
     if (isPlayer1) {
       this._forward = "z";
       this._backward = "s";
@@ -40,70 +40,70 @@ class Controller {
   }
 
   //////////////////////////////////////////////////////////
-  // Getters and setters
+  // getters and setters
   //////////////////////////////////////////////////////////
 
   // Forward
-  getForward(): string {
+  public getForward(): string {
     return this._forward;
   }
-  setForward(forward: string): void {
+  public setForward(forward: string): void {
     this._forward = forward;
   }
 
   // Backward
-  getBackward(): string {
+  public getBackward(): string {
     return this._backward;
   }
-  setBackward(backward: string): void {
+  public setBackward(backward: string): void {
     this._backward = backward;
   }
 
   // Left
-  getLeft(): string {
+  public getLeft(): string {
     return this._left;
   }
-  setLeft(left: string): void {
+  public setLeft(left: string): void {
     this._left = left;
   }
 
   // Right
-  getRight(): string {
+  public getRight(): string {
     return this._right;
   }
-  setRight(right: string): void {
+  public setRight(right: string): void {
     this._right = right;
   }
 
   // Jump
-  getJump(): string {
+  public getJump(): string {
     return this._jump;
   }
-  setJump(jump: string): void {
+  public setJump(jump: string): void {
     this._jump = jump;
   }
 
   // Slide
-  getSlide(): string {
+  public getSlide(): string {
     return this._slide;
   }
-  setSlide(slide: string): void {
+  public setSlide(slide: string): void {
     this._slide = slide;
   }
 
   // Modifier
-  getModifier(): string {
+  public getModifier(): string {
     return this._modifier;
   }
-  setModifier(modifier: string): void {
+  public setModifier(modifier: string): void {
     this._modifier = modifier;
   }
 
   // Capacity
-  getCapacity(): string {
+  public getCapacity(): string {
     return this._capacity;
   }
-  setCapacity(capacity: string): void {
+  public setCapacity(capacity: string): void {
     this._capacity = capacity;
   }
 }

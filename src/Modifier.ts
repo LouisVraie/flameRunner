@@ -26,78 +26,78 @@ class Modifier {
   }
 
   //////////////////////////////////////////////////////////
-  // Getters and setters
+  // getters and setters
   //////////////////////////////////////////////////////////
 
   // Name
-  getName(): string {
+  public getName(): string {
     return this._name;
   }
-  setName(name: string): void {
+  public setName(name: string): void {
     this._name = name;
   }
 
   // Description
-  getDescription(): string {
+  public getDescription(): string {
     return this._description;
   }
-  setDescription(description: string): void {
+  public setDescription(description: string): void {
     this._description = description;
   }
 
   // Icon
-  getIcon(): string {
+  public getIcon(): string {
     return this._icon;
   }
-  setIcon(icon: string): void {
+  public setIcon(icon: string): void {
     this._icon = icon;
   }
 
   // Duration
-  getDuration(): number {
+  public getDuration(): number {
     return this._duration;
   }
-  setDuration(duration: number): void {
+  public setDuration(duration: number): void {
     this._duration = duration;
   }
 
   // SpeedDelta
-  getSpeedDelta(): Vector3 {
+  public getSpeedDelta(): Vector3 {
     return this._speedDelta;
   }
-  setSpeedDelta(speedDelta: Vector3): void {
+  public setSpeedDelta(speedDelta: Vector3): void {
     this._speedDelta = speedDelta;
   }
 
   // StaminaDelta
-  getStaminaDelta(): number {
+  public getStaminaDelta(): number {
     return this._staminaDelta;
   }
-  setStaminaDelta(staminaDelta: number): void {
+  public setStaminaDelta(staminaDelta: number): void {
     this._staminaDelta = staminaDelta;
   }
 
   // StaminaRegenDelta
-  getStaminaRegenDelta(): number {
+  public getStaminaRegenDelta(): number {
     return this._staminaRegenDelta;
   }
-  setStaminaRegenDelta(staminaRegenDelta: number): void {
+  public setStaminaRegenDelta(staminaRegenDelta: number): void {
     this._staminaRegenDelta = staminaRegenDelta;
   }
 
   // Vision
-  getVision(): boolean {
+  public getVision(): boolean {
     return this._vision;
   }
-  setVision(vision: boolean): void {
+  public setVision(vision: boolean): void {
     this._vision = vision;
   }
 
   // TimeDelta
-  getTimeDelta(): number {
+  public getTimeDelta(): number {
     return this._timeDelta;
   }
-  setTimeDelta(timeDelta: number): void {
+  public setTimeDelta(timeDelta: number): void {
     this._timeDelta = timeDelta;
   }
 }

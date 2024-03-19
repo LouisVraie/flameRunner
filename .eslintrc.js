@@ -3,7 +3,7 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    node: true, // Ajout de l'environnement node
+    node: true,
   },
   settings: {
     "import/resolver": {
@@ -11,8 +11,8 @@ module.exports = {
         "extensions": [
           ".js",
           ".jsx",
-          ".ts", // Ajout des extensions .ts
-          ".tsx" // Ajout des extensions .tsx
+          ".ts",
+          ".tsx"
         ]
       }
     }
@@ -28,28 +28,30 @@ module.exports = {
   overrides: [
     {
       files: [
-        '*.ts' // Ajout des fichiers TypeScript
+        '*.ts'
       ],
-      parser: '@typescript-eslint/parser', // Utilisation du parser TypeScript
+      parser: '@typescript-eslint/parser', // Typescript parser
       parserOptions: {
-        ecmaVersion: 12, // Utilisation de la dernière version ECMAScript
-        sourceType: 'module', // Utilisation de modules
+        ecmaVersion: 12, // use ECMAScript 12
+        sourceType: 'module', // use imports
       },
       extends: [
         'eslint:recommended',
-        'plugin:@typescript-eslint/recommended' // Utilisation des règles recommandées pour TypeScript
+        'plugin:@typescript-eslint/recommended' // recommended rules for TypeScript
       ],
-      plugins: ['@typescript-eslint'], // Ajout du plugin TypeScript
+      plugins: ['@typescript-eslint'], // plugin TypeScript
       rules: {
-        // Vos règles spécifiques à TypeScript ici
-        "@typescript-eslint/no-unused-vars": "warn", // Utilisation de la règle TypeScript pour détecter les variables non utilisées
-        "@typescript-eslint/no-empty-function": "warn" // Utilisation de la règle TypeScript pour détecter les fonctions vides
+        // Typescript specific rules
+        "@typescript-eslint/no-unused-vars": "warn", // detect unused variables
+        "@typescript-eslint/no-empty-function": "warn", // detect empty functions
+        "@typescript-eslint/no-explicit-any": "warn", // detect any type
       }
     }
   ],
   rules: {
-    // Vos règles générales ici
+    // General rules
     "no-unused-vars" : "warn",
     "no-empty" : "warn",
+    "no-undef" : "warn",
   }
 }
