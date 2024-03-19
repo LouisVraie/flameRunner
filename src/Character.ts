@@ -37,7 +37,7 @@ class Character {
 
   private _mesh: Mesh;
 
-  constructor(assets: any, scene: Scene, name: string, group: Group, health: number, stamina: number, staminaRegen: number, transform: TransformNode, position: Vector3, speed: Vector3, mesh: Mesh) {
+  constructor(assets: any, scene: Scene, name: string, group: Group, health: number, stamina: number, staminaRegen: number, transform: TransformNode, position: Vector3, speed: Vector3) {
     this._scene = scene;
     
     this._name = name || "No name";
