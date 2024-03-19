@@ -1,4 +1,9 @@
+import { KeyboardEventTypes, Scene } from "@babylonjs/core";
+
 class Controller {
+
+  private _scene: Scene;
+  private _inputMap: Map<string, boolean>;
 
   private _forward: string;
   private _backward: string;
@@ -13,30 +18,27 @@ class Controller {
 
   constructor(isPlayer1: boolean) {
     // set up the default keys of the keyboard for AZERTY
-    if (isPlayer1) {
-      this._forward = "z";
-      this._backward = "s";
-      this._left = "q";
-      this._right = "d";
-      
-      this._jump = " ";
-      this._slide = "c";
+    this._setDefaultKeys(isPlayer1);
 
-      this._modifier = "a";
-      this._capacity = "e";
-      
-    } else {
-      this._forward = "ArrowUp";
-      this._backward = "ArrowDown";
-      this._left = "ArrowLeft";
-      this._right = "ArrowRight";
-      
-      this._jump = "Shift";
-      this._slide = "Control";
+    // set up the input map event listener
+    this._inputMap = new Map<string, boolean>();
 
-      this._modifier = "0";
-      this._capacity = "Enter";
-    }
+    // add the event listener and update the input map with the key pressed or released with BabylonJS methods
+    this._scene.onKeyboardObservable.add((kbInfo) => {
+      switch (kbInfo.type) {
+        case KeyboardEventTypes.KEYDOWN:
+          this._inputMap.set(kbInfo.event.code, true);
+          break;
+        case KeyboardEventTypes.KEYUP:
+          this._inputMap.set(kbInfo.event.code, false);
+          break;
+      }
+    });
+
+    //add to the scene an observable that calls updateFromKeyboard before rendering
+    this._scene.onBeforeRenderObservable.add(() => {
+      this._updateFromKeyboard();
+    });
   }
 
   //////////////////////////////////////////////////////////
@@ -106,6 +108,87 @@ class Controller {
   public setCapacity(capacity: string): void {
     this._capacity = capacity;
   }
+
+  
+  //////////////////////////////////////////////////////////
+  // Methods
+  //////////////////////////////////////////////////////////
+
+  // setDefaultKeys
+  private _setDefaultKeys(isPlayer1: boolean): void {
+    if (isPlayer1) {
+      this._forward = "z";
+      this._backward = "s";
+      this._left = "q";
+      this._right = "d";
+      
+      this._jump = " ";
+      this._slide = "c";
+
+      this._modifier = "a";
+      this._capacity = "e";
+      
+    } else {
+      this._forward = "ArrowUp";
+      this._backward = "ArrowDown";
+      this._left = "ArrowLeft";
+      this._right = "ArrowRight";
+      
+      this._jump = "Shift";
+      this._slide = "Control";
+
+      this._modifier = "0";
+      this._capacity = "Enter";
+    }
+  }
+
+  // Keyboard controls & Mobile controls
+  //handles what is done when keys are pressed or if on mobile, when buttons are pressed
+  private _updateFromKeyboard(): void {
+  //   //forward - backward movement
+  //   if ((this.inputMap["ArrowUp"] || this.mobileUp) && !this._ui.gamePaused) {
+  //     this.verticalAxis = 1;
+  //     this.vertical = Scalar.Lerp(this.vertical, 1, 0.2);
+
+  //   } else if ((this.inputMap["ArrowDown"] || this.mobileDown) && !this._ui.gamePaused) {
+  //     this.vertical = Scalar.Lerp(this.vertical, -1, 0.2);
+  //     this.verticalAxis = -1;
+  //   } else {
+  //     this.vertical = 0;
+  //     this.verticalAxis = 0;
+  //   }
+
+  //   //left - right movement
+  //   if ((this.inputMap["ArrowLeft"] || this.mobileLeft) && !this._ui.gamePaused) {
+  //       //lerp will create a scalar linearly interpolated amt between start and end scalar
+  //       //taking current horizontal and how long you hold, will go up to -1(all the way left)
+  //       this.horizontal = Scalar.Lerp(this.horizontal, -1, 0.2);
+  //       this.horizontalAxis = -1;
+
+  //   } else if ((this.inputMap["ArrowRight"] || this.mobileRight) && !this._ui.gamePaused) {
+  //       this.horizontal = Scalar.Lerp(this.horizontal, 1, 0.2);
+  //       this.horizontalAxis = 1;
+  //   }
+  //   else {
+  //       this.horizontal = 0;
+  //       this.horizontalAxis = 0;
+  //   }
+
+  //   //dash
+  //   if ((this.inputMap["Shift"] || this._mobileDash) && !this._ui.gamePaused) {
+  //       this.dashing = true;
+  //   } else {
+  //       this.dashing = false;
+  //   }
+
+  //   //Jump Checks (SPACE)
+  //   if ((this.inputMap[" "] || this._mobileJump) && !this._ui.gamePaused) {
+  //       this.jumpKeyDown = true;
+  //   } else {
+  //       this.jumpKeyDown = false;
+  //   }
+  }
+
 }
 
 export default Controller;
