@@ -6,23 +6,16 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const appDirectory = fs.realpathSync(process.cwd());
 
 module.exports = {
-    entry: path.resolve(appDirectory, "src/index.js"),
+    entry: path.resolve(appDirectory, "src/index.ts"),
     output: {
         filename: "js/babylonBundle.js",
         path: path.resolve("./dist/"),
     },
     resolve: {
         extensions: [".ts", ".js"],
-        fallback: {
-            fs: false,
-            path: false, 
-        },
     },
     module: {
         rules: [
-            {
-                test: /\.m?js/,
-            },
             {
                 test: /\.(js|mjs|jsx|ts|tsx)$/,
                 loader: "source-map-loader",
@@ -31,6 +24,7 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 loader: "ts-loader",               
+                exclude: /node_modules/,
             },
             {
                 test: /\.(glsl|vs|fs)$/,

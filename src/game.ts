@@ -1,4 +1,5 @@
 import { AbstractMesh, BoundingInfo, Color3, Color4, DefaultRenderingPipeline, Engine, FreeCamera, HemisphericLight, KeyboardEventTypes, Mesh, MeshBuilder, MotionBlurPostProcess, Scalar, Scene, SceneLoader, Sound, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
+import "@babylonjs/loaders/";
 import { Inspector } from "@babylonjs/inspector";
 
 const TRACK_WIDTH = 8;
