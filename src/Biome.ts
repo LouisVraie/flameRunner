@@ -2,18 +2,18 @@ import { ParticleSystem, PointLight, Sound } from "@babylonjs/core";
 import Obstacle from "./Obstacle";
 
 class Biome {
-  private name: string;
-  private musics: Sound[];
-  private obstacles: Obstacle[];
-  private lights: PointLight[];
-  private particles: ParticleSystem[];
+  private _name: string;
+  private _musics: Sound[];
+  private _obstacles: Obstacle[];
+  private _lights: PointLight[];
+  private _particles: ParticleSystem[];
 
   constructor(name: string, musics: Sound[], obstacles: Obstacle[], lights: PointLight[], particles: ParticleSystem[]) {
-    this.name = name;
-    this.musics = musics;
-    this.obstacles = obstacles;
-    this.lights = lights;
-    this.particles = particles;
+    this._name = name;
+    this._musics = musics;
+    this._obstacles = obstacles;
+    this._lights = lights;
+    this._particles = particles;
   }
 
   //////////////////////////////////////////////////////////
@@ -22,42 +22,42 @@ class Biome {
 
   // Name
   public getName(): string {
-    return this.name;
+    return this._name;
   }
   public setName(name: string): void {
-    this.name = name;
+    this._name = name;
   }
 
   // Musics
   public getMusics(): Sound[] {
-    return this.musics;
+    return this._musics;
   }
   public setMusics(musics: Sound[]): void {
-    this.musics = musics;
+    this._musics = musics;
   }
 
   // Obstacles
   public getObstacles(): Obstacle[] {
-    return this.obstacles;
+    return this._obstacles;
   }
   public setObstacles(obstacles: Obstacle[]): void {
-    this.obstacles = obstacles;
+    this._obstacles = obstacles;
   }
 
   // Lights
   public getLights(): PointLight[] {
-    return this.lights;
+    return this._lights;
   }
   public setLights(lights: PointLight[]): void {
-    this.lights = lights;
+    this._lights = lights;
   }
 
   // Particles
   public getParticles(): ParticleSystem[] {
-    return this.particles;
+    return this._particles;
   }
   public setParticles(particles: ParticleSystem[]): void {
-    this.particles = particles;
+    this._particles = particles;
   }
 }
 
