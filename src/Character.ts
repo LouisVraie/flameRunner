@@ -31,7 +31,11 @@ class Character {
   private _currentAnim: AnimationGroup = null;
   private _prevAnim: AnimationGroup;
   private _isFalling: boolean = false;
-  private _jumped: boolean = false;
+  private _isJumping: boolean = false;
+  private _isSliding: boolean = false;
+  private _isClimbing: boolean = false;
+  private _isStunned: boolean = false;
+  private _isDead: boolean = false;
 
   private _transform: TransformNode;
   private _position: Vector3;
@@ -106,17 +110,18 @@ class Character {
 
   // Animations
   private _setAnimations(assets: any): void {
-    this._idle = assets.animationGroups[0];
-    this._idleJump = assets.animationGroups[2];
-    this._run = assets.animationGroups[3];
-    this._runJump = assets.animationGroups[4];
-    this._runSlide = assets.animationGroups[5];
-    this._climbUpWall = assets.animationGroups[6];
-    this._climbEnd = assets.animationGroups[7];
-    this._stunBack = assets.animationGroups[8];
-    this._fallIdle = assets.animationGroups[9];
-    this._fallRoll = assets.animationGroups[10];
-    this._death = assets.animationGroups[11];
+    // Idle animations is a blend of assets.animationGroups[5] and assets.animationGroups[7]
+    this._idle = assets.animationGroups[5]; 
+    this._idleJump = assets.animationGroups[6];
+    this._run = assets.animationGroups[8];
+    this._runJump = assets.animationGroups[9];
+    this._runSlide = assets.animationGroups[10];
+    this._climbUpWall = assets.animationGroups[1];
+    this._climbEnd = assets.animationGroups[0];
+    this._stunBack = assets.animationGroups[11];
+    this._fallIdle = assets.animationGroups[3];
+    this._fallRoll = assets.animationGroups[4];
+    this._death = assets.animationGroups[2];
   }
 
   // Transform
@@ -155,7 +160,7 @@ class Character {
   // Methods
   //////////////////////////////////////////////////////////
 
-  public async createCharacter(group: Group): Promise<Character> {
+  public async createCharacterAsync(group: Group): Promise<Character> {
 
     this._group = group;
 
@@ -173,12 +178,38 @@ class Character {
 
     this._mesh = characterMesh;
 
+    // Set up animations
+    this._setUpAnimations();
+
     return this;
+  }
+
+  private _setUpAnimations(): void {
+    this._scene.stopAllAnimations();
+    this._run.loopAnimation = true;
+    this._idle.loopAnimation = true;
+
+    //initialize current and previous
+    this._currentAnim = this._idle;
+    this._prevAnim = this._fallIdle;
   }
 
   // Move the character
   public moveCharacterMeshDirection(direction: Vector3): void {
+    // if the character is moving, play the run animation otherwise play the idle animation
+    if(direction.length() > 0){
+      this._currentAnim = this._run;
+    } else {
+      this._currentAnim = this._idle;
+    }
     this._mesh.moveWithCollisions(direction);
+
+    // animation update
+    if(this._currentAnim != null && this._prevAnim !== this._currentAnim){
+      this._prevAnim.stop();
+      this._currentAnim.play(this._currentAnim.loopAnimation);
+      this._prevAnim = this._currentAnim;
+    }
   }
 }
 
