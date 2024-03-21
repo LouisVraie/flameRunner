@@ -1,4 +1,4 @@
-import { Quaternion, Scene, SceneLoader, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
+import { Scene, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 import Character from "./Character";
 import Controller from "./Controller";
 import Modifier from "./Modifier";
@@ -7,19 +7,12 @@ import Group from "./Group";
 
 class Player {
   private _scene: Scene;
-  private _deltaTime: number;
 
   private _identifier: string;
   private _score: number;
 
   private _controller: Controller;
   private _character: Character;
-
-  // movement variables
-  private _h: number;
-  private _v: number;
-  private _inputAmt: number;
-  private _moveDirection: Vector3;
 
   // camera variables
   private _camRoot: TransformNode;
@@ -30,11 +23,6 @@ class Player {
   private _life: number;
 
   //const values
-  private static readonly PLAYER_SPEED: number = 0.45;
-  private static readonly JUMP_FORCE: number = 0.80;
-  private static readonly GRAVITY: number = -2.8;
-  private static readonly SLIDE_FACTOR: number = 2.5;
-  private static readonly SLIDE_TIME: number = 10; //how many frames the slide lasts
   private static readonly DOWN_TILT: Vector3 = new Vector3(0.8290313946973066, 0, 0);
   private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.45, 0, 0);
 
@@ -156,59 +144,9 @@ class Player {
     this._camRoot.position = Vector3.Lerp(this._camRoot.position, new Vector3(this._character.getMesh().position.x, centerPlayer, this._character.getMesh().position.z), 0.4);
   }
 
-  // Move character using the controller horizontal and vertical inputs
-  private _updateFromControls(): void {
-    this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
-    this._h = this._controller.getHorizontal();
-    this._v = this._controller.getVertical();
-
-    //--MOVEMENTS BASED ON CAMERA (as it rotates)--
-    const fwd = this._camRoot.forward;
-    const right = this._camRoot.right;
-    const correctedVertical = fwd.scaleInPlace(this._v);
-    const correctedHorizontal = right.scaleInPlace(this._h);
-
-    //movement based off of camera's view
-    const move = correctedHorizontal.addInPlace(correctedVertical);
-
-    //clear y so that the character doesnt fly up, normalize for next step
-    this._moveDirection = new Vector3((move).normalize().x, 0, (move).normalize().z);
-    
-    //clamp the input value so that diagonal movement isn't twice as fast
-    const inputMag = Math.abs(this._h) + Math.abs(this._v);
-    if (inputMag < 0) {
-        this._inputAmt = 0;
-    } else if (inputMag > 1) {
-        this._inputAmt = 1;
-    } else {
-        this._inputAmt = inputMag;
-    }
-    //final movement that takes into consideration the inputs
-    this._moveDirection = this._moveDirection.scaleInPlace(this._inputAmt * Player.PLAYER_SPEED);
-    
-
-    // Apply rotation only if there's actual movement
-    if (this._controller.getHorizontalAxis() !== 0 || this._controller.getVerticalAxis() !== 0) {
-      // Apply the rotation to the character
-      //rotation based on input & the camera angle
-      let angle = Math.atan2(this._controller.getHorizontalAxis(), this._controller.getVerticalAxis());
-      angle += this._camRoot.rotation.y;
-
-      // The mesh must face the direction it moves
-      const targetQuaternion = Quaternion.FromEulerAngles(0, angle, 0);
-      const currentQuaternion = this._character.getMesh().rotationQuaternion || Quaternion.Identity();
-      this._character.getMesh().rotationQuaternion = Quaternion.Slerp(currentQuaternion, targetQuaternion, 10 * this._deltaTime);
-    }
-
-    // Move the character
-    this._character.moveCharacterMeshDirection(this._moveDirection);
-  }
-
   //--GAME UPDATES--
   private _beforeRenderUpdate(): void {
-    this._updateFromControls();
-    // this._updateGroundDetection();
-    // this._animatePlayer();
+    this._character.updateCharacter(this._camRoot, this._controller);
   }
 
   // Update player
