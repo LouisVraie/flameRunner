@@ -1,4 +1,4 @@
-import { AnimationGroup, Mesh, PhysicsImpostor, Quaternion, Scene, SceneLoader, TransformNode, Vector3 } from "@babylonjs/core";
+import { AnimationGroup, Mesh, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
@@ -21,6 +21,7 @@ class Character extends TransformNode{
   private _v: number;
   private _inputAmt: number;
   private _moveDirection: Vector3;
+  private _jumpCount: number;
 
   // Animations
   private _idle: AnimationGroup;
@@ -38,6 +39,7 @@ class Character extends TransformNode{
   // animation trackers
   private _currentAnim: AnimationGroup = null;
   private _prevAnim: AnimationGroup;
+  private _isGrounded: boolean = true;
   private _isFalling: boolean = false;
   private _isJumping: boolean = false;
   private _isSliding: boolean = false;
@@ -50,6 +52,7 @@ class Character extends TransformNode{
 
   // Constants
   private static readonly PLAYER_SPEED: number = 0.45;
+  private static readonly JUMP_NUMBER: number = 1;
   private static readonly JUMP_FORCE: number = 0.80;
   private static readonly GRAVITY: number = -2.8;
   private static readonly SLIDE_FACTOR: number = 2.5;
@@ -63,6 +66,8 @@ class Character extends TransformNode{
     this._health = 3;
     this._stamina = 100;
     this._staminaRegen = 1;
+
+    this._jumpCount = 0;
 
     this._speed = new Vector3(1, 1, 1);
   }
@@ -219,6 +224,7 @@ class Character extends TransformNode{
     
     this._h = controller.getHorizontal();
     this._v = controller.getVertical();
+    this._moveDirection = Vector3.Zero();
 
     //--MOVEMENTS BASED ON CAMERA (as it rotates)--
     const fwd = camRoot.forward;
@@ -243,20 +249,59 @@ class Character extends TransformNode{
     }
     //final movement that takes into consideration the inputs
     this._moveDirection = this._moveDirection.scaleInPlace(this._inputAmt * Character.PLAYER_SPEED);
+
+    // jump
+    // if (controller.getJumping() && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
+    //   this._jumpCount++;
+    //   this._isJumping = true;
+    //   this._isGrounded = false;
+    // }
     this._mesh.moveWithCollisions(this._moveDirection);
   }
 
   // Animate the character
   public animateCharacter(): void {
-    // if the character is moving, play the run animation otherwise play the idle animation
-    if(this._moveDirection.length() > 0){
+    const isMoving = this._moveDirection.length() > 0;
+
+    // if the character is running, play the run animation
+    if(isMoving && this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
       this._currentAnim = this._run;
+    // if the character is running and jumping, play the run jump animation
+    } else if (isMoving && !this._isGrounded && this._isJumping && !this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
+      this._currentAnim = this._runJump;
+    // if the character is sliding while running, play the slide animation
+    } else if (isMoving && this._isGrounded && !this._isJumping && !this._isFalling && this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
+      this._currentAnim = this._runSlide;
+    // if the character is climbing, play the climbing animation
+    } else if (!isMoving && !this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && this._isClimbing && !this._isStunned && !this._isDead){
+      this._currentAnim = this._climbUpWall;
+    // if the character is climbing and reaches the top, play the climbing end animation
+    } else if (!isMoving && this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && this._isClimbing && !this._isStunned && !this._isDead){
+      this._currentAnim = this._climbEnd;
+    // if the character is stunned, play the stunned animation
+    } else if (!isMoving && this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && !this._isClimbing && this._isStunned && !this._isDead){
+      this._currentAnim = this._stunBack;
+    // if the character is falling, play the fall animation
+    } else if (!isMoving && !this._isGrounded && !this._isJumping && this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
+      this._currentAnim = this._fallIdle;
+    // if the character is touching the ground after falling, play the fall roll animation
+    } else if (!isMoving && this._isGrounded && !this._isJumping && this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && this._isDead){
+      this._currentAnim = this._fallRoll;
+    // if the character is dead, play the death animation
+    } else if (this._isDead){
+      this._currentAnim = this._death;
+    // if the character is jumping without moving, play the idle jump animation
+    } else if (!isMoving && this._isGrounded && this._isJumping && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
+      this._currentAnim = this._idleJump;
+      // this._isJumping = false;
+      // this._jumpCount = 0;
     } else {
       this._currentAnim = this._idle;
     }
 
     // animation update
     if(this._currentAnim != null && this._prevAnim !== this._currentAnim){
+      // put a smooth transition between animations
       this._prevAnim.stop();
       this._currentAnim.play(this._currentAnim.loopAnimation);
       this._prevAnim = this._currentAnim;
