@@ -1,4 +1,4 @@
-import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Scene, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
 
@@ -16,7 +16,41 @@ class World{
         this._worldMesh = worldMesh;
         this._worldMesh.scaling = new Vector3(10, 10, 10); // Adjust scaling as needed
         this._worldMesh.position.y = 0; // Adjust position as needed
-        this._worldMesh.physicsImpostor = new PhysicsImpostor(this._worldMesh, PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this._scene);
+        this._worldMesh.position.x = 0;
+        this._worldMesh.position.z = 0;
+        // this._worldMesh.physicsImpostor = new PhysicsImpostor(this._worldMesh, PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this._scene);
+        const worldAggregate = new PhysicsAggregate(this._worldMesh, PhysicsShapeType.MESH, { mass: 0 }, this._scene);
+    }
+
+    addGLBMeshToScene(scene: Scene, glbFilePath: string, onSuccess?: () => void, onError?: (message: string) => void): void {
+        SceneLoader.ImportMesh('', glbFilePath, '', this._scene, 
+            (meshes) => {
+                // onSuccess callback
+                if (onSuccess) {
+                    onSuccess();
+                    
+                    // Ajouter physicsAggregate après le chargement réussi du mesh
+                    const physicsImpostor = new Mesh('physicsAggregate', scene);
+                    for (const mesh of meshes) {
+                        mesh.setParent(physicsImpostor);
+                    }
+                    physicsImpostor.physicsImpostor = new PhysicsImpostor(physicsImpostor, PhysicsImpostor.MeshImpostor, { mass: 0 }, scene);
+
+                }
+            },
+            (event) => {
+                // onProgress callback
+                console.log(`Loading ${event.loaded}/${event.total}`);
+            },
+            (scene, message, exception) => {
+                // onError callback
+                const errorMessage = message ?? (exception?.message ?? "An error occurred while loading the mesh.");
+                console.error(errorMessage);
+                if (onError) {
+                    onError(errorMessage);
+                }
+            }
+        );
     }
 
     addFreeCamera(name: string,  position: Vector3, zoom : boolean) : void {
