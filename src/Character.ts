@@ -60,7 +60,7 @@ class Character extends TransformNode{
     this._scene = scene;
     
     this._name = name || "No name";
-    this._health = 100;
+    this._health = 3;
     this._stamina = 100;
     this._staminaRegen = 1;
 

@@ -20,7 +20,7 @@ class Player {
   private _camera: UniversalCamera;
 
   private _modifier: Modifier;
-  private _life: number;
+  private _deathCounter: number;
 
   //const values
   private static readonly DOWN_TILT: Vector3 = new Vector3(0.8290313946973066, 0, 0);
@@ -39,7 +39,7 @@ class Player {
     this._attachController();
 
     this._modifier = null;
-    this._life = 3;
+    this._deathCounter = 0;
   }
 
   //////////////////////////////////////////////////////////
@@ -94,12 +94,12 @@ class Player {
     this._modifier = modifier;
   }
 
-  // Life
-  public getLife(): number {
-    return this._life;
+  // DeathCounter
+  public getDeathCounter(): number {
+    return this._deathCounter;
   }
-  public setLife(life: number): void {
-    this._life = life;
+  public setDeathCounter(deathCounter: number): void {
+    this._deathCounter = deathCounter;
   }
 
   //////////////////////////////////////////////////////////
