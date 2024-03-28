@@ -1,8 +1,18 @@
-import { AnimationGroup, Mesh, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
+import { AnimationGroup, FollowCamera, Matrix, Mesh, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
+
+enum MovingState {
+  DEFAULT = 0,
+  JUMPING = 1,
+  FALLING = 2,
+  SLIDING = 3,
+  CLIMBING = 4,
+  STUNNED = 5,
+  DEAD = 6
+}
 
 class Character extends TransformNode{
 
@@ -16,11 +26,15 @@ class Character extends TransformNode{
   private _stamina: number;
   private _staminaRegen: number;
 
+  // camera variables
+  private _camera: FollowCamera;
+
   // movement variables
   private _h: number;
   private _v: number;
   private _inputAmt: number;
   private _moveDirection: Vector3;
+  private _lastPosition: Vector3;
   private _jumpCount: number;
 
   // Animations
@@ -40,18 +54,13 @@ class Character extends TransformNode{
   private _currentAnim: AnimationGroup = null;
   private _prevAnim: AnimationGroup;
   private _isGrounded: boolean = true;
-  private _isFalling: boolean = false;
-  private _isJumping: boolean = false;
-  private _isSliding: boolean = false;
-  private _isClimbing: boolean = false;
-  private _isStunned: boolean = false;
-  private _isDead: boolean = false;
+  private _movingState: MovingState = MovingState.DEFAULT;
 
-  private _speed: Vector3;
   private _mesh: Mesh;
 
   // Constants
   private static readonly PLAYER_SPEED: number = 0.45;
+  private static readonly ROTATION_SPEED: number = 0.02;
   private static readonly JUMP_NUMBER: number = 1;
   private static readonly JUMP_FORCE: number = 0.80;
   private static readonly GRAVITY: number = -2.8;
@@ -67,9 +76,9 @@ class Character extends TransformNode{
     this._stamina = 100;
     this._staminaRegen = 1;
 
-    this._jumpCount = 0;
+    this._moveDirection = new Vector3(0, 0, 1);
 
-    this._speed = new Vector3(1, 1, 1);
+    this._jumpCount = 0;
   }
 
   //////////////////////////////////////////////////////////
@@ -148,14 +157,6 @@ class Character extends TransformNode{
     this._mesh.position = position;
   }
 
-  // Speed
-  public getSpeed(): Vector3 {
-    return this._speed;
-  }
-  public setSpeed(speed: Vector3): void {
-    this._speed = speed;
-  }
-
   // Mesh
   public getMesh(): Mesh {
     return this._mesh;
@@ -183,9 +184,15 @@ class Character extends TransformNode{
     characterMesh.physicsImpostor = new PhysicsImpostor(characterMesh, PhysicsImpostor.MeshImpostor, { mass: 1, restitution: 0.1 }, this._scene);
     characterMesh.position = new Vector3(0, 5, 0);
     characterMesh.scaling = new Vector3(20, 20, 20);
+    characterMesh.rotationQuaternion = null;
 
     this._mesh = characterMesh;
     this._mesh.parent = this;
+
+    // Create the follow camera
+    this.createFollowCamera();
+
+
 
     // Set up animations
     this._setUpAnimations();
@@ -203,52 +210,68 @@ class Character extends TransformNode{
     this._prevAnim = this._fallIdle;
   }
 
+  // Create the follow camera
+  private createFollowCamera() {
+    const camera = new FollowCamera("characterFollowCamera", this._mesh.position, this._scene, this._mesh);
+
+    camera.radius = 80; // how far from the object to follow
+    camera.heightOffset = 40; // how high above the object to place the camera
+    camera.rotationOffset = 180; // the viewing angle
+    camera.cameraAcceleration = .05; // how fast to move
+    camera.maxCameraSpeed = 5; // speed limit
+    this._camera = camera;
+
+    this._scene.activeCamera = this._camera;
+  }
+
   // Update character's rotation
   public updateCharacterRotation(camRoot: TransformNode, controller: Controller): void {
-    // Apply rotation only if there's actual movement
-    if (controller.getHorizontalAxis() !== 0 || controller.getVerticalAxis() !== 0) {
-      // Apply the rotation to the character
-      //rotation based on input & the camera angle
-      let angle = Math.atan2(controller.getHorizontalAxis(), controller.getVerticalAxis());
-      angle += camRoot.rotation.y;
+    // // Apply rotation only if there's actual movement
+    // if (controller.getHorizontalAxis() !== 0 || controller.getVerticalAxis() !== 0) {
+    //   // Apply the rotation to the character
+    //   //rotation based on input & the camera angle
+    //   let angle = Math.atan2(controller.getHorizontalAxis(), controller.getVerticalAxis());
+    //   angle += camRoot.rotation.y;
 
-      // The mesh must face the direction it moves
-      const targetQuaternion = Quaternion.FromEulerAngles(0, angle, 0);
-      const currentQuaternion = this._mesh.rotationQuaternion || Quaternion.Identity();
-      this._mesh.rotationQuaternion = Quaternion.Slerp(currentQuaternion, targetQuaternion, 10 * this._deltaTime);
-    }
+    //   // The mesh must face the direction it moves
+    //   const targetQuaternion = Quaternion.FromEulerAngles(0, angle, 0);
+    //   const currentQuaternion = this._mesh.rotationQuaternion || Quaternion.Identity();
+    //   this._mesh.rotationQuaternion = Quaternion.Slerp(currentQuaternion, targetQuaternion, 10 * this._deltaTime);
+    // }
   }
 
   // Move the character
-  public moveCharacterMeshDirection(camRoot: TransformNode, controller: Controller): void {
+  public moveCharacterMeshDirection(controller: Controller): void {
     
-    this._h = controller.getHorizontal();
-    this._v = controller.getVertical();
-    this._moveDirection = Vector3.Zero();
-
-    //--MOVEMENTS BASED ON CAMERA (as it rotates)--
-    const fwd = camRoot.forward;
-    const right = camRoot.right;
-    const correctedVertical = fwd.scaleInPlace(this._v);
-    const correctedHorizontal = right.scaleInPlace(this._h);
-
-    //movement based off of camera's view
-    const move = correctedHorizontal.addInPlace(correctedVertical);
-
-    //clear y so that the character doesnt fly up, normalize for next step
-    this._moveDirection = new Vector3((move).normalize().x, 0, (move).normalize().z);
+    const inputMap = controller.getInputMap();
+    this._lastPosition = this._mesh.position;
     
+    //this._mesh.rotationQuaternion = null 
     //clamp the input value so that diagonal movement isn't twice as fast
-    const inputMag = Math.abs(this._h) + Math.abs(this._v);
-    if (inputMag < 0) {
-        this._inputAmt = 0;
-    } else if (inputMag > 1) {
-        this._inputAmt = 1;
-    } else {
-        this._inputAmt = inputMag;
+    // const inputMag = Math.abs(this._h) + Math.abs(this._v);
+    // if (inputMag < 0) {
+    //     this._inputAmt = 0;
+    // } else if (inputMag > 1) {
+    //     this._inputAmt = 1;
+    // } else {
+    //     this._inputAmt = inputMag;
+    // }
+
+    // Determine movement direction based on input
+    if (inputMap.get(controller.getForward())) {
+      this._mesh.moveWithCollisions(this._moveDirection.scaleInPlace(Character.PLAYER_SPEED));
     }
-    //final movement that takes into consideration the inputs
-    this._moveDirection = this._moveDirection.scaleInPlace(this._inputAmt * Character.PLAYER_SPEED);
+    if (inputMap.get(controller.getBackward())) {
+      this._mesh.moveWithCollisions(this._moveDirection.scaleInPlace(-Character.PLAYER_SPEED));
+    }
+    if (inputMap.get(controller.getLeft())) {
+      this._mesh.rotation.y -= Character.ROTATION_SPEED;
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
+    }
+    if (inputMap.get(controller.getRight())) {
+      this._mesh.rotation.y += Character.ROTATION_SPEED;
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
+    }
 
     // jump
     // if (controller.getJumping() && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
@@ -256,48 +279,51 @@ class Character extends TransformNode{
     //   this._isJumping = true;
     //   this._isGrounded = false;
     // }
-    this._mesh.moveWithCollisions(this._moveDirection);
   }
 
   // Animate the character
   public animateCharacter(): void {
-    const isMoving = this._moveDirection.length() > 0;
-
-    // if the character is running, play the run animation
-    if(isMoving && this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
-      this._currentAnim = this._run;
-    // if the character is running and jumping, play the run jump animation
-    } else if (isMoving && !this._isGrounded && this._isJumping && !this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
-      this._currentAnim = this._runJump;
-    // if the character is sliding while running, play the slide animation
-    } else if (isMoving && this._isGrounded && !this._isJumping && !this._isFalling && this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
-      this._currentAnim = this._runSlide;
-    // if the character is climbing, play the climbing animation
-    } else if (!isMoving && !this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && this._isClimbing && !this._isStunned && !this._isDead){
-      this._currentAnim = this._climbUpWall;
-    // if the character is climbing and reaches the top, play the climbing end animation
-    } else if (!isMoving && this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && this._isClimbing && !this._isStunned && !this._isDead){
-      this._currentAnim = this._climbEnd;
-    // if the character is stunned, play the stunned animation
-    } else if (!isMoving && this._isGrounded && !this._isJumping && !this._isFalling && !this._isSliding && !this._isClimbing && this._isStunned && !this._isDead){
-      this._currentAnim = this._stunBack;
-    // if the character is falling, play the fall animation
-    } else if (!isMoving && !this._isGrounded && !this._isJumping && this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
-      this._currentAnim = this._fallIdle;
-    // if the character is touching the ground after falling, play the fall roll animation
-    } else if (!isMoving && this._isGrounded && !this._isJumping && this._isFalling && !this._isSliding && !this._isClimbing && !this._isStunned && this._isDead){
-      this._currentAnim = this._fallRoll;
-    // if the character is dead, play the death animation
-    } else if (this._isDead){
-      this._currentAnim = this._death;
-    // if the character is jumping without moving, play the idle jump animation
-    } else if (!isMoving && this._isGrounded && this._isJumping && !this._isSliding && !this._isClimbing && !this._isStunned && !this._isDead){
-      this._currentAnim = this._idleJump;
-      // this._isJumping = false;
-      // this._jumpCount = 0;
-    } else {
-      this._currentAnim = this._idle;
+    if(!this._lastPosition.equals(this._mesh.position)) {
+      console.log("======================================")
+      console.log("Last pos",this._lastPosition)
+      console.log("Mesh pos", this._mesh.position)
     }
+    const isMoving = !this._lastPosition.equals(this._mesh.position);
+
+    // Determine the appropriate animation based on the character's moving state
+    switch (this._movingState) {
+      // If the character is jumping, play the run jump animation
+      case MovingState.JUMPING:
+        this._currentAnim = isMoving ? this._runJump : this._idleJump;
+        break;
+      // If the character is sliding, play the slide animation
+      case MovingState.SLIDING:
+        this._currentAnim = this._runSlide;
+        break;
+      // If the character is climbing, play the climbing animation
+      case MovingState.CLIMBING:
+        this._currentAnim = this._climbUpWall;
+        // this._currentAnim = this._climbEnd;
+        break;
+      // If the character is stunned, play the stunned animation
+      case MovingState.STUNNED:
+        this._currentAnim = this._stunBack;
+        break;
+      // If the character is falling, play the fall animation
+      case MovingState.FALLING:
+        this._currentAnim = this._isGrounded ? this._fallRoll : this._fallIdle;
+        break;
+      // If the character is dead, play the death animation
+      case MovingState.DEAD:
+        this._currentAnim = this._death;
+        break;
+        
+      // Default case: play the run animation if moving, otherwise play the idle animation
+      case MovingState.DEFAULT:
+      default:
+        this._currentAnim = isMoving ? this._run : this._idle;
+        break;
+      }
 
     // animation update
     if(this._currentAnim != null && this._prevAnim !== this._currentAnim){
@@ -314,7 +340,7 @@ class Character extends TransformNode{
     // Update character rotation
     this.updateCharacterRotation(camRoot, controller);
     // Move the character
-    this.moveCharacterMeshDirection(camRoot, controller);
+    this.moveCharacterMeshDirection(controller);
     // Animate the character
     this.animateCharacter();
   }

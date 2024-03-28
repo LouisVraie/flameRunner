@@ -1,5 +1,8 @@
 import { KeyboardEventTypes, Scalar, Scene } from "@babylonjs/core";
 
+import "@babylonjs/inspector";
+import "@babylonjs/core/Debug/debugLayer";
+
 class Controller {
 
   private _scene: Scene;
@@ -38,6 +41,14 @@ class Controller {
       switch (kbInfo.type) {
         case KeyboardEventTypes.KEYDOWN:
           this._inputMap.set(kbInfo.event.code, true);
+          // if key i is pressed, toggle the inspector
+          if (kbInfo.event.code == "KeyI") {
+            if (this._scene.debugLayer.isVisible()) {
+              this._scene.debugLayer.hide();
+            } else {
+              this._scene.debugLayer.show();
+            }
+          }
           break;
         case KeyboardEventTypes.KEYUP:
           this._inputMap.set(kbInfo.event.code, false);
