@@ -13,6 +13,9 @@ module.exports = {
     },
     resolve: {
         extensions: [".ts", ".js"],
+        alias: {
+            '@babylonjs/havok': path.resolve(__dirname, 'node_modules/@babylonjs/havok')
+        }
     },
     module: {
         rules: [

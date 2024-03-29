@@ -1,8 +1,12 @@
-import { AnimationGroup, FollowCamera, Matrix, Mesh, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, Matrix, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
+
+const PLAYER_HEIGHT = 1.7;
+const PLAYER_RADIUS = 0.4;
+const USE_FORCES = true;
 
 enum MovingState {
   DEFAULT = 0,
@@ -58,7 +62,9 @@ class Character extends TransformNode{
   private _isGrounded: boolean = true;
   private _movingState: MovingState = MovingState.DEFAULT;
 
+  private _hitbox: Mesh;
   private _mesh: Mesh;
+  private _capsuleAggregate: PhysicsAggregate;
 
   // Constants
   private static readonly PLAYER_SPEED: number = 0.45;
@@ -78,6 +84,11 @@ class Character extends TransformNode{
     this._stamina = 100;
     this._staminaRegen = 1;
 
+    // Create capsule
+    this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: PLAYER_HEIGHT, radius: PLAYER_RADIUS }, this._scene);
+    this._hitbox.visibility = 0.4;
+    this._hitbox.position = new Vector3(0, 8, 0);
+        
     this._moveDirection = new Vector3(0, 0, 1);
 
     this._jumpCount = 0;
@@ -178,7 +189,42 @@ class Character extends TransformNode{
     const assets = await SceneLoader.ImportMeshAsync("", "", player1, this._scene);
 
     const characterMesh = assets.meshes[0] as Mesh;
+    characterMesh.position = new Vector3(0, -PLAYER_HEIGHT / 2, 0);
+    characterMesh.scaling = new Vector3(1, 1, 1);
+    characterMesh.rotate(Vector3.UpReadOnly, Math.PI);
+    characterMesh.name = "toto";
+    characterMesh.bakeCurrentTransformIntoVertices();
+    characterMesh.checkCollisions = true;
 
+    
+
+    // Combine character and capsule
+    //characterMesh.parent = this._hitbox;
+
+    
+    
+
+    this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1, friction: 1, restitution: 0.1 }, this._scene);
+    this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+
+
+    this._capsuleAggregate.body.setMassProperties({
+      inertia: new Vector3(0, 0, 0),
+      centerOfMass: new Vector3(0, PLAYER_HEIGHT / 2, 0),
+      mass: 1,
+      inertiaOrientation: new Quaternion(0, 0, 0, 1)
+    });
+    // if (USE_FORCES) {
+    //   this._capsuleAggregate.body.setLinearDamping(0.8);
+    //   this._capsuleAggregate.body.setAngularDamping(10.0);
+    // }
+    // else {
+    //   this._capsuleAggregate.body.setLinearDamping(0.5);
+    //   this._capsuleAggregate.body.setAngularDamping(0.5);
+    // }
+    
+    characterMesh.parent =  this._hitbox;
+    
     // Animations
     this._setAnimations(assets);
 
@@ -244,6 +290,8 @@ class Character extends TransformNode{
 
   // Move the character
   public moveCharacterMeshDirection(controller: Controller): void {
+    const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
+    this._capsuleAggregate.body.setLinearVelocity(direction);
     
     const inputMap = controller.getInputMap();
     this._lastPosition = this._mesh.position.clone();
