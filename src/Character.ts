@@ -1,7 +1,11 @@
-import { AnimationGroup, Mesh, PhysicsImpostor, Scene, SceneLoader, TransformNode, Vector3 } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3 } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
+
+const PLAYER_HEIGHT = 1.7;
+const PLAYER_RADIUS = 0.4;
+const USE_FORCES = true;
 
 class Character {
 
@@ -33,9 +37,11 @@ class Character {
   private _isFalling: boolean = false;
   private _jumped: boolean = false;
 
-  private _transform: TransformNode;
+  private _hitbox: Mesh;
   private _position: Vector3;
   private _speed: Vector3;
+
+  private _capsuleAggregate: PhysicsAggregate;
 
   private _mesh: Mesh;
 
@@ -47,8 +53,15 @@ class Character {
     this._stamina = 100;
     this._staminaRegen = 1;
 
-    this._transform =  null;
+    // Create capsule
+    this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: PLAYER_HEIGHT, radius: PLAYER_RADIUS }, this._scene);
+    this._hitbox.visibility = 0.4;
+    this._hitbox.position = new Vector3(0, 8, 0);
+    
+
+
     this._position = Vector3.Zero();
+
     this._speed = new Vector3(1, 1, 1);
   }
 
@@ -106,7 +119,7 @@ class Character {
 
   // Animations
   private _setAnimations(assets: any): void {
-    this._idle = assets.animationGroups[0];
+    this._idle = assets.animationGroups[5];
     this._idleJump = assets.animationGroups[2];
     this._run = assets.animationGroups[3];
     this._runJump = assets.animationGroups[4];
@@ -117,15 +130,17 @@ class Character {
     this._fallIdle = assets.animationGroups[9];
     this._fallRoll = assets.animationGroups[10];
     this._death = assets.animationGroups[11];
+    this._idle.start(true);
+    this._currentAnim = this._idle;
   }
 
   // Transform
-  public getTransform(): TransformNode {
-    return this._transform;
-  }
-  public setTransform(transform: TransformNode): void {
-    this._transform = transform;
-  }
+  // public getTransform(): TransformNode {
+  //   return this._transform;
+  // }
+  // public setTransform(transform: TransformNode): void {
+  //   this._transform = transform;
+  // }
 
   // Position
   public getPosition(): Vector3 {
@@ -162,23 +177,63 @@ class Character {
     const assets = await SceneLoader.ImportMeshAsync("", "", player1, this._scene);
 
     const characterMesh = assets.meshes[0] as Mesh;
+    characterMesh.position = new Vector3(0, -PLAYER_HEIGHT / 2, 0);
+    characterMesh.scaling = new Vector3(1, 1, 1);
+    characterMesh.rotate(Vector3.UpReadOnly, Math.PI);
+    characterMesh.name = "toto";
+    characterMesh.bakeCurrentTransformIntoVertices();
+    characterMesh.checkCollisions = true;
 
+    
+
+    // Combine character and capsule
+    //characterMesh.parent = this._hitbox;
+
+    
+    
+
+    this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1, friction: 1, restitution: 0.1 }, this._scene);
+    this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+
+
+    this._capsuleAggregate.body.setMassProperties({
+      inertia: new Vector3(0, 0, 0),
+      centerOfMass: new Vector3(0, PLAYER_HEIGHT / 2, 0),
+      mass: 1,
+      inertiaOrientation: new Quaternion(0, 0, 0, 1)
+    });
+    // if (USE_FORCES) {
+    //   this._capsuleAggregate.body.setLinearDamping(0.8);
+    //   this._capsuleAggregate.body.setAngularDamping(10.0);
+    // }
+    // else {
+    //   this._capsuleAggregate.body.setLinearDamping(0.5);
+    //   this._capsuleAggregate.body.setAngularDamping(0.5);
+    // }
+    
+    characterMesh.parent =  this._hitbox;
+    
     // Animations
     this._setAnimations(assets);
 
-    // Apply physics to the character
-    characterMesh.physicsImpostor = new PhysicsImpostor(characterMesh, PhysicsImpostor.MeshImpostor, { mass: 1, restitution: 0.1 }, this._scene);
-    characterMesh.position = new Vector3(0, 5, 0);
-    characterMesh.scaling = new Vector3(20, 20, 20);
-
     this._mesh = characterMesh;
+
+    
+
+    // Position the capsule below the character
+    //this._hitbox.position = this._mesh.position.subtract(new Vector3(0, characterHeight / 2, 0));
+
+    // Set the character position at the top of the capsule
+    //this._mesh.position = this._hitbox.getAbsolutePosition().add(new Vector3(0, characterHeight / 2, 0));
 
     return this;
   }
 
   // Move the character
   public moveCharacterMeshDirection(direction: Vector3): void {
-    this._mesh.moveWithCollisions(direction);
+    let currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
+    this._capsuleAggregate.body.setLinearVelocity(direction);
+    //this._mesh.moveWithCollisions(direction);
   }
 }
 

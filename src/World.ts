@@ -1,57 +1,66 @@
-import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsShapeType, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, ScenePerformancePriority, ShadowGenerator, SpotLight, TransformNode, Vector3 } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
+
+import map from "../assets/models/world.glb";
+import HavokPhysics from "@babylonjs/havok";
+
+const worldMap = {
+    name: "map",
+    model: map
+}
 
 class World{
     private _scene: Scene;
     private _worldMesh: AbstractMesh;
     private _physicsPlugin: HavokPlugin;
     private _players: Player[] = [];
+    private _gameObject: TransformNode;
 
     constructor(scene: Scene) {
         this._scene = scene;
+
+        this._gameObject = new TransformNode("world", this._scene);
+        this._gameObject.position = Vector3.Zero();
     }
 
-    createWorld(worldMesh: AbstractMesh): void {
-        this._worldMesh = worldMesh;
-        this._worldMesh.scaling = new Vector3(10, 10, 10); // Adjust scaling as needed
-        this._worldMesh.position.y = 0; // Adjust position as needed
-        this._worldMesh.position.x = 0;
-        this._worldMesh.position.z = 0;
-        // this._worldMesh.physicsImpostor = new PhysicsImpostor(this._worldMesh, PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this._scene);
-        const worldAggregate = new PhysicsAggregate(this._worldMesh, PhysicsShapeType.MESH, { mass: 0 }, this._scene);
+    async getInitializedHavok() {
+        return await HavokPhysics();
     }
 
-    addGLBMeshToScene(scene: Scene, glbFilePath: string, onSuccess?: () => void, onError?: (message: string) => void): void {
-        SceneLoader.ImportMesh('', glbFilePath, '', this._scene, 
-            (meshes) => {
-                // onSuccess callback
-                if (onSuccess) {
-                    onSuccess();
-                    
-                    // Ajouter physicsAggregate après le chargement réussi du mesh
-                    const physicsImpostor = new Mesh('physicsAggregate', scene);
-                    for (const mesh of meshes) {
-                        mesh.setParent(physicsImpostor);
-                    }
-                    physicsImpostor.physicsImpostor = new PhysicsImpostor(physicsImpostor, PhysicsImpostor.MeshImpostor, { mass: 0 }, scene);
+    async createScene(){
+        const havokInstance = await this.getInitializedHavok();
+        this._scene.collisionsEnabled = true;
+        this._scene.performancePriority = ScenePerformancePriority.BackwardCompatible;
 
-                }
-            },
-            (event) => {
-                // onProgress callback
-                console.log(`Loading ${event.loaded}/${event.total}`);
-            },
-            (scene, message, exception) => {
-                // onError callback
-                const errorMessage = message ?? (exception?.message ?? "An error occurred while loading the mesh.");
-                console.error(errorMessage);
-                if (onError) {
-                    onError(errorMessage);
-                }
-            }
-        );
+        const hk = new HavokPlugin(true, havokInstance);
+        this._scene.enablePhysics(new Vector3(0, -9.81, 0), hk)
     }
+
+    async loadWorld(){
+        let result = await SceneLoader.ImportMeshAsync("", "", worldMap.model, this._scene);
+        
+        this._gameObject = result.meshes[0];
+        this._gameObject.name = "world";
+        this._gameObject.setParent(null);
+        this._gameObject.scaling.scaleInPlace(2.5);
+        this._gameObject.position.set(0,0,0);
+
+        for (let childMesh of result.meshes) {
+
+            childMesh.refreshBoundingInfo(true);
+            if (childMesh.getTotalVertices() > 0) {
+                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.4, restitution : 0.1});
+                meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+                childMesh.receiveShadows = true;
+           }
+        }
+    }
+
+    async initGame(){
+        await this.createScene();
+    }
+  
 
     addFreeCamera(name: string,  position: Vector3, zoom : boolean) : void {
         const camera = new FreeCamera(name, position, this._scene);
@@ -70,7 +79,7 @@ class World{
         sphere.position.z = posZ;
 
         if(physics){
-            const sphereAggregate = new PhysicsAggregate(sphere, PhysicsShapeType.SPHERE, { mass: 1, restitution: 0.75 }, this._scene);
+            const sphereAggregate = new PhysicsAggregate(sphere, PhysicsShapeType.SPHERE, { mass: 1, restitution: 0.1 }, this._scene);
         }
     }
 
