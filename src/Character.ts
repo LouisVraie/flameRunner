@@ -35,6 +35,8 @@ class Character extends TransformNode{
   private _inputAmt: number;
   private _moveDirection: Vector3;
   private _lastPosition: Vector3;
+  private _isMoving: boolean;
+  private _currentPosition: Vector3;
   private _jumpCount: number;
 
   // Animations
@@ -244,33 +246,26 @@ class Character extends TransformNode{
   public moveCharacterMeshDirection(controller: Controller): void {
     
     const inputMap = controller.getInputMap();
-    this._lastPosition = this._mesh.position;
+    this._lastPosition = this._mesh.position.clone();
     
-    //this._mesh.rotationQuaternion = null 
-    //clamp the input value so that diagonal movement isn't twice as fast
-    // const inputMag = Math.abs(this._h) + Math.abs(this._v);
-    // if (inputMag < 0) {
-    //     this._inputAmt = 0;
-    // } else if (inputMag > 1) {
-    //     this._inputAmt = 1;
-    // } else {
-    //     this._inputAmt = inputMag;
-    // }
-
     // Determine movement direction based on input
+    // Forward
     if (inputMap.get(controller.getForward())) {
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
       this._mesh.moveWithCollisions(this._moveDirection.scaleInPlace(Character.PLAYER_SPEED));
     }
+    // Backward
     if (inputMap.get(controller.getBackward())) {
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
       this._mesh.moveWithCollisions(this._moveDirection.scaleInPlace(-Character.PLAYER_SPEED));
     }
+    // Left
     if (inputMap.get(controller.getLeft())) {
       this._mesh.rotation.y -= Character.ROTATION_SPEED;
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
     }
+    // Right
     if (inputMap.get(controller.getRight())) {
       this._mesh.rotation.y += Character.ROTATION_SPEED;
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
     }
 
     // jump
@@ -279,22 +274,20 @@ class Character extends TransformNode{
     //   this._isJumping = true;
     //   this._isGrounded = false;
     // }
+
+    // Check if the character is moving
+    this._currentPosition = this._mesh.position.clone();
+    this._isMoving = !this._lastPosition.equals(this._currentPosition);
   }
 
   // Animate the character
   public animateCharacter(): void {
-    if(!this._lastPosition.equals(this._mesh.position)) {
-      console.log("======================================")
-      console.log("Last pos",this._lastPosition)
-      console.log("Mesh pos", this._mesh.position)
-    }
-    const isMoving = !this._lastPosition.equals(this._mesh.position);
 
     // Determine the appropriate animation based on the character's moving state
     switch (this._movingState) {
       // If the character is jumping, play the run jump animation
       case MovingState.JUMPING:
-        this._currentAnim = isMoving ? this._runJump : this._idleJump;
+        this._currentAnim = this._isMoving ? this._runJump : this._idleJump;
         break;
       // If the character is sliding, play the slide animation
       case MovingState.SLIDING:
@@ -321,7 +314,7 @@ class Character extends TransformNode{
       // Default case: play the run animation if moving, otherwise play the idle animation
       case MovingState.DEFAULT:
       default:
-        this._currentAnim = isMoving ? this._run : this._idle;
+        this._currentAnim = this._isMoving ? this._run : this._idle;
         break;
       }
 
