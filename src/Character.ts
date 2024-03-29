@@ -4,8 +4,8 @@ import Group from "./Group";
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
 
-const PLAYER_HEIGHT = 1.7;
-const PLAYER_RADIUS = 0.4;
+const PLAYER_HEIGHT = 1.5;
+const PLAYER_RADIUS = 0.25;
 const USE_FORCES = true;
 
 enum MovingState {
@@ -67,7 +67,7 @@ class Character extends TransformNode{
   private _capsuleAggregate: PhysicsAggregate;
 
   // Constants
-  private static readonly PLAYER_SPEED: number = 0.45;
+  private static readonly PLAYER_SPEED: number = 0.45*10;
   private static readonly ROTATION_SPEED: number = 0.02;
   private static readonly JUMP_NUMBER: number = 1;
   private static readonly JUMP_FORCE: number = 0.80;
@@ -83,11 +83,6 @@ class Character extends TransformNode{
     this._health = 3;
     this._stamina = 100;
     this._staminaRegen = 1;
-
-    // Create capsule
-    this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: PLAYER_HEIGHT, radius: PLAYER_RADIUS }, this._scene);
-    this._hitbox.visibility = 0.4;
-    this._hitbox.position = new Vector3(0, 8, 0);
         
     this._moveDirection = new Vector3(0, 0, 1);
 
@@ -192,55 +187,36 @@ class Character extends TransformNode{
     characterMesh.position = new Vector3(0, -PLAYER_HEIGHT / 2, 0);
     characterMesh.scaling = new Vector3(1, 1, 1);
     characterMesh.rotate(Vector3.UpReadOnly, Math.PI);
-    characterMesh.name = "toto";
+    characterMesh.name = this._name;
     characterMesh.bakeCurrentTransformIntoVertices();
     characterMesh.checkCollisions = true;
-
-    
+    characterMesh.rotationQuaternion = null;
 
     // Combine character and capsule
     //characterMesh.parent = this._hitbox;
 
-    
-    
+    // Create capsule
+    this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: PLAYER_HEIGHT, radius: PLAYER_RADIUS }, this._scene);
+    this._hitbox.visibility = 0.4;
+    this._hitbox.position = new Vector3(0, 8, 0);
 
-    this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1, friction: 1, restitution: 0.1 }, this._scene);
+    this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1000, friction:0.5, restitution: 0.01 }, this._scene);
     this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
-
 
     this._capsuleAggregate.body.setMassProperties({
       inertia: new Vector3(0, 0, 0),
-      centerOfMass: new Vector3(0, PLAYER_HEIGHT / 2, 0),
-      mass: 1,
-      inertiaOrientation: new Quaternion(0, 0, 0, 1)
+      // centerOfMass: new Vector3(0, PLAYER_HEIGHT / 2, 0),
     });
-    // if (USE_FORCES) {
-    //   this._capsuleAggregate.body.setLinearDamping(0.8);
-    //   this._capsuleAggregate.body.setAngularDamping(10.0);
-    // }
-    // else {
-    //   this._capsuleAggregate.body.setLinearDamping(0.5);
-    //   this._capsuleAggregate.body.setAngularDamping(0.5);
-    // }
-    
-    characterMesh.parent =  this._hitbox;
+    this._capsuleAggregate.body.setLinearDamping(1);
+    this._capsuleAggregate.body.setAngularDamping(1.0);
     
     // Animations
     this._setAnimations(assets);
-
-    // Apply physics to the character
-    characterMesh.physicsImpostor = new PhysicsImpostor(characterMesh, PhysicsImpostor.MeshImpostor, { mass: 1, restitution: 0.1 }, this._scene);
-    characterMesh.position = new Vector3(0, 5, 0);
-    characterMesh.scaling = new Vector3(20, 20, 20);
-    characterMesh.rotationQuaternion = null;
-
     this._mesh = characterMesh;
-    this._mesh.parent = this;
+    this._mesh.parent = this._hitbox;
 
     // Create the follow camera
     this.createFollowCamera();
-
-
 
     // Set up animations
     this._setUpAnimations();
@@ -262,8 +238,8 @@ class Character extends TransformNode{
   private createFollowCamera() {
     const camera = new FollowCamera("characterFollowCamera", this._mesh.position, this._scene, this._mesh);
 
-    camera.radius = 80; // how far from the object to follow
-    camera.heightOffset = 40; // how high above the object to place the camera
+    camera.radius = 10; // how far from the object to follow
+    camera.heightOffset = 10; // how high above the object to place the camera
     camera.rotationOffset = 180; // the viewing angle
     camera.cameraAcceleration = .05; // how fast to move
     camera.maxCameraSpeed = 5; // speed limit
@@ -290,22 +266,21 @@ class Character extends TransformNode{
 
   // Move the character
   public moveCharacterMeshDirection(controller: Controller): void {
-    const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
-    this._capsuleAggregate.body.setLinearVelocity(direction);
-    
+    // const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
+    // this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
     const inputMap = controller.getInputMap();
-    this._lastPosition = this._mesh.position.clone();
+    this._lastPosition = this._hitbox.position.clone();
     
     // Determine movement direction based on input
     // Forward
     if (inputMap.get(controller.getForward())) {
       this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
-      this._mesh.moveWithCollisions(this._moveDirection.scaleInPlace(Character.PLAYER_SPEED));
+      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection.scaleInPlace(Character.PLAYER_SPEED));
     }
     // Backward
     if (inputMap.get(controller.getBackward())) {
       this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
-      this._mesh.moveWithCollisions(this._moveDirection.scaleInPlace(-Character.PLAYER_SPEED));
+      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection.scaleInPlace(-Character.PLAYER_SPEED));
     }
     // Left
     if (inputMap.get(controller.getLeft())) {
@@ -324,7 +299,7 @@ class Character extends TransformNode{
     // }
 
     // Check if the character is moving
-    this._currentPosition = this._mesh.position.clone();
+    this._currentPosition = this._hitbox.position.clone();
     this._isMoving = !this._lastPosition.equals(this._currentPosition);
   }
 

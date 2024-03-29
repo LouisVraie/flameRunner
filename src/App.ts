@@ -26,18 +26,6 @@ class App {
         this._camera.setTarget(Vector3.Zero());
         this._camera.attachControl(this._canvas, true);
 
-        // hide/show the Inspector
-        window.addEventListener("keydown", (ev) => {
-            // Ctrl+Alt+I
-            if (ev.ctrlKey && ev.altKey && ev.key === 'i') {
-                if (this._scene.debugLayer.isVisible()) {
-                    this._scene.debugLayer.hide();
-                } else {
-                    this._scene.debugLayer.show();
-                }
-            }
-        });
-
         window.addEventListener("resize", () => {
             this._engine.resize();
         });
@@ -48,14 +36,9 @@ class App {
         });
     }
 
-
-    // public  getLight(): HemisphericLight { 
-    //     return this._light; 
-    // }
-    // public setLight(light: HemisphericLight) {
-    //     this._light = light; 
-    // }
-
+    //////////////////////////////////////////////////////////
+    // getters and setters
+    //////////////////////////////////////////////////////////
 
     public getCamera(): ArcRotateCamera {
         return this._camera;
@@ -63,7 +46,6 @@ class App {
     public setCamera(camera: ArcRotateCamera){
         this._camera = camera; 
     }
-    
     
     public getCanvas(): HTMLCanvasElement {
         return this._canvas;
@@ -86,5 +68,9 @@ class App {
     public setScene(scene: Scene): void {
         this._scene = scene;
     }
+
+    //////////////////////////////////////////////////////////
+    // methods
+    //////////////////////////////////////////////////////////
 }
 export default App;

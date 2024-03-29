@@ -38,7 +38,7 @@ class World{
     }
 
     async loadWorld(){
-        let result = await SceneLoader.ImportMeshAsync("", "", worldMap.model, this._scene);
+        const result = await SceneLoader.ImportMeshAsync("", "", worldMap.model, this._scene);
         
         this._gameObject = result.meshes[0];
         this._gameObject.name = "world";
@@ -46,11 +46,11 @@ class World{
         this._gameObject.scaling.scaleInPlace(2.5);
         this._gameObject.position.set(0,0,0);
 
-        for (let childMesh of result.meshes) {
+        for (const childMesh of result.meshes) {
 
             childMesh.refreshBoundingInfo(true);
             if (childMesh.getTotalVertices() > 0) {
-                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.4, restitution : 0.1});
+                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, restitution: 0});
                 meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
                 childMesh.receiveShadows = true;
            }
