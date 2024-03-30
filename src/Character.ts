@@ -1,4 +1,4 @@
-import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, Matrix, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, Matrix, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer, Viewport } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
@@ -245,7 +245,9 @@ class Character extends TransformNode{
     camera.maxCameraSpeed = 5; // speed limit
     this._camera = camera;
 
-    this._scene.activeCamera = this._camera;
+    // this._scene.activeCamera = this._camera;
+    this._scene.activeCameras.push(this._camera);
+    //this._camera.viewport = new Viewport(0.5, 0, 0.5, 1.0)
   }
 
   // Update character's rotation

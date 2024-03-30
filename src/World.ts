@@ -1,4 +1,4 @@
-import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, ScenePerformancePriority, ShadowGenerator, SpotLight, TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, ScenePerformancePriority, ShadowGenerator, SpotLight, TransformNode, Vector3, Viewport } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
 
@@ -16,6 +16,9 @@ class World{
     private _physicsPlugin: HavokPlugin;
     private _players: Player[] = [];
     private _gameObject: TransformNode;
+    
+    
+    
 
     constructor(scene: Scene) {
         this._scene = scene;
@@ -50,7 +53,7 @@ class World{
 
             childMesh.refreshBoundingInfo(true);
             if (childMesh.getTotalVertices() > 0) {
-                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, restitution: 0});
+                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, restitution: 0, friction:0.5});
                 meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
                 childMesh.receiveShadows = true;
            }
@@ -60,6 +63,8 @@ class World{
     async initGame(){
         await this.createScene();
     }
+
+    
   
 
     addFreeCamera(name: string,  position: Vector3, zoom : boolean) : void {
@@ -69,6 +74,9 @@ class World{
         }
         camera.setTarget(Vector3.Zero());
         camera.attachControl(this._scene.getEngine().getRenderingCanvas(), true);
+
+        this._scene.activeCameras.push(camera);
+        //camera.viewport = new Viewport(0, 0, 0.5, 1.0);
     }
 
     addSphere(name: string, segment: number, diameter: number, posX : number, posY : number, posZ : number, physics : boolean): void{
