@@ -1,4 +1,4 @@
-import { ArcRotateCamera, Engine, HemisphericLight, Mesh, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, Engine, HemisphericLight, Mesh, MeshBuilder, Scene, Vector3, Viewport } from "@babylonjs/core";
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
@@ -9,6 +9,11 @@ class App {
     private _scene: Scene;
     private _camera: ArcRotateCamera;
     public _light: HemisphericLight;
+
+    private _viewportsData: Viewport[] = [
+        new Viewport(0.5, 0, 0.5, 1.0),
+        new Viewport(0, 0, 0.5, 1.0)
+    ];
 
     constructor() {
         // create the canvas html element and attach it to the webpage
@@ -32,8 +37,25 @@ class App {
 
         // run the main render loop
         this._engine.runRenderLoop(() => {
+            this.addViewports();
             this._scene.render();
         });
+    }
+
+
+    async addViewports(){
+        if(this._scene.activeCameras.length <= this._viewportsData.length){
+
+            if(this._scene.activeCameras.length > 1){
+                for(let i = 0; i < this._scene.activeCameras.length; i++){
+                    this._scene.activeCameras[i].viewport = this._viewportsData[i];
+                }
+            }            
+        }
+        else{
+            console.error("Erreur : Nombre d'activeCameras est supérieur au nombre de viewports autorisés.");
+        }
+        
     }
 
     //////////////////////////////////////////////////////////

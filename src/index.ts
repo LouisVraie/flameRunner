@@ -1,5 +1,5 @@
 import HavokPhysics from "@babylonjs/havok";
-import { Vector3, HavokPlugin, Color3, MeshBuilder, PhysicsAggregate, PhysicsShapeType} from "@babylonjs/core";
+import { Vector3, HavokPlugin, Color3, MeshBuilder, PhysicsAggregate, PhysicsShapeType, Viewport} from "@babylonjs/core";
 
 // import { Inspector } from '@babylonjs/inspector';
 import "@babylonjs/loaders/";
@@ -18,6 +18,7 @@ async function createScene(){
     ground.position = new Vector3(0, -5, 0);
 
     world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
+    //world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
 
     const havokInstance = await HavokPhysics();
     const havokPlugin = new HavokPlugin(true, havokInstance);    
@@ -33,6 +34,8 @@ async function createScene(){
     return scene;
 }
 
-window.onload = () => {
-    createScene()
+window.onload = async () => {
+    
+    const sc = await createScene();
+
 }

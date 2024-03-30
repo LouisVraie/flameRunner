@@ -1,4 +1,4 @@
-import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, Matrix, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer, AbstractMesh } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
@@ -251,7 +251,7 @@ class Character extends TransformNode{
     camera.lockedTarget = this._cameraRoot; // target to follow
     this._camera = camera;
 
-    this._scene.activeCamera = this._camera;
+    this._scene.activeCameras.push(this._camera);
   }
 
   // Update the character's position
@@ -271,22 +271,6 @@ class Character extends TransformNode{
     // }
 
     this._lastPosition = position.clone();
-  }
-  
-  // Update character's rotation
-  public updateCharacterRotation(camRoot: TransformNode, controller: Controller): void {
-    // // Apply rotation only if there's actual movement
-    // if (controller.getHorizontalAxis() !== 0 || controller.getVerticalAxis() !== 0) {
-    //   // Apply the rotation to the character
-    //   //rotation based on input & the camera angle
-    //   let angle = Math.atan2(controller.getHorizontalAxis(), controller.getVerticalAxis());
-    //   angle += camRoot.rotation.y;
-
-    //   // The mesh must face the direction it moves
-    //   const targetQuaternion = Quaternion.FromEulerAngles(0, angle, 0);
-    //   const currentQuaternion = this._mesh.rotationQuaternion || Quaternion.Identity();
-    //   this._mesh.rotationQuaternion = Quaternion.Slerp(currentQuaternion, targetQuaternion, 10 * this._deltaTime);
-    // }
   }
 
   // Move the character
@@ -387,8 +371,7 @@ class Character extends TransformNode{
   // Update the character
   public updateCharacter(camRoot: TransformNode, controller: Controller): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
-    // Update character rotation
-    this.updateCharacterRotation(camRoot, controller);
+
     // Move the character
     this.moveCharacterMeshDirection(controller);
     // Animate the character
