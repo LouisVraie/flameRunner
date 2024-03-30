@@ -23,6 +23,11 @@ class App {
         this._canvas.id = "gameCanvas";
         document.body.appendChild(this._canvas);
 
+        // fps
+        const fps = document.createElement("div");
+        fps.id = "fps";
+        document.body.appendChild(fps);
+
         // initialize babylon scene and engine
         this._engine = new Engine(this._canvas, true);
         this._scene = new Scene(this._engine);
@@ -35,10 +40,15 @@ class App {
             this._engine.resize();
         });
 
+        const divFPS = document.getElementById("fps");
+
         // run the main render loop
         this._engine.runRenderLoop(() => {
             this.addViewports();
             this._scene.render();
+
+            // display fps
+            divFPS.innerText = this._engine.getFps().toFixed() + " fps";
         });
     }
 

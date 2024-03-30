@@ -61,9 +61,10 @@ Celui qui possède le temps de course le plus court l'emporte.
 - Création du personnage 3D :
   - Trouver un modèle 3D;
   - Lui ajouter toutes les animations souhaitées ([voir Détails => Animations](#détails));
-  - Associer une caméra avec vue en troisième personne;
+  - Associer une caméra avec vue en troisième personne avec un offset;
   - Appliquer de la physique au personnage;
   - Début des déplacements du personnage (ZQSD);
+- Gestion des viewports pour le split screen;
 
 ## Crédits
 
