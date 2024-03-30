@@ -1,11 +1,9 @@
-import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, Matrix, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, Matrix, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Quaternion, Scene, SceneLoader, TransformNode, Vector3, VertexBuffer, AbstractMesh } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
 
-const PLAYER_HEIGHT = 1.5;
-const PLAYER_RADIUS = 0.25;
 const USE_FORCES = true;
 
 enum MovingState {
@@ -31,16 +29,13 @@ class Character extends TransformNode{
   private _staminaRegen: number;
 
   // camera variables
+  private _cameraRoot: AbstractMesh;
   private _camera: FollowCamera;
 
   // movement variables
-  private _h: number;
-  private _v: number;
-  private _inputAmt: number;
   private _moveDirection: Vector3;
   private _lastPosition: Vector3;
   private _isMoving: boolean;
-  private _currentPosition: Vector3;
   private _jumpCount: number;
 
   // Animations
@@ -67,6 +62,9 @@ class Character extends TransformNode{
   private _capsuleAggregate: PhysicsAggregate;
 
   // Constants
+  private static readonly PLAYER_HEIGHT: number = 1.5;
+  private static readonly PLAYER_RADIUS: number = 0.25;
+  private static readonly PLAYER_END_ANIMATION_THRESHOLD: number = 0.01;
   private static readonly PLAYER_SPEED: number = 0.45*10;
   private static readonly ROTATION_SPEED: number = 0.02;
   private static readonly JUMP_NUMBER: number = 1;
@@ -184,7 +182,7 @@ class Character extends TransformNode{
     const assets = await SceneLoader.ImportMeshAsync("", "", player1, this._scene);
 
     const characterMesh = assets.meshes[0] as Mesh;
-    characterMesh.position = new Vector3(0, -PLAYER_HEIGHT / 2, 0);
+    characterMesh.position = new Vector3(0, -Character.PLAYER_HEIGHT / 2, 0);
     characterMesh.scaling = new Vector3(1, 1, 1);
     characterMesh.rotate(Vector3.UpReadOnly, Math.PI);
     characterMesh.name = this._name;
@@ -196,7 +194,7 @@ class Character extends TransformNode{
     //characterMesh.parent = this._hitbox;
 
     // Create capsule
-    this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: PLAYER_HEIGHT, radius: PLAYER_RADIUS }, this._scene);
+    this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: Character.PLAYER_HEIGHT, radius: Character.PLAYER_RADIUS }, this._scene);
     this._hitbox.visibility = 0.4;
     this._hitbox.position = new Vector3(0, 8, 0);
 
@@ -236,18 +234,45 @@ class Character extends TransformNode{
 
   // Create the follow camera
   private createFollowCamera() {
-    const camera = new FollowCamera("characterFollowCamera", this._mesh.position, this._scene, this._mesh);
+    // Create cameraRoot as a child of this._mesh
+    this._cameraRoot = new AbstractMesh("cameraRoot");
+    this._cameraRoot.parent = this._mesh;
 
-    camera.radius = 10; // how far from the object to follow
-    camera.heightOffset = 10; // how high above the object to place the camera
+    // Position cameraRoot above this._mesh
+    this._cameraRoot.position = new Vector3(0, 1, 0);
+
+    const camera = new FollowCamera("characterFollowCamera", this._mesh.position, this._scene);
+
+    camera.radius = 4; // how far from the object to follow
+    camera.heightOffset = 1.5; // how high above the object to place the camera
     camera.rotationOffset = 180; // the viewing angle
     camera.cameraAcceleration = .05; // how fast to move
     camera.maxCameraSpeed = 5; // speed limit
+    camera.lockedTarget = this._cameraRoot; // target to follow
     this._camera = camera;
 
     this._scene.activeCamera = this._camera;
   }
 
+  // Update the character's position
+  public updatePosition(position: Vector3): void {
+    // Check if the current position is different from the last recorded position withing a certain threshold
+    if (this._lastPosition && Vector3.Distance(position, this._lastPosition) > Character.PLAYER_END_ANIMATION_THRESHOLD) {
+      this._isMoving = true;
+    } else {
+      this._isMoving = false;
+    }
+
+    // Check if the character is grounded
+    // if (this._capsuleAggregate.body.getLinearVelocity().y < 0.1) {
+    //   this._jumpCount = 0;
+    //   this._movingState = MovingState.DEFAULT;
+    //   this._isGrounded = true;
+    // }
+
+    this._lastPosition = position.clone();
+  }
+  
   // Update character's rotation
   public updateCharacterRotation(camRoot: TransformNode, controller: Controller): void {
     // // Apply rotation only if there's actual movement
@@ -269,7 +294,6 @@ class Character extends TransformNode{
     // const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
     // this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
     const inputMap = controller.getInputMap();
-    this._lastPosition = this._hitbox.position.clone();
     
     // Determine movement direction based on input
     // Forward
@@ -284,23 +308,33 @@ class Character extends TransformNode{
     }
     // Left
     if (inputMap.get(controller.getLeft())) {
-      this._mesh.rotation.y -= Character.ROTATION_SPEED;
+      // Backward
+      if (inputMap.get(controller.getBackward())) {
+        this._mesh.rotation.y += Character.ROTATION_SPEED;
+      } else {
+        this._mesh.rotation.y -= Character.ROTATION_SPEED;
+      }
     }
     // Right
     if (inputMap.get(controller.getRight())) {
-      this._mesh.rotation.y += Character.ROTATION_SPEED;
+      // Backward
+      if (inputMap.get(controller.getBackward())) {
+        this._mesh.rotation.y -= Character.ROTATION_SPEED;
+      } else {
+        this._mesh.rotation.y += Character.ROTATION_SPEED;
+      }
     }
 
-    // jump
+    // // jump
     // if (controller.getJumping() && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
     //   this._jumpCount++;
-    //   this._isJumping = true;
+    //   this._movingState = MovingState.JUMPING;
+    //   this._capsuleAggregate.body.applyImpulse(Vector3.Up().scale(Character.JUMP_FORCE), this._capsuleAggregate.transformNode.getAbsolutePosition());
     //   this._isGrounded = false;
     // }
 
-    // Check if the character is moving
-    this._currentPosition = this._hitbox.position.clone();
-    this._isMoving = !this._lastPosition.equals(this._currentPosition);
+    // Update the character's position
+    this.updatePosition(this._capsuleAggregate.transformNode.getAbsolutePosition());
   }
 
   // Animate the character

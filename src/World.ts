@@ -17,6 +17,9 @@ class World{
     private _players: Player[] = [];
     private _gameObject: TransformNode;
 
+    public static readonly WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
+    public static readonly WORLD_SCALE: number = 2.5;
+
     constructor(scene: Scene) {
         this._scene = scene;
 
@@ -34,7 +37,7 @@ class World{
         this._scene.performancePriority = ScenePerformancePriority.BackwardCompatible;
 
         const hk = new HavokPlugin(true, havokInstance);
-        this._scene.enablePhysics(new Vector3(0, -9.81, 0), hk)
+        this._scene.enablePhysics(World.WORLD_GRAVITY, hk)
     }
 
     async loadWorld(){
@@ -43,14 +46,14 @@ class World{
         this._gameObject = result.meshes[0];
         this._gameObject.name = "world";
         this._gameObject.setParent(null);
-        this._gameObject.scaling.scaleInPlace(2.5);
+        this._gameObject.scaling.scaleInPlace(World.WORLD_SCALE);
         this._gameObject.position.set(0,0,0);
 
         for (const childMesh of result.meshes) {
 
             childMesh.refreshBoundingInfo(true);
             if (childMesh.getTotalVertices() > 0) {
-                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, restitution: 0});
+                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
                 meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
                 childMesh.receiveShadows = true;
            }
