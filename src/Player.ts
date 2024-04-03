@@ -2,6 +2,7 @@ import { Scene, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core"
 import Character from "./Character";
 import Controller from "./Controller";
 import Modifier from "./Modifier";
+import PlayerInterface from "./PlayerInterface";
 
 import Group from "./Group";
 
@@ -13,6 +14,8 @@ class Player {
 
   private _controller: Controller;
   private _character: Character;
+  
+  private _interface: PlayerInterface;
 
   // camera variables
   private _camRoot: TransformNode;
@@ -37,6 +40,9 @@ class Player {
     
     this._attachCamera();
     this._attachController();
+
+    this._interface = new PlayerInterface(identifier);
+    this._interface.addViewport();
 
     this._modifier = null;
     this._deathCounter = 0;

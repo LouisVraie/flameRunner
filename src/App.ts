@@ -9,6 +9,7 @@ class App {
     private _scene: Scene;
     private _camera: ArcRotateCamera;
     public _light: HemisphericLight;
+    private _globalGUI: HTMLDivElement;
 
     private _viewportsData: Viewport[] = [
         new Viewport(0.5, 0, 0.5, 1.0),
@@ -16,6 +17,7 @@ class App {
     ];
 
     constructor() {
+
         // create the canvas html element and attach it to the webpage
         this._canvas = document.createElement("canvas");
         this._canvas.style.width = "100%";
@@ -23,10 +25,38 @@ class App {
         this._canvas.id = "gameCanvas";
         document.body.appendChild(this._canvas);
 
+        this._globalGUI = document.createElement("div");
+        this._globalGUI.style.width = "100%";
+        this._globalGUI.style.height = "100%";
+        this._globalGUI.style.position = "absolute";
+        this._globalGUI.style.display = "flex";
+        this._globalGUI.style.pointerEvents = "none";
+        this._globalGUI.id = "gui";
+        document.body.appendChild(this._globalGUI);
+
+        //this.createStartMenu(this._globalGUI);
+
+        let toggle = true;
+
         // fps
         const fps = document.createElement("div");
         fps.id = "fps";
         document.body.appendChild(fps);
+
+        // document.addEventListener("keydown", (event) => {
+        //     if (event.key == "Escape") {
+        //         toggle = !toggle;
+
+        //         console.log("toggle", toggle);                
+
+        //         if(toggle){
+        //             this._globalGUI.style.display = 'flex';                    
+        //         } 
+        //         else{
+        //             this._globalGUI.style.display = 'none';
+        //         }
+        //     }
+        // });
 
         // initialize babylon scene and engine
         this._engine = new Engine(this._canvas, true);
@@ -38,6 +68,8 @@ class App {
 
         window.addEventListener("resize", () => {
             this._engine.resize();
+            this._globalGUI.style.width = `${window.innerWidth}px`;
+            this._globalGUI.style.height = `${window.innerHeight}px`;
         });
 
         const divFPS = document.getElementById("fps");
@@ -57,15 +89,38 @@ class App {
         if(this._scene.activeCameras.length <= this._viewportsData.length){
 
             if(this._scene.activeCameras.length > 1){
-                for(let i = 0; i < this._scene.activeCameras.length; i++){
+                for(let i = 0; i < this._scene.activeCameras.length; i++){                    
                     this._scene.activeCameras[i].viewport = this._viewportsData[i];
                 }
-            }            
+            }          
         }
         else{
             console.error("Erreur : Nombre d'activeCameras est supérieur au nombre de viewports autorisés.");
-        }
-        
+        }        
+    }
+
+    addTitle(parent){
+        const title = document.createElement('h1');
+        title.innerHTML = "Flame Runner";
+        title.id = 'title';
+        parent.appendChild(title);
+    }
+
+    addButtonMenu(parent, content){
+        const button = document.createElement('button');
+        button.className = "menu_btn";
+        button.innerHTML = content;
+        parent.appendChild(button);
+    }
+
+    
+
+    createStartMenu(parent){
+        this.addTitle(parent);
+        const titles = ["Solo runner", "Dual runners", "Help", "Credits", "Quit"];
+        titles.forEach((t) => {
+            this.addButtonMenu(parent, t);
+        });
     }
 
     //////////////////////////////////////////////////////////
@@ -99,6 +154,14 @@ class App {
     
     public setScene(scene: Scene): void {
         this._scene = scene;
+    }
+
+    public getGlobalGui(): HTMLDivElement {
+        return this._globalGUI;
+    }
+
+    public setGlobalGui(div: HTMLDivElement): void {
+        this._globalGUI = div;
     }
 
     //////////////////////////////////////////////////////////

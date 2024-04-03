@@ -18,7 +18,7 @@ async function createScene(){
     ground.position = new Vector3(0, -5, 0);
 
     world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
-    // world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
+    //world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
 
     const havokInstance = await HavokPhysics();
     const havokPlugin = new HavokPlugin(true, havokInstance);    
@@ -30,6 +30,7 @@ async function createScene(){
     world.addSphere("sphere", 32, 3, 0, 15, 0, true);
     
     const player = await world.addPlayer("player1");
+    const player2 = await world.addPlayer("player2");
     
     return scene;
 }
