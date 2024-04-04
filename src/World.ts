@@ -5,6 +5,8 @@ import Group from "./Group";
 import map from "../assets/models/world.glb";
 import HavokPhysics from "@babylonjs/havok";
 
+export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
+
 const worldMap = {
     name: "map",
     model: map
@@ -17,7 +19,6 @@ class World{
     private _players: Player[] = [];
     private _gameObject: TransformNode;
 
-    public static readonly WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
     public static readonly WORLD_SCALE: number = 2.5;
 
     constructor(scene: Scene) {
@@ -37,7 +38,7 @@ class World{
         this._scene.performancePriority = ScenePerformancePriority.BackwardCompatible;
 
         const hk = new HavokPlugin(true, havokInstance);
-        this._scene.enablePhysics(World.WORLD_GRAVITY, hk)
+        this._scene.enablePhysics(WORLD_GRAVITY, hk)
     }
 
     async loadWorld(){
