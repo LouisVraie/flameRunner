@@ -16,6 +16,8 @@ class World{
     private _physicsPlugin: HavokPlugin;
     private _players: Player[] = [];
     private _gameObject: TransformNode;
+    private _light: DirectionalLight;
+    private _shadowGenerator: ShadowGenerator;
 
     public static readonly WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
     public static readonly WORLD_SCALE: number = 2.5;
@@ -25,6 +27,10 @@ class World{
 
         this._gameObject = new TransformNode("world", this._scene);
         this._gameObject.position = Vector3.Zero();
+
+        this.addDiffuseLight("diffuseLightOrigin", new Vector3(0, 10, 0), new Color3(1, 1, 1));
+        this._shadowGenerator = new ShadowGenerator(1024, this._light);
+        this._shadowGenerator.useExponentialShadowMap = true;
     }
 
     async getInitializedHavok() {
@@ -43,7 +49,9 @@ class World{
     async loadWorld(){
         const result = await SceneLoader.ImportMeshAsync("", "", worldMap.model, this._scene);
         
-        this._gameObject = result.meshes[0];
+        this._worldMesh = result.meshes[0];
+        this._worldMesh.receiveShadows = true;
+        this._gameObject = this._worldMesh;
         this._gameObject.name = "world";
         this._gameObject.setParent(null);
         this._gameObject.scaling.scaleInPlace(World.WORLD_SCALE);
@@ -55,6 +63,7 @@ class World{
             if (childMesh.getTotalVertices() > 0) {
                 const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
                 meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+                this._shadowGenerator.addShadowCaster(childMesh);
                 childMesh.receiveShadows = true;
            }
         }
@@ -97,17 +106,20 @@ class World{
     }
 
     addDiffuseLight(name: string, position: Vector3, color: Color3): void {
-        const light = new DirectionalLight(name, new Vector3(0, -1, 0), this._scene);
-        light.position = position;
-        light.diffuse = color;
+        this._light = new DirectionalLight(name, new Vector3(0, -1, 0), this._scene);
+        this._light.position = position;
+        this._light.diffuse = color;
+        this._light.shadowEnabled = true;
+        this._light.shadowOrthoScale = 2;
     }
 
-    addPlayer(identifier: string): void {
+    addPlayer(identifier: string): Player {
         const player = new Player(this._scene, identifier);
         player.addCharacterAsync("Wall-E", Group.getSprinter()).then(() => {
             player.updatePlayer();
             this._players.push(player);
         });
+        return player;
     }
 
     moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {
@@ -119,6 +131,25 @@ class World{
         this._physicsPlugin = plugin;
         this._scene.enablePhysics(gravity, this._physicsPlugin);
     }
+
+    public setShadows(mesh: AbstractMesh){
+        this._shadowGenerator.addShadowCaster(mesh);
+    }
+
+    public getLight(): DirectionalLight {
+        return this._light;
+    }
+    public setLight(light: DirectionalLight): void {
+        this._light = light;
+    }
+    public getShadowGenerator(): ShadowGenerator {
+        return this._shadowGenerator;
+    }
+    public setShadowGenerator(shadowGenerator: ShadowGenerator): void {
+        this._shadowGenerator = shadowGenerator;
+    }
+
+    
 }
 
 export default World;

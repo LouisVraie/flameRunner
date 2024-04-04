@@ -10,6 +10,7 @@ class App {
     private _camera: ArcRotateCamera;
     public _light: HemisphericLight;
     private _globalGUI: HTMLDivElement;
+    private _menuContainer: HTMLDivElement;
 
     private _viewportsData: Viewport[] = [
         new Viewport(0.5, 0, 0.5, 1.0),
@@ -34,7 +35,13 @@ class App {
         this._globalGUI.id = "gui";
         document.body.appendChild(this._globalGUI);
 
+
+        this._menuContainer = document.createElement('div');
+        this._menuContainer.className = "menu_container";
+        this._menuContainer.style.display = "flex";
+
         //this.createStartMenu(this._globalGUI);
+        this.createStartMenu(this._globalGUI);
 
         let toggle = true;
 
@@ -43,20 +50,24 @@ class App {
         fps.id = "fps";
         document.body.appendChild(fps);
 
-        // document.addEventListener("keydown", (event) => {
-        //     if (event.key == "Escape") {
-        //         toggle = !toggle;
+        document.addEventListener("keydown", (event) => {
+            if (event.key == "Escape") {
+                
 
-        //         console.log("toggle", toggle);                
+                console.log("toggle", toggle);                
 
-        //         if(toggle){
-        //             this._globalGUI.style.display = 'flex';                    
-        //         } 
-        //         else{
-        //             this._globalGUI.style.display = 'none';
-        //         }
-        //     }
-        // });
+                if(toggle){
+                    this._menuContainer.style.display = 'flex';  
+                    //this._globalGUI.style.pointerEvents = "none";
+                                      
+                } 
+                else{
+                    this._menuContainer.style.display = 'none';
+                    //this._globalGUI.style.pointerEvents = "none";
+                }
+                toggle = !toggle;
+            }
+        });
 
         // initialize babylon scene and engine
         this._engine = new Engine(this._canvas, true);
@@ -116,12 +127,16 @@ class App {
     
 
     createStartMenu(parent){
-        this.addTitle(parent);
+
+        parent.appendChild(this._menuContainer);
+
+        this.addTitle(this._menuContainer);
         const titles = ["Solo runner", "Dual runners", "Help", "Credits", "Quit"];
         titles.forEach((t) => {
-            this.addButtonMenu(parent, t);
+            this.addButtonMenu(this._menuContainer, t);
         });
     }
+
 
     //////////////////////////////////////////////////////////
     // getters and setters

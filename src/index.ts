@@ -16,8 +16,9 @@ async function createScene(){
 
     const ground = MeshBuilder.CreateGround("ground", {width: 100, height: 100}, scene);
     ground.position = new Vector3(0, -5, 0);
+    ground.receiveShadows = true;
 
-    world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
+    //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
     //world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
 
     const havokInstance = await HavokPhysics();
@@ -30,8 +31,8 @@ async function createScene(){
     world.addSphere("sphere", 32, 3, 0, 15, 0, true);
     
     const player = await world.addPlayer("player1");
-    const player2 = await world.addPlayer("player2");
-    
+    world.setShadows(player.getCharacter().getMesh())
+    //const player2 = await world.addPlayer("player2");
     return scene;
 }
 
