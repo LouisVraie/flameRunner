@@ -1,4 +1,4 @@
-import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport, Ray, RayHelper, Color3 } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport, Ray, RayHelper, Color3, Skeleton, Nullable } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
@@ -60,6 +60,7 @@ class Character extends TransformNode{
 
   private _hitbox: Mesh;
   private _mesh: Mesh;
+  private _skeleton: Skeleton;
   private _capsuleAggregate: PhysicsAggregate;
 
   // Constants
@@ -67,6 +68,7 @@ class Character extends TransformNode{
   private static readonly PLAYER_RADIUS: number = 0.25;
   private static readonly PLAYER_END_ANIMATION_THRESHOLD: number = 0.01;
   private static readonly PLAYER_SPEED: number = 4.5;
+  private static readonly PLAYER_SPRINT_MULTIPLIER: number = 1.5;
   private static readonly ROTATION_SPEED: number = 0.02;
   private static readonly JUMP_NUMBER: number = 1;
   private static readonly JUMP_FORCE: number = 0.5;
@@ -197,6 +199,11 @@ class Character extends TransformNode{
     });
     this._lastPosition = characterMesh.position.clone();
 
+    // Get the skeleton
+    const skeleton = assets.skeletons[0];
+    skeleton.enableBlending(0.1);
+    this._skeleton = skeleton;
+
     // Combine character and capsule
     //characterMesh.parent = this._hitbox;
 
@@ -325,13 +332,24 @@ class Character extends TransformNode{
       this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scaleInPlace(Character.PLAYER_SPEED);
       // this._moveDirection.addInPlace(WORLD_GRAVITY);
 
+      // Set running animation playing forward
+      this._run.speedRatio = 1;
+      
+      // Sprint
+      if (inputMap.get(controller.getSprint())) {
+        this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
+      }
+
       // Set the character's velocity
       this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
     }
     // Backward
     if (inputMap.get(controller.getBackward())) {
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED);
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED/2);
       // this._moveDirection.addInPlace(WORLD_GRAVITY);
+
+      // Set running animation playing backwards
+      this._run.speedRatio = -0.85;
 
       // Set the character's velocity
       this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
@@ -370,7 +388,7 @@ class Character extends TransformNode{
 
   // Animate the character
   public animateCharacter(): void {
-
+    
     // Determine the appropriate animation based on the character's moving state
     switch (this._movingState) {
       // If the character is jumping, play the run jump animation
@@ -403,6 +421,7 @@ class Character extends TransformNode{
       case MovingState.DEFAULT:
       default:
         this._currentAnim = this._isMoving ? this._run : this._idle;
+        this._run.speedRatio
         break;
       }
 
