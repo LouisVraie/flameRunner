@@ -19,7 +19,7 @@ async function createScene(){
     ground.receiveShadows = true;
 
     //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
-    //world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
+    world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
 
     const havokInstance = await HavokPhysics();
     const havokPlugin = new HavokPlugin(true, havokInstance);    

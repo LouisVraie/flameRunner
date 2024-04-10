@@ -2,7 +2,7 @@ import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, Hemisp
 import Player from "./Player";
 import Group from "./Group";
 
-import map from "../assets/models/world.glb";
+import map from "../assets/models/world2.glb";
 import HavokPhysics from "@babylonjs/havok";
 
 const worldMap = {
@@ -30,7 +30,7 @@ class World{
 
         this.addDiffuseLight("diffuseLightOrigin", new Vector3(0, 10, 0), new Color3(1, 1, 1));
         this._shadowGenerator = new ShadowGenerator(1024, this._light);
-        this._shadowGenerator.useExponentialShadowMap = true;
+        this._shadowGenerator.usePercentageCloserFiltering = true;
     }
 
     async getInitializedHavok() {
@@ -60,11 +60,19 @@ class World{
         for (const childMesh of result.meshes) {
 
             childMesh.refreshBoundingInfo(true);
+            console.log(childMesh.id);
             if (childMesh.getTotalVertices() > 0) {
                 const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
                 meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
-                this._shadowGenerator.addShadowCaster(childMesh);
-                childMesh.receiveShadows = true;
+                if(!childMesh.id.startsWith("Dirt")){
+                    // environment elements cast shadows
+                    this._shadowGenerator.addShadowCaster(childMesh);
+                }
+                else{
+                    // ground receives shadows
+                    childMesh.receiveShadows = true;
+                }
+                
            }
         }
     }
@@ -117,6 +125,7 @@ class World{
         const player = new Player(this._scene, identifier);
         player.addCharacterAsync("Wall-E", Group.getSprinter()).then(() => {
             player.updatePlayer();
+            this._shadowGenerator.addShadowCaster(player.getCharacter().getMesh())
             this._players.push(player);
         });
         return player;
