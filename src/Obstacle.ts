@@ -70,6 +70,7 @@ abstract class Obstacle{
   }
 
   public abstract createObstacle(): void;
+  public abstract disposeObstacle(): void;
 }
 
 export default Obstacle;

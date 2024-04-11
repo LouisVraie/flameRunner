@@ -1,11 +1,8 @@
-import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport, Ray, RayHelper, Color3, Skeleton, Nullable } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport, Ray, RayHelper, Color3, Skeleton, Nullable, ActionManager } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
-import { WORLD_GRAVITY } from "./World";
-
-const USE_FORCES = true;
 
 enum MovingState {
   DEFAULT = 0,
@@ -166,6 +163,11 @@ class Character extends TransformNode{
     this._mesh.position = position;
   }
 
+  // Hitbox
+  public getHitbox(): Mesh {
+    return this._hitbox;
+  }
+
   // Mesh
   public getMesh(): Mesh {
     return this._mesh;
@@ -197,6 +199,7 @@ class Character extends TransformNode{
     characterMesh.getChildMeshes().forEach((m) => {
       m.isPickable = false;
     });
+
     this._lastPosition = characterMesh.position.clone();
 
     // Get the skeleton
@@ -212,7 +215,7 @@ class Character extends TransformNode{
     this._hitbox.visibility = 0.4;
     this._hitbox.position = new Vector3(0, 8, 0);
     this._hitbox.isPickable = false;
-
+    this._hitbox.actionManager = new ActionManager(this._scene);
     this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1000, friction:0.5, restitution: 0.01 }, this._scene);
     this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
 
@@ -222,7 +225,7 @@ class Character extends TransformNode{
     });
     this._capsuleAggregate.body.setLinearDamping(1);
     this._capsuleAggregate.body.setAngularDamping(1.0);
-    
+
     // Animations
     this._setAnimations(assets);
     this._mesh = characterMesh;

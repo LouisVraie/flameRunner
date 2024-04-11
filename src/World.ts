@@ -1,4 +1,4 @@
-import { AbstractMesh, Color3, DirectionalLight, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, ScenePerformancePriority, ShadowGenerator, SpotLight, TransformNode, Vector3, Viewport } from "@babylonjs/core";
+import { AbstractMesh, ActionManager, Color3, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, ScenePerformancePriority, ShadowGenerator, SpotLight, TransformNode, Vector3, Viewport } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
 
@@ -19,6 +19,7 @@ class World{
     private _worldMesh: AbstractMesh;
     private _physicsPlugin: HavokPlugin;
     private _players: Player[] = [];
+    private _cubeModifiers: CubeModifier[] = [];
     private _gameObject: TransformNode;
     private _light: DirectionalLight;
     private _shadowGenerator: ShadowGenerator;
@@ -76,6 +77,15 @@ class World{
                 
            }
         }
+
+        // world.addSphere("sphere", 32, 3, 0, 15, 0, true);
+        this.addCubeModifier();
+        const player = await this.addPlayer("player1");
+        this.setShadows(player.getCharacter().getMesh());
+        //const player2 = await world.addPlayer("player2");
+        
+        // Set the character's collision on the cube modifier
+        this._setCubeModifierCollision();
     }
 
     async initGame(){
@@ -122,19 +132,21 @@ class World{
         this._light.shadowOrthoScale = 2;
     }
 
-    addPlayer(identifier: string): Player {
+    async addPlayer(identifier: string): Promise<Player> {
         const player = new Player(this._scene, identifier);
-        player.addCharacterAsync("Wall-E", Group.getSprinter()).then(() => {
-            player.updatePlayer();
-            this._shadowGenerator.addShadowCaster(player.getCharacter().getMesh())
-            this._players.push(player);
-        });
+        await player.addCharacterAsync("Wall-E", Group.getSprinter());
+
+        player.updatePlayer();
+        this._shadowGenerator.addShadowCaster(player.getCharacter().getMesh())
+        this._players.push(player);
+
         return player;
     }
 
     addCubeModifier() : void {
         const cubeModifier = new CubeModifier(this._scene);
         cubeModifier.createObstacle();
+        this._cubeModifiers.push(cubeModifier);
     }
 
     moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {
@@ -164,7 +176,28 @@ class World{
         this._shadowGenerator = shadowGenerator;
     }
 
-    
+    // Set the character's collision on the cube modifier
+    private _setCubeModifierCollision(): void {
+
+        // for each player
+        for (const player of this._players) {
+            // for each cube modifier
+            for (const cube of this._cubeModifiers) {
+                console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and cube: " + cube.getMesh().name);
+                // Create a trigger for the cube modifier
+                player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                    {
+                        trigger : ActionManager.OnIntersectionEnterTrigger,
+                        parameter : cube.getMesh()
+                    },
+                    () => {
+                        console.log("HIT Cube!");
+                        cube.disposeObstacle();
+                    }
+                ));
+            }
+        }
+    }
 }
 
 export default World;

@@ -11,6 +11,8 @@ class CubeModifier extends Obstacle{
   private _modifier: Modifier;
   private _randomValue: number;
 
+  private _mesh : Mesh;
+
   constructor(scene: Scene) {
     super(scene);
   }
@@ -18,7 +20,10 @@ class CubeModifier extends Obstacle{
   //////////////////////////////////////////////////////////
   // getters and setters
   //////////////////////////////////////////////////////////
-
+  // Mesh
+  public getMesh(): Mesh {
+    return this._mesh;
+  }
 
   //////////////////////////////////////////////////////////
   // methods
@@ -37,6 +42,7 @@ class CubeModifier extends Obstacle{
     box.scaling.scaleInPlace(WORLD_SCALE);
     box.material = cubeMaterial;
     box.parent = parent;
+    this._mesh = box;
 
     // Adding rotation animation to the cube
     this._scene.registerBeforeRender(() => {
@@ -81,6 +87,11 @@ class CubeModifier extends Obstacle{
     material.emissiveColor = new Color3(0.5, 0.5, 0.5);
 
     return textPlane;
+  }
+
+  public disposeObstacle(): void {
+    this._mesh.dispose();
+    this.getParentNode().dispose();
   }
 }
 
