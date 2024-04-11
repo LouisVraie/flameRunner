@@ -43,7 +43,7 @@ class App {
         //this.createStartMenu(this._globalGUI);
         this.createStartMenu(this._globalGUI);
 
-        let toggle = true;
+        let toggle = false;
 
         // fps
         const fps = document.createElement("div");

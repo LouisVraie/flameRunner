@@ -1,13 +1,14 @@
-import { AbstractMesh, ActionManager, Color3, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, Mesh, MeshBuilder, PhysicsAggregate, PhysicsImpostor, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, ScenePerformancePriority, ShadowGenerator, SpotLight, TransformNode, Vector3, Viewport } from "@babylonjs/core";
+import { AbstractMesh, ActionManager, Color3, CubeTexture, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, MeshBuilder, MirrorTexture, NodeMaterial,  PhysicsAggregate,  PhysicsMotionType,  PhysicsShapeType,  Plane,  Scene,  SceneLoader,  ScenePerformancePriority,  ShadowGenerator,  StandardMaterial,  Texture,  TransformNode, Vector3 } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
 
-import map from "../assets/models/world2.glb";
+import map from "../assets/models/new_world.glb";
 import HavokPhysics from "@babylonjs/havok";
 import CubeModifier from "./CubeModifier";
 
+
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
-export const WORLD_SCALE: number = 2.5;
+export const WORLD_SCALE: number = 0.5;
 
 const worldMap = {
     name: "map",
@@ -30,9 +31,16 @@ class World{
         this._gameObject = new TransformNode("world", this._scene);
         this._gameObject.position = Vector3.Zero();
 
-        this.addDiffuseLight("diffuseLightOrigin", new Vector3(0, 10, 0), new Color3(1, 1, 1));
+        this.addDiffuseLight("diffuseLightOrigin", new Vector3(0, 20, 0), new Color3(1, 1, 1));
         this._shadowGenerator = new ShadowGenerator(1024, this._light);
         this._shadowGenerator.usePercentageCloserFiltering = true;
+
+        // add in IBL with linked environment        
+        let env = CubeTexture.CreateFromPrefilteredData("https://patrickryanms.github.io/BabylonJStextures/Demos/waterRefraction/assets/env/kloofendal_pureSky.env", scene);
+        env.name = "sky";
+        env.gammaSpace = false;
+        env.rotationY = 4.0823;
+        this._scene.environmentTexture = env;
     }
 
     async getInitializedHavok() {
@@ -57,7 +65,7 @@ class World{
         this._gameObject.name = "world";
         this._gameObject.setParent(null);
         this._gameObject.scaling.scaleInPlace(WORLD_SCALE);
-        this._gameObject.position.set(0,0,0);
+        this._gameObject.position.set(0,-3,0);
 
         for (const childMesh of result.meshes) {
 
@@ -66,7 +74,7 @@ class World{
             if (childMesh.getTotalVertices() > 0) {
                 const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
                 meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
-                if(!childMesh.id.startsWith("Dirt")){
+                if(!childMesh.id.startsWith("Ground_")){
                     // environment elements cast shadows
                     this._shadowGenerator.addShadowCaster(childMesh);
                 }
@@ -74,7 +82,29 @@ class World{
                     // ground receives shadows
                     childMesh.receiveShadows = true;
                 }
-                
+
+                //#JN2BSF#171   #6MCVHR#5
+                if(childMesh.id.startsWith("River")){
+                    //this.applySnippetTexture(childMesh, "#6MCVHR#5");
+
+                    let sphereMaterials = new StandardMaterial("sphereMaterial", this._scene);
+                    sphereMaterials.emissiveColor = new Color3(51,153,255)
+                    sphereMaterials.backFaceCulling = false;
+                    childMesh.material = sphereMaterials;
+            
+                }
+                // SXYK15
+                if(childMesh.id.startsWith("Eiffel_")){
+                    this.applySnippetTexture(childMesh, "#SXYK15");
+                }
+                //#JNQ200#11
+                if(childMesh.id.startsWith("Object001")){
+                    this.applySnippetTexture(childMesh, "#J4XAC0");
+                }
+                //#V11ZH9
+                if(childMesh.id.startsWith("Bandeau")){
+                    this.applySnippetTexture(childMesh, "#V11ZH9");
+                }
            }
         }
 
@@ -93,6 +123,12 @@ class World{
     }
 
     
+    applySnippetTexture(mesh: AbstractMesh, snippetId: string) : void{
+        NodeMaterial.ParseFromSnippetAsync(snippetId, this._scene).then(nodeMaterial => {
+            nodeMaterial.backFaceCulling = false;
+            mesh.material = nodeMaterial;
+        });
+    }
   
 
     addFreeCamera(name: string,  position: Vector3, zoom : boolean) : void {
