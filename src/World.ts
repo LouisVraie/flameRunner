@@ -183,7 +183,6 @@ class World{
         for (const player of this._players) {
             // for each cube modifier
             for (const cube of this._cubeModifiers) {
-                console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and cube: " + cube.getMesh().name);
                 // Create a trigger for the cube modifier
                 player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
                     {
@@ -191,7 +190,6 @@ class World{
                         parameter : cube.getMesh()
                     },
                     () => {
-                        console.log("HIT Cube!");
                         cube.disposeObstacle();
                     }
                 ));
