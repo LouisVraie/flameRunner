@@ -4,8 +4,10 @@ import Group from "./Group";
 
 import map from "../assets/models/world.glb";
 import HavokPhysics from "@babylonjs/havok";
+import CubeModifier from "./CubeModifier";
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
+export const WORLD_SCALE: number = 2.5;
 
 const worldMap = {
     name: "map",
@@ -18,8 +20,6 @@ class World{
     private _physicsPlugin: HavokPlugin;
     private _players: Player[] = [];
     private _gameObject: TransformNode;
-
-    public static readonly WORLD_SCALE: number = 2.5;
 
     constructor(scene: Scene) {
         this._scene = scene;
@@ -47,7 +47,7 @@ class World{
         this._gameObject = result.meshes[0];
         this._gameObject.name = "world";
         this._gameObject.setParent(null);
-        this._gameObject.scaling.scaleInPlace(World.WORLD_SCALE);
+        this._gameObject.scaling.scaleInPlace(WORLD_SCALE);
         this._gameObject.position.set(0,0,0);
 
         for (const childMesh of result.meshes) {
@@ -109,6 +109,11 @@ class World{
             player.updatePlayer();
             this._players.push(player);
         });
+    }
+
+    addCubeModifier() : void {
+        const cubeModifier = new CubeModifier(this._scene);
+        cubeModifier.createObstacle();
     }
 
     moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {

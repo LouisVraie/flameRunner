@@ -338,6 +338,8 @@ class Character extends TransformNode{
       // Sprint
       if (inputMap.get(controller.getSprint())) {
         this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
+        // Set running animation playing forward
+        this._run.speedRatio = 1.25;
       }
 
       // Set the character's velocity
