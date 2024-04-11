@@ -1,5 +1,7 @@
 # Flame Runner
 
+> *Testez le jeu **[ici](https://louisvraie.github.io/flameRunner/).***
+
 ## Description du jeu
 
 Jeu de course à pied avec un style low poly dans lequel vous traversez différents environnements (Ville, Campagne, Désert, ...) où l'objectif est d'arriver au bout du chemin en terminant par l'ascension de la montagne sacrée avec à son sommet la flamme olympique.

@@ -1,8 +1,9 @@
-import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport } from "@babylonjs/core";
+import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport, Ray, RayHelper, Color3, Skeleton, Nullable } from "@babylonjs/core";
 import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
+import { WORLD_GRAVITY } from "./World";
 
 const USE_FORCES = true;
 
@@ -59,6 +60,7 @@ class Character extends TransformNode{
 
   private _hitbox: Mesh;
   private _mesh: Mesh;
+  private _skeleton: Skeleton;
   private _capsuleAggregate: PhysicsAggregate;
 
   // Constants
@@ -66,10 +68,11 @@ class Character extends TransformNode{
   private static readonly PLAYER_RADIUS: number = 0.25;
   private static readonly PLAYER_END_ANIMATION_THRESHOLD: number = 0.01;
   private static readonly PLAYER_SPEED: number = 4.5;
+  private static readonly PLAYER_SPRINT_MULTIPLIER: number = 1.5;
   private static readonly ROTATION_SPEED: number = 0.02;
   private static readonly JUMP_NUMBER: number = 1;
-  private static readonly JUMP_FORCE: number = 0.80;
-  private static readonly GRAVITY: number = -2.8;
+  private static readonly JUMP_FORCE: number = 0.5;
+  private static readonly GROUND_THRESHOLD: number = 0.05;
   private static readonly SLIDE_FACTOR: number = 2.5;
   private static readonly SLIDE_TIME: number = 10; //how many frames the slide lasts
 
@@ -189,6 +192,17 @@ class Character extends TransformNode{
     characterMesh.bakeCurrentTransformIntoVertices();
     characterMesh.checkCollisions = true;
     characterMesh.rotationQuaternion = null;
+    characterMesh.isPickable = false;
+    // put all children meshes not pickable
+    characterMesh.getChildMeshes().forEach((m) => {
+      m.isPickable = false;
+    });
+    this._lastPosition = characterMesh.position.clone();
+
+    // Get the skeleton
+    const skeleton = assets.skeletons[0];
+    skeleton.enableBlending(0.1);
+    this._skeleton = skeleton;
 
     // Combine character and capsule
     //characterMesh.parent = this._hitbox;
@@ -197,6 +211,7 @@ class Character extends TransformNode{
     this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: Character.PLAYER_HEIGHT, radius: Character.PLAYER_RADIUS }, this._scene);
     this._hitbox.visibility = 0.4;
     this._hitbox.position = new Vector3(0, 8, 0);
+    this._hitbox.isPickable = false;
 
     this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1000, friction:0.5, restitution: 0.01 }, this._scene);
     this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
@@ -254,41 +269,92 @@ class Character extends TransformNode{
     this._scene.activeCameras.push(this._camera);
   }
 
+  // Update the character's grounded state
+  public updateGrounded(): void {
+
+    const radius = Character.PLAYER_RADIUS / 2;
+    const height = Character.PLAYER_HEIGHT / 2;
+
+    // Define a ray from the character's position downward to check for ground collision
+    // create 4 rays at bottom of capsule place in a square
+    const ray1 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, -height, radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
+    const ray2 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, -height, radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
+    const ray3 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, -height, -radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
+    const ray4 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, -height, -radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
+
+    // list of rays
+    const rays = [ray1, ray2, ray3, ray4];
+
+    // create ray helpers with a foreach loop
+    // rays.forEach((ray) => {
+    //   const rayHelper = new RayHelper(ray);
+    //   rayHelper.show(this._scene, Color3.Green());
+    // });
+
+    // Perform a raycast to check for collisions with the ground with ray list
+    // If one of the rays hits the ground, the character is considered grounded
+    rays.forEach((ray) => {
+      const hit = this._scene.pickWithRay(ray);
+      // Check if the ray hit an object and if the distance to the object is less than a threshold (considered as touching ground)
+      if (!this._isGrounded && hit.hit) {
+        this._jumpCount = 0;
+        this._movingState = MovingState.DEFAULT;
+        this._isGrounded = true; // Character is grounded
+        return;
+      }
+    });
+  }
+
   // Update the character's position
   public updatePosition(position: Vector3): void {
     // Check if the current position is different from the last recorded position withing a certain threshold
-    if (this._lastPosition && Vector3.Distance(position, this._lastPosition) > Character.PLAYER_END_ANIMATION_THRESHOLD) {
+    // Without taking the y-axis into account
+    if (Math.abs(position.x - this._lastPosition.x) > Character.PLAYER_END_ANIMATION_THRESHOLD || Math.abs(position.z - this._lastPosition.z) > Character.PLAYER_END_ANIMATION_THRESHOLD) {
       this._isMoving = true;
     } else {
       this._isMoving = false;
     }
 
-    // Check if the character is grounded
-    // if (this._capsuleAggregate.body.getLinearVelocity().y < 0.1) {
-    //   this._jumpCount = 0;
-    //   this._movingState = MovingState.DEFAULT;
-    //   this._isGrounded = true;
-    // }
+    // Update the character's grounded state
+    this.updateGrounded();
 
     this._lastPosition = position.clone();
   }
 
   // Move the character
   public moveCharacterMeshDirection(controller: Controller): void {
-    // const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
-    // this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
+    // Get the input map from the controller
     const inputMap = controller.getInputMap();
-    
+
     // Determine movement direction based on input
     // Forward
     if (inputMap.get(controller.getForward())) {
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
-      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection.scaleInPlace(Character.PLAYER_SPEED));
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scaleInPlace(Character.PLAYER_SPEED);
+      // this._moveDirection.addInPlace(WORLD_GRAVITY);
+
+      // Set running animation playing forward
+      this._run.speedRatio = 1;
+      
+      // Sprint
+      if (inputMap.get(controller.getSprint())) {
+        this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
+        // Set running animation playing forward
+        this._run.speedRatio = 1.25;
+      }
+
+      // Set the character's velocity
+      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
     }
     // Backward
     if (inputMap.get(controller.getBackward())) {
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y));
-      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection.scaleInPlace(-Character.PLAYER_SPEED));
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED/2);
+      // this._moveDirection.addInPlace(WORLD_GRAVITY);
+
+      // Set running animation playing backwards
+      this._run.speedRatio = -0.85;
+
+      // Set the character's velocity
+      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
     }
     // Left
     if (inputMap.get(controller.getLeft())) {
@@ -309,13 +375,14 @@ class Character extends TransformNode{
       }
     }
 
-    // // jump
-    // if (controller.getJumping() && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
-    //   this._jumpCount++;
-    //   this._movingState = MovingState.JUMPING;
-    //   this._capsuleAggregate.body.applyImpulse(Vector3.Up().scale(Character.JUMP_FORCE), this._capsuleAggregate.transformNode.getAbsolutePosition());
-    //   this._isGrounded = false;
-    // }
+    // jump
+    if (inputMap.get(controller.getJump()) && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
+      console.log("jump");
+      this._jumpCount++;
+      this._movingState = MovingState.JUMPING;
+      this._capsuleAggregate.body.applyImpulse(Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass), this._capsuleAggregate.transformNode.getAbsolutePosition());
+      this._isGrounded = false;
+    }
 
     // Update the character's position
     this.updatePosition(this._capsuleAggregate.transformNode.getAbsolutePosition());
@@ -323,7 +390,7 @@ class Character extends TransformNode{
 
   // Animate the character
   public animateCharacter(): void {
-
+    
     // Determine the appropriate animation based on the character's moving state
     switch (this._movingState) {
       // If the character is jumping, play the run jump animation
@@ -356,6 +423,7 @@ class Character extends TransformNode{
       case MovingState.DEFAULT:
       default:
         this._currentAnim = this._isMoving ? this._run : this._idle;
+        this._run.speedRatio
         break;
       }
 

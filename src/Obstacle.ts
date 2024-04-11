@@ -1,31 +1,29 @@
-import { Mesh, Vector3 } from "@babylonjs/core";
+import { Scene, Vector3, TransformNode } from "@babylonjs/core";
 
 abstract class Obstacle{
 
-  private _mesh: Mesh;
+  protected _scene: Scene;
+  private _parentNode: TransformNode;
   private _position: Vector3;
   private _size: Vector3;
   private _tangible: boolean;
   private _visible: boolean;
 
-  constructor(mesh: Mesh, position: Vector3, size: Vector3, tangible: boolean, visible: boolean){
-    this._mesh = mesh || null;
-    this._position = position || Vector3.Zero();
-    this._size = size || new Vector3(1, 1, 1);
-    this._tangible = tangible || false;
-    this._visible = visible || true;
+  constructor(scene: Scene) {
+    this._scene = scene;
+    this.createDefaultObstacle();
   }
 
   //////////////////////////////////////////////////////////
   // getters and setters
   //////////////////////////////////////////////////////////
 
-  // Mesh
-  public getMesh(): Mesh {
-    return this._mesh;
+  // Parent Node
+  public getParentNode(): TransformNode {
+    return this._parentNode;
   }
-  public setMesh(mesh: Mesh): void {
-    this._mesh = mesh;
+  public setParentNode(parentNode: TransformNode): void {
+    this._parentNode = parentNode;
   }
 
   // Position
@@ -59,6 +57,19 @@ abstract class Obstacle{
   public setVisible(visible: boolean): void {
     this._visible = visible;
   }
+
+  //////////////////////////////////////////////////////////
+  // methods
+  //////////////////////////////////////////////////////////
+  private createDefaultObstacle(): void {
+    this._parentNode = null;
+    this._position =  Vector3.Zero();
+    this._size = new Vector3(1, 1, 1);
+    this._tangible = false;
+    this._visible = true;
+  }
+
+  public abstract createObstacle(): void;
 }
 
 export default Obstacle;

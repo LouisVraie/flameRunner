@@ -28,8 +28,8 @@ async function createScene(){
 
     const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, scene);
 
-    world.addSphere("sphere", 32, 3, 0, 15, 0, true);
-    
+    // world.addSphere("sphere", 32, 3, 0, 15, 0, true);
+    world.addCubeModifier();
     const player = await world.addPlayer("player1");
     world.setShadows(player.getCharacter().getMesh())
     //const player2 = await world.addPlayer("player2");
