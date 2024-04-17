@@ -2,7 +2,7 @@ import { AbstractMesh, ActionManager, Color3, CubeTexture, DirectionalLight, Exe
 import Player from "./Player";
 import Group from "./Group";
 
-import map from "../assets/models/new_worldSpawn.glb";
+import map from "../assets/models/new_worldGiratoire.glb";
 import HavokPhysics from "@babylonjs/havok";
 import CubeModifier from "./CubeModifier";
 import Vehicule  from "./Vehicle";
@@ -73,48 +73,60 @@ class World{
         this._gameObject.scaling.scaleInPlace(WORLD_SCALE);
         this._gameObject.position.set(0,-3,0);
 
+        let tabGiratoire = [];
+
         for (const childMesh of result.meshes) {
 
             childMesh.refreshBoundingInfo(true);
             
             if (childMesh.getTotalVertices() > 0) {
-                const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
-                meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
-                if(!childMesh.id.startsWith("Ground_")){
-                    // environment elements cast shadows
-                    this._shadowGenerator.addShadowCaster(childMesh);
+                if(!childMesh.id.startsWith("Giratoire") && !childMesh.id.startsWith("Dispawn")){
+                    const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
+                    meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+                    if(!childMesh.id.startsWith("Ground_")){
+                        // environment elements cast shadows
+                        this._shadowGenerator.addShadowCaster(childMesh);
+                    }
+                    else{
+                        // ground receives shadows
+                        childMesh.receiveShadows = true;
+                    }
+
+                    
+
+                    if(childMesh.id.startsWith("Limit")) {
+                        childMesh.isVisible = false;
+                        childMesh.isPickable = true;
+                    }
+
+                    //#JN2BSF#171   #6MCVHR#5
+                    if(childMesh.id.startsWith("River")){
+                        //this.applySnippetTexture(childMesh, "#6MCVHR#5");
+
+                        let sphereMaterials = new StandardMaterial("sphereMaterial", this._scene);
+                        sphereMaterials.emissiveColor = new Color3(51,153,255)
+                        sphereMaterials.backFaceCulling = false;
+                        childMesh.material = sphereMaterials;
+                
+                    }
+                    // SXYK15
+                    // if(childMesh.id.startsWith("Eiffel_")){
+                    //     this.applySnippetTexture(childMesh, "#SXYK15");
+                    // }
+                    // //#JNQ200#11
+                    // if(childMesh.id.startsWith("Object001")){
+                    //     this.applySnippetTexture(childMesh, "#J4XAC0");
+                    // }
+                    //#V11ZH9
+                    if(childMesh.id.startsWith("Bandeau")){
+                        this.applySnippetTexture(childMesh, "#V11ZH9");
+                    }
                 }
                 else{
-                    // ground receives shadows
-                    childMesh.receiveShadows = true;
-                }
-
-                if(childMesh.id.startsWith("Limit")) {
-                    childMesh.isVisible = false;
-                    childMesh.isPickable = true;
-                }
-
-                //#JN2BSF#171   #6MCVHR#5
-                if(childMesh.id.startsWith("River")){
-                    //this.applySnippetTexture(childMesh, "#6MCVHR#5");
-
-                    let sphereMaterials = new StandardMaterial("sphereMaterial", this._scene);
-                    sphereMaterials.emissiveColor = new Color3(51,153,255)
-                    sphereMaterials.backFaceCulling = false;
-                    childMesh.material = sphereMaterials;
-            
-                }
-                // SXYK15
-                // if(childMesh.id.startsWith("Eiffel_")){
-                //     this.applySnippetTexture(childMesh, "#SXYK15");
-                // }
-                // //#JNQ200#11
-                // if(childMesh.id.startsWith("Object001")){
-                //     this.applySnippetTexture(childMesh, "#J4XAC0");
-                // }
-                //#V11ZH9
-                if(childMesh.id.startsWith("Bandeau")){
-                    this.applySnippetTexture(childMesh, "#V11ZH9");
+                    //if(childMesh.id.startsWith("Giratoire")){
+                        console.log(childMesh.id);
+                        tabGiratoire.push(childMesh);                    
+                    //}
                 }
            }
         }
@@ -122,11 +134,24 @@ class World{
         // world.addSphere("sphere", 32, 3, 0, 15, 0, true);
         this.addCubeModifier();
 
-        await this.addVehicleObstacle();
+        //await this.addVehicleObstacle();
 
         const player = await this.addPlayer("player1");
         this.setShadows(player.getCharacter().getMesh());
         //const player2 = await world.addPlayer("player2");
+
+        tabGiratoire.forEach((element)=>{
+
+
+            // Animation de rotation de la plateforme et des véhicules
+            this._scene.registerBeforeRender(function () {
+                const rotation = 0.01;
+                        
+                element.rotation.y -= rotation;
+                
+            });
+        })
+        
         
         // Set the character's collision on the cube modifier
         this._setCubeModifierCollision();
