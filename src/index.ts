@@ -6,6 +6,7 @@ import "@babylonjs/loaders/";
 
 import World from "./World";
 import App from "./App";
+import Spawn from "./Spawn";
 
 const app = new App();
 
@@ -35,9 +36,13 @@ async function createScene(){
     const havokInstance = await HavokPhysics();
     const havokPlugin = new HavokPlugin(true, havokInstance);    
     world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
-    world.loadWorld();
+    await world.loadWorld();
 
     const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, scene);
+
+    //const spawn = new Spawn(scene)
+    //spawn.enumSpawnNodes();
+
     return scene;
 }
 

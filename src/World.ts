@@ -2,9 +2,14 @@ import { AbstractMesh, ActionManager, Color3, CubeTexture, DirectionalLight, Exe
 import Player from "./Player";
 import Group from "./Group";
 
-import map from "../assets/models/new_world.glb";
+import map from "../assets/models/new_worldSpawn.glb";
 import HavokPhysics from "@babylonjs/havok";
 import CubeModifier from "./CubeModifier";
+import Vehicule  from "./Vehicle";
+
+import policeCar from '../assets/models/policeCar.glb';
+
+import { FurMaterial } from "babylonjs-materials";
 
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
@@ -21,6 +26,7 @@ class World{
     private _physicsPlugin: HavokPlugin;
     private _players: Player[] = [];
     private _cubeModifiers: CubeModifier[] = [];
+    private _vehicleObstacles: Vehicule[] = [];
     private _gameObject: TransformNode;
     private _light: DirectionalLight;
     private _shadowGenerator: ShadowGenerator;
@@ -58,7 +64,7 @@ class World{
 
     async loadWorld(){
         const result = await SceneLoader.ImportMeshAsync("", "", worldMap.model, this._scene);
-        
+
         this._worldMesh = result.meshes[0];
         this._worldMesh.receiveShadows = true;
         this._gameObject = this._worldMesh;
@@ -70,7 +76,7 @@ class World{
         for (const childMesh of result.meshes) {
 
             childMesh.refreshBoundingInfo(true);
-            console.log(childMesh.id);
+            
             if (childMesh.getTotalVertices() > 0) {
                 const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
                 meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
@@ -81,6 +87,11 @@ class World{
                 else{
                     // ground receives shadows
                     childMesh.receiveShadows = true;
+                }
+
+                if(childMesh.id.startsWith("Limit")) {
+                    childMesh.isVisible = false;
+                    childMesh.isPickable = true;
                 }
 
                 //#JN2BSF#171   #6MCVHR#5
@@ -94,13 +105,13 @@ class World{
             
                 }
                 // SXYK15
-                if(childMesh.id.startsWith("Eiffel_")){
-                    this.applySnippetTexture(childMesh, "#SXYK15");
-                }
-                //#JNQ200#11
-                if(childMesh.id.startsWith("Object001")){
-                    this.applySnippetTexture(childMesh, "#J4XAC0");
-                }
+                // if(childMesh.id.startsWith("Eiffel_")){
+                //     this.applySnippetTexture(childMesh, "#SXYK15");
+                // }
+                // //#JNQ200#11
+                // if(childMesh.id.startsWith("Object001")){
+                //     this.applySnippetTexture(childMesh, "#J4XAC0");
+                // }
                 //#V11ZH9
                 if(childMesh.id.startsWith("Bandeau")){
                     this.applySnippetTexture(childMesh, "#V11ZH9");
@@ -110,12 +121,16 @@ class World{
 
         // world.addSphere("sphere", 32, 3, 0, 15, 0, true);
         this.addCubeModifier();
+
+        await this.addVehicleObstacle();
+
         const player = await this.addPlayer("player1");
         this.setShadows(player.getCharacter().getMesh());
         //const player2 = await world.addPlayer("player2");
         
         // Set the character's collision on the cube modifier
         this._setCubeModifierCollision();
+        //this._setVehicleCollision();
     }
 
     async initGame(){
@@ -185,6 +200,12 @@ class World{
         this._cubeModifiers.push(cubeModifier);
     }
 
+    async addVehicleObstacle() : Promise<void>{
+        const vehicle = new Vehicule(this._scene, policeCar);
+        await vehicle.createObstacle();
+        this._vehicleObstacles.push(vehicle);
+    }
+
     moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {
         const speed = 0.1;
         characterMesh.moveWithCollisions(direction.multiplyByFloats(speed, speed, speed));
@@ -229,6 +250,29 @@ class World{
                     () => {
                         console.log("HIT Cube!");
                         cube.disposeObstacle();
+                    }
+                ));
+            }
+        }
+    }
+
+
+    private _setVehicleCollision(): void {
+
+        // for each player
+        for (const player of this._players) {
+            // for each cube modifier
+            for (const vehicle of this._vehicleObstacles) {
+                //console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and vehicle: " + vehicle.getMesh().name);
+                // Create a trigger for the vehicle modifier
+                player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                    {
+                        trigger : ActionManager.OnIntersectionEnterTrigger,
+                        parameter : vehicle.getMesh()
+                    },
+                    () => {
+                        console.log("HIT vehicle!");
+                        //vehicle.disposeObstacle();
                     }
                 ));
             }
