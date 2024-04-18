@@ -66,7 +66,7 @@ class Character extends TransformNode{
   private static readonly PLAYER_END_ANIMATION_THRESHOLD: number = 0.01;
   private static readonly PLAYER_SPEED: number = 4.5;
   private static readonly PLAYER_SPRINT_MULTIPLIER: number = 1.5;
-  private static readonly ROTATION_SPEED: number = 0.02;
+  private static readonly ROTATION_SPEED: number = 2;
   private static readonly JUMP_NUMBER: number = 1;
   private static readonly JUMP_FORCE: number = 0.5;
   private static readonly GROUND_THRESHOLD: number = 0.05;
@@ -363,18 +363,18 @@ class Character extends TransformNode{
     if (inputMap.get(controller.getLeft())) {
       // Backward
       if (inputMap.get(controller.getBackward())) {
-        this._mesh.rotation.y += Character.ROTATION_SPEED;
+        this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
       } else {
-        this._mesh.rotation.y -= Character.ROTATION_SPEED;
+        this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
       }
     }
     // Right
     if (inputMap.get(controller.getRight())) {
       // Backward
       if (inputMap.get(controller.getBackward())) {
-        this._mesh.rotation.y -= Character.ROTATION_SPEED;
+        this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
       } else {
-        this._mesh.rotation.y += Character.ROTATION_SPEED;
+        this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
       }
     }
 
