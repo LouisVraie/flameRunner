@@ -95,7 +95,14 @@ class Group {
     const capacityDuration = 10;
     const capacityDelay = 10;
   
-    const capacity = new Modifier(name, description, icon, 10, new Vector3(2, 1, 2), null, null, true, null);
+    // Create a new modifier
+    const capacity = new Modifier();
+    capacity.setName(name);
+    capacity.setDescription(description);
+    capacity.setIcon(icon);
+    capacity.setDuration(capacityDuration);
+    capacity.setSpeedDelta(2);
+
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
   
     return group;
@@ -111,8 +118,15 @@ class Group {
     const capacityDuration = 10;
     const capacityDelay = 10;
 
-    const modifier = new Modifier(name, description, icon, 10, null, null, null, true, null);
-    const group = new Group(name, description, icon, capacityName, modifier, capacityDuration, capacityDelay);
+    // Create a new modifier
+    const capacity = new Modifier();
+    capacity.setName(name);
+    capacity.setDescription(description);
+    capacity.setIcon(icon);
+    capacity.setDuration(capacityDuration);
+    // TODO : Add the ghost capacity
+
+    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
 
     return group;
   }
@@ -126,7 +140,14 @@ class Group {
     const capacityDuration = 15;
     const capacityDelay = 15;
   
-    const capacity = new Modifier(name, description, icon, 15, null, 1.5, 1.5, true, null);
+    // Create a new modifier
+    const capacity = new Modifier();
+    capacity.setName(name);
+    capacity.setDescription(description);
+    capacity.setIcon(icon);
+    capacity.setDuration(capacityDuration);
+    capacity.setStaminaRegenDelta(2);
+
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
   
     return group;
@@ -141,7 +162,14 @@ class Group {
     const capacityDuration = 12;
     const capacityDelay = 12;
   
-    const capacity = new Modifier(name, description, icon, 12, new Vector3(2, 1, 2), null, null, true, null);
+    // Create a new modifier
+    const capacity = new Modifier();
+    capacity.setName(name);
+    capacity.setDescription(description);
+    capacity.setIcon(icon);
+    capacity.setDuration(capacityDuration);
+    capacity.setJumpDelta(2);
+
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
   
     return group;

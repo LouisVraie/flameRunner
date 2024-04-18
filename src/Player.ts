@@ -12,6 +12,10 @@ class Player {
   private _identifier: string;
   private _score: number;
 
+  private _health: number;
+  private _stamina: number;
+  private _staminaRegen: number;
+
   private _controller: Controller;
   private _character: Character;
   
@@ -26,8 +30,10 @@ class Player {
   private _deathCounter: number;
 
   //const values
-  private static readonly DOWN_TILT: Vector3 = new Vector3(0.8290313946973066, 0, 0);
   private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.45, 0, 0);
+  private static readonly MAX_HEALTH: number = 3;
+  private static readonly MAX_STAMINA: number = 100;
+  private static readonly STAMINA_REGEN: number = 1;
 
   constructor(
     scene: Scene,
@@ -37,6 +43,10 @@ class Player {
     
     this._identifier = identifier || "No identifier";
     this._score = 0;
+
+    this._health = Player.MAX_HEALTH;
+    this._stamina = Player.MAX_STAMINA;
+    this._staminaRegen = Player.STAMINA_REGEN;
     
     this._attachCamera();
     this._attachController();
@@ -44,7 +54,7 @@ class Player {
     this._interface = new PlayerInterface(identifier);
     this._interface.addViewport();
 
-    this._modifier = null;
+    this._modifier = new Modifier();
     this._deathCounter = 0;
   }
 
@@ -66,6 +76,30 @@ class Player {
   }
   public setScore(score: number): void {
     this._score = score;
+  }
+
+  // Health
+  public getHealth(): number {
+    return this._health;
+  }
+  public setHealth(health: number): void {
+    this._health = health;
+  }
+
+  // Stamina
+  public getStamina(): number {
+    return this._stamina;
+  }
+  public setStamina(stamina: number): void {
+    this._stamina = stamina;
+  }
+
+  // StaminaRegen
+  public getStaminaRegen(): number {
+    return this._staminaRegen;
+  }
+  public setStaminaRegen(staminaRegen: number): void {
+    this._staminaRegen = staminaRegen;
   }
 
   // Controller
@@ -106,6 +140,12 @@ class Player {
   }
   public setDeathCounter(deathCounter: number): void {
     this._deathCounter = deathCounter;
+  }
+
+  // Set Modifier from random value
+  public setModifierFromRandomValue(randomValue: number): void {
+    this._modifier = Modifier.getRandomModifier(randomValue);
+    console.log("CubeModifier : ", randomValue, "%, ", this._modifier.getName());
   }
 
   //////////////////////////////////////////////////////////
@@ -152,7 +192,7 @@ class Player {
 
   //--GAME UPDATES--
   private _beforeRenderUpdate(): void {
-    this._character.updateCharacter(this._camRoot, this._controller);
+    this._character.updateCharacter(this._camRoot, this._controller, this._modifier);
   }
 
   // Update player
@@ -162,6 +202,7 @@ class Player {
       this._updateCamera();
     })
   }
+
 }
 
 export default Player;

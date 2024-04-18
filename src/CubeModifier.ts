@@ -1,14 +1,12 @@
-import { Color3, TransformNode, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3, GlowLayer } from "@babylonjs/core";
+import { Color3, TransformNode, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import Obstacle from "./Obstacle";
 import { WORLD_SCALE } from "./World";
-import Modifier from "./Modifier";
 
 class CubeModifier extends Obstacle{
 
   private static readonly SIZE: number = 0.5;
   private static readonly ROTATION_SPEED: number = 1;
 
-  private _modifier: Modifier;
   private _randomValue: number;
 
   private _mesh : Mesh;
@@ -25,6 +23,11 @@ class CubeModifier extends Obstacle{
     return this._mesh;
   }
 
+  // Random Value
+  public getRandomValue(): number {
+    return this._randomValue;
+  }
+
   //////////////////////////////////////////////////////////
   // methods
   //////////////////////////////////////////////////////////
@@ -34,7 +37,7 @@ class CubeModifier extends Obstacle{
 
     // Creating material for the cube
     const cubeMaterial = new StandardMaterial("cubeModifierMaterial", this._scene);
-    cubeMaterial.diffuseColor = new Color3(255, 0, 0);
+    cubeMaterial.diffuseColor = new Color3(255, 255, 255);
     cubeMaterial.alpha = 0.5; // 50% Transparency
 
     // Creating the cube with the material
@@ -79,18 +82,21 @@ class CubeModifier extends Obstacle{
     const texture = new DynamicTexture("textTexture", { width: 256, height: 256 }, this._scene);
     // add shadow to the text
     texture.drawText(`${this._randomValue}%`, null, null, "bold 100px Arial", "black", "transparent", true, true);
-    texture.drawText(`${this._randomValue}%`, null, null, "bold 105px Arial", "red", "transparent", true, true);
+    texture.drawText(`${this._randomValue}%`, null, null, "bold 105px Arial", "white", "transparent", true, true);
 
     material.diffuseTexture = texture;
     material.diffuseTexture.hasAlpha = true;
     material.specularColor = new Color3(0, 0, 0);
     material.emissiveColor = new Color3(0.5, 0.5, 0.5);
 
+    // TODO : Edge rendering
+
     return textPlane;
   }
 
   public disposeObstacle(): void {
     this._mesh.dispose();
+    // TODO : Remove ActionTrigger linked to the cube modifier
     this.getParentNode().dispose();
   }
 }

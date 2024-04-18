@@ -190,6 +190,9 @@ class World{
                         parameter : cube.getMesh()
                     },
                     () => {
+                        // Apply the modifier to the player
+                        player.setModifierFromRandomValue(cube.getRandomValue());
+
                         cube.disposeObstacle();
                     }
                 ));

@@ -3,6 +3,7 @@ import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
+import Modifier from "./Modifier";
 
 enum MovingState {
   DEFAULT = 0,
@@ -21,10 +22,6 @@ class Character extends TransformNode{
 
   private _name: string;
   private _group: Group;
-
-  private _health: number;
-  private _stamina: number;
-  private _staminaRegen: number;
 
   // camera variables
   private _cameraRoot: AbstractMesh;
@@ -78,9 +75,6 @@ class Character extends TransformNode{
     this._scene = scene;
     
     this._name = name || "No name";
-    this._health = 3;
-    this._stamina = 100;
-    this._staminaRegen = 1;
         
     this._moveDirection = new Vector3(0, 0, 1);
 
@@ -113,30 +107,6 @@ class Character extends TransformNode{
   }
   public setGroup(group: Group): void {
     this._group = group;
-  }
-
-  // Health
-  public getHealth(): number {
-    return this._health;
-  }
-  public setHealth(health: number): void {
-    this._health = health;
-  }
-
-  // Stamina
-  public getStamina(): number {
-    return this._stamina;
-  }
-  public setStamina(stamina: number): void {
-    this._stamina = stamina;
-  }
-
-  // StaminaRegen
-  public getStaminaRegen(): number {
-    return this._staminaRegen;
-  }
-  public setStaminaRegen(staminaRegen: number): void {
-    this._staminaRegen = staminaRegen;
   }
 
   // Animations
@@ -325,14 +295,14 @@ class Character extends TransformNode{
   }
 
   // Move the character
-  public moveCharacterMeshDirection(controller: Controller): void {
+  public moveCharacterMeshDirection(controller: Controller, modifier: Modifier): void {
     // Get the input map from the controller
     const inputMap = controller.getInputMap();
 
     // Determine movement direction based on input
     // Forward
     if (inputMap.get(controller.getForward())) {
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scaleInPlace(Character.PLAYER_SPEED);
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scaleInPlace(Character.PLAYER_SPEED * modifier.getSpeedDelta());
       // this._moveDirection.addInPlace(WORLD_GRAVITY);
 
       // Set running animation playing forward
@@ -350,7 +320,7 @@ class Character extends TransformNode{
     }
     // Backward
     if (inputMap.get(controller.getBackward())) {
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED/2);
+      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED/2 * modifier.getSpeedDelta());
       // this._moveDirection.addInPlace(WORLD_GRAVITY);
 
       // Set running animation playing backwards
@@ -440,11 +410,11 @@ class Character extends TransformNode{
   }
 
   // Update the character
-  public updateCharacter(camRoot: TransformNode, controller: Controller): void {
+  public updateCharacter(camRoot: TransformNode, controller: Controller, modifier: Modifier): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
 
     // Move the character
-    this.moveCharacterMeshDirection(controller);
+    this.moveCharacterMeshDirection(controller, modifier);
     // Animate the character
     this.animateCharacter();
   }
