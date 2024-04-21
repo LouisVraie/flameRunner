@@ -26,6 +26,8 @@ class Character extends TransformNode{
   private _stamina: number;
   private _staminaRegen: number;
 
+  private _spawnLocation : Vector3;
+
   // camera variables
   private _cameraRoot: AbstractMesh;
   private _camera: FollowCamera;
@@ -73,7 +75,7 @@ class Character extends TransformNode{
   private static readonly SLIDE_FACTOR: number = 2.5;
   private static readonly SLIDE_TIME: number = 10; //how many frames the slide lasts
 
-  constructor(scene: Scene, name: string) {
+  constructor(scene: Scene, name: string, spawnLocation : Vector3) {
     super("character", scene);
     this._scene = scene;
     
@@ -85,6 +87,8 @@ class Character extends TransformNode{
     this._moveDirection = new Vector3(0, 0, 1);
 
     this._jumpCount = 0;
+
+    this._spawnLocation = spawnLocation;
   }
 
   //////////////////////////////////////////////////////////
@@ -213,7 +217,7 @@ class Character extends TransformNode{
     // Create capsule
     this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: Character.PLAYER_HEIGHT, radius: Character.PLAYER_RADIUS }, this._scene);
     this._hitbox.visibility = 0.4;
-    this._hitbox.position = new Vector3(0, 8, 0);
+    this._hitbox.position = this._spawnLocation;
     this._hitbox.isPickable = false;
     this._hitbox.actionManager = new ActionManager(this._scene);
     this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1000, friction:0.5, restitution: 0.01 }, this._scene);

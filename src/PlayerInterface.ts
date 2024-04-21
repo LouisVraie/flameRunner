@@ -26,7 +26,7 @@ class PlayerInterface {
 
     addViewport(){
 
-        console.log("hello")
+        //console.log("hello")
 
         const gui = document.querySelector("#gui");
         //gui.classList.add('in_game');

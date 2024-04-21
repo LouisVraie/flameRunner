@@ -1,15 +1,15 @@
-import { AbstractMesh, ActionManager, Color3, CubeTexture, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, MeshBuilder, MirrorTexture, NodeMaterial,  PhysicsAggregate,  PhysicsMotionType,  PhysicsShapeType,  Plane,  Scene,  SceneLoader,  ScenePerformancePriority,  ShadowGenerator,  StandardMaterial,  Texture,  TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, ActionManager, Color3, Color4, CubeTexture, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, Layer, MeshBuilder, MirrorTexture, NodeMaterial,  ParticleSystem,  PhysicsAggregate,  PhysicsMotionType,  PhysicsShapeType,  Plane,  Scene,  SceneLoader,  ScenePerformancePriority,  ShadowGenerator,  StandardMaterial,  Texture,  TransformNode, Vector3 } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
 
-import map from "../assets/models/new_worldGiratoire.glb";
+import map from "../assets/models/new_world.glb";
 import HavokPhysics from "@babylonjs/havok";
 import CubeModifier from "./CubeModifier";
-import Vehicule  from "./Vehicle";
 
-import policeCar from '../assets/models/policeCar.glb';
-
-import { FurMaterial } from "babylonjs-materials";
+import Spawn from "./Spawner";
+import Vehicle from "./Vehicle";
+import Spawner from "./Spawner";
+import { Vector } from "babylonjs";
 
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
@@ -26,10 +26,31 @@ class World{
     private _physicsPlugin: HavokPlugin;
     private _players: Player[] = [];
     private _cubeModifiers: CubeModifier[] = [];
-    private _vehicleObstacles: Vehicule[] = [];
+    private _vehicleObstacles: Vehicle[] = [];
     private _gameObject: TransformNode;
     private _light: DirectionalLight;
     private _shadowGenerator: ShadowGenerator;
+    private _worldSpawn: Vector3;
+
+    private _dispawnerTab: AbstractMesh[] = [];
+    private _spawnerTab: TransformNode[] = [];
+    private _groundTab: AbstractMesh[] = [];
+    private _limitTab: AbstractMesh[] =[];
+    private _gazTab: AbstractMesh[] =[];
+
+
+    public getDispawnerList() : AbstractMesh[]{
+        return this._dispawnerTab;
+    }
+    public getSpawnerList() : TransformNode[]{
+        return this._spawnerTab;
+    }
+    public getGroundList() : AbstractMesh[]{
+        return this._groundTab;
+    }
+    public getLimitList() : AbstractMesh[]{
+        return this._limitTab;
+    }
 
     constructor(scene: Scene) {
         this._scene = scene;
@@ -47,6 +68,11 @@ class World{
         env.gammaSpace = false;
         env.rotationY = 4.0823;
         this._scene.environmentTexture = env;
+
+        this._worldSpawn = Vector3.Zero();
+
+        // Pour afficher un background
+        //var layer = new Layer('','https://i.imgur.com/mBBxGJH.jpg', this._scene, true);
     }
 
     async getInitializedHavok() {
@@ -73,84 +99,90 @@ class World{
         this._gameObject.scaling.scaleInPlace(WORLD_SCALE);
         this._gameObject.position.set(0,-3,0);
 
-        let tabGiratoire = [];
+        for(const transformNode of result.transformNodes){
+            //console.log(transformNode.id);
+
+            if(transformNode.id.startsWith("Spawn")){
+                this._spawnerTab.push(transformNode);
+            }
+
+            if(transformNode.id == "Respawn"){
+                this._worldSpawn = transformNode.absolutePosition;
+                console.log("World spawn : ", this._worldSpawn);
+            }
+        }
+
 
         for (const childMesh of result.meshes) {
 
             childMesh.refreshBoundingInfo(true);
+
+            //console.log(childMesh.id)
             
             if (childMesh.getTotalVertices() > 0) {
-                if(!childMesh.id.startsWith("Giratoire") && !childMesh.id.startsWith("Dispawn")){
-                    const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
-                    meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
-                    if(!childMesh.id.startsWith("Ground_")){
-                        // environment elements cast shadows
-                        this._shadowGenerator.addShadowCaster(childMesh);
-                    }
-                    else{
-                        // ground receives shadows
-                        childMesh.receiveShadows = true;
-                    }
 
-                    
-
-                    if(childMesh.id.startsWith("Limit")) {
-                        childMesh.isVisible = false;
-                        childMesh.isPickable = true;
-                    }
-
-                    //#JN2BSF#171   #6MCVHR#5
-                    if(childMesh.id.startsWith("River")){
-                        //this.applySnippetTexture(childMesh, "#6MCVHR#5");
-
-                        let sphereMaterials = new StandardMaterial("sphereMaterial", this._scene);
-                        sphereMaterials.emissiveColor = new Color3(51,153,255)
-                        sphereMaterials.backFaceCulling = false;
-                        childMesh.material = sphereMaterials;
                 
-                    }
-                    // SXYK15
-                    // if(childMesh.id.startsWith("Eiffel_")){
-                    //     this.applySnippetTexture(childMesh, "#SXYK15");
-                    // }
-                    // //#JNQ200#11
-                    // if(childMesh.id.startsWith("Object001")){
-                    //     this.applySnippetTexture(childMesh, "#J4XAC0");
-                    // }
-                    //#V11ZH9
-                    if(childMesh.id.startsWith("Bandeau")){
-                        this.applySnippetTexture(childMesh, "#V11ZH9");
-                    }
+                if(childMesh.id.startsWith("Dispawn")){
+                    childMesh.isPickable = true;
+                    this._dispawnerTab.push(childMesh);
                 }
                 else{
-                    //if(childMesh.id.startsWith("Giratoire")){
-                        console.log(childMesh.id);
-                        tabGiratoire.push(childMesh);                    
-                    //}
+                    const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
+                    meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
                 }
-           }
+                
+                if(childMesh.id.startsWith("Ground")){
+                    this._groundTab.push(childMesh);
+                }                
+                if(childMesh.id.startsWith("Limit")) {
+                    this._limitTab.push(childMesh);
+                    childMesh.isVisible = false;
+                    childMesh.isPickable = true;
+                }
+                if(childMesh.id.startsWith("Gaz")) {
+                    this.addSmoke(childMesh.absolutePosition);
+                    this._gazTab.push(childMesh);
+                }
+
+                childMesh.receiveShadows = true;
+                this._shadowGenerator.addShadowCaster(childMesh);
+                
+                
+
+                if(childMesh.id.startsWith("Bandeau")){
+                    this.applySnippetTexture(childMesh, "#V11ZH9");
+                }
+                
+            }
         }
+
+        
+
+        this._spawnerTab.forEach((spawner) => {
+            console.log(spawner.id);
+            const parts = spawner.id.split('_');
+            const direction = parts[1];
+            const type = parts[2];
+            if (type.startsWith("Vehicle")) {
+                
+                const newSpawner = new Spawner(this._scene, spawner, direction, "Vehicle", this._dispawnerTab);
+                this._scene.registerBeforeRender(() => {
+                    newSpawner.updateVehicle();
+                })
+        
+            }
+        });
+        
 
         // world.addSphere("sphere", 32, 3, 0, 15, 0, true);
         this.addCubeModifier();
 
         //await this.addVehicleObstacle();
 
-        const player = await this.addPlayer("player1");
+        const player = await this.addPlayer("player1", this._worldSpawn);
         this.setShadows(player.getCharacter().getMesh());
         //const player2 = await world.addPlayer("player2");
 
-        tabGiratoire.forEach((element)=>{
-
-
-            // Animation de rotation de la plateforme et des véhicules
-            this._scene.registerBeforeRender(function () {
-                const rotation = 0.01;
-                        
-                element.rotation.y -= rotation;
-                
-            });
-        })
         
         
         // Set the character's collision on the cube modifier
@@ -195,6 +227,61 @@ class World{
         }
     }
 
+    addSmoke(vector : Vector3){
+        // Create a particle system
+        var particleSystem = new ParticleSystem("particles", 8000, this._scene);
+
+        //Texture of each particle
+        particleSystem.particleTexture = new Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/FFV/smokeParticleTexture.png", this._scene);
+
+        // lifetime
+        particleSystem.minLifeTime = 2;
+        particleSystem.maxLifeTime = 4;// permet de modifier la hauteur par la durée de vie
+
+        // emit rate
+        particleSystem.emitRate = 100;
+
+        // gravity
+        particleSystem.gravity = new Vector3(0.25, 1.5, 0);
+
+        // size gradient
+        particleSystem.addSizeGradient(0, 0.6, 1);
+        particleSystem.addSizeGradient(0.3, 1, 2);
+        particleSystem.addSizeGradient(0.5, 2, 3);
+        particleSystem.addSizeGradient(1.0, 6, 8);
+
+        // color gradient
+        particleSystem.addColorGradient(0, new Color4(0.5, 0.5, 0.5, 0),  new Color4(0.8, 0.8, 0.8, 0));
+        particleSystem.addColorGradient(0.4, new Color4(1, 1, 1, 0.1), new Color4(1, 1, 1, 0.4));
+        particleSystem.addColorGradient(0.7, new Color4(1, 1, 1, 0.2), new Color4(1, 1, 1, 0.4));
+        particleSystem.addColorGradient(1.0, new Color4(0.0, 0.0, 0.0, 0), new Color4(0.03, 0.03, 0.03, 0));
+
+        // speed gradient
+        particleSystem.addVelocityGradient(0, 1, 1.5);
+        particleSystem.addVelocityGradient(0.1, 0.8, 0.9);
+        particleSystem.addVelocityGradient(0.7, 0.4, 0.5);
+        particleSystem.addVelocityGradient(1, 0.1, 0.2);
+
+        // rotation
+        particleSystem.minInitialRotation = 0;
+        particleSystem.maxInitialRotation = Math.PI;
+        particleSystem.minAngularSpeed = -1;
+        particleSystem.maxAngularSpeed = 1;
+
+        // blendmode
+        particleSystem.blendMode = ParticleSystem.BLENDMODE_STANDARD;
+        
+        // emitter shape
+        var sphereEmitter = particleSystem.createConeEmitter(0.01, 0.5);
+        // Where the particles come from
+        particleSystem.emitter = vector; // the starting object, the emitter
+        // particleSystem.minEmitBox = new Vector3(-0.5, -0.5, -0.5); // Starting all from
+        // particleSystem.maxEmitBox = new Vector3(0.5, 0, 0.5); // To...
+
+        // Start the particle system
+        particleSystem.start();
+    }
+
     addHemisphericLight(name: string, position: Vector3, intensity: number): void{
         const light = new HemisphericLight(name, position, this._scene);
         light.intensity = intensity;
@@ -208,10 +295,9 @@ class World{
         this._light.shadowOrthoScale = 2;
     }
 
-    async addPlayer(identifier: string): Promise<Player> {
+    async addPlayer(identifier: string, position : Vector3): Promise<Player> {
         const player = new Player(this._scene, identifier);
-        await player.addCharacterAsync("Wall-E", Group.getSprinter());
-
+        await player.addCharacterAsync("Wall-E", position, Group.getSprinter());
         player.updatePlayer();
         this._shadowGenerator.addShadowCaster(player.getCharacter().getMesh())
         this._players.push(player);
@@ -225,11 +311,11 @@ class World{
         this._cubeModifiers.push(cubeModifier);
     }
 
-    async addVehicleObstacle() : Promise<void>{
-        const vehicle = new Vehicule(this._scene, policeCar);
-        await vehicle.createObstacle();
-        this._vehicleObstacles.push(vehicle);
-    }
+    // async addVehicleObstacle() : Promise<void>{
+    //     const vehicle = new Vehicule(this._scene, policeCar);
+    //     await vehicle.createObstacle();
+    //     this._vehicleObstacles.push(vehicle);
+    // }
 
     moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {
         const speed = 0.1;
@@ -265,7 +351,7 @@ class World{
         for (const player of this._players) {
             // for each cube modifier
             for (const cube of this._cubeModifiers) {
-                console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and cube: " + cube.getMesh().name);
+                //console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and cube: " + cube.getMesh().name);
                 // Create a trigger for the cube modifier
                 player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
                     {
@@ -273,7 +359,7 @@ class World{
                         parameter : cube.getMesh()
                     },
                     () => {
-                        console.log("HIT Cube!");
+                        //console.log("HIT Cube!");
                         cube.disposeObstacle();
                     }
                 ));
@@ -282,27 +368,7 @@ class World{
     }
 
 
-    private _setVehicleCollision(): void {
-
-        // for each player
-        for (const player of this._players) {
-            // for each cube modifier
-            for (const vehicle of this._vehicleObstacles) {
-                //console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and vehicle: " + vehicle.getMesh().name);
-                // Create a trigger for the vehicle modifier
-                player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
-                    {
-                        trigger : ActionManager.OnIntersectionEnterTrigger,
-                        parameter : vehicle.getMesh()
-                    },
-                    () => {
-                        console.log("HIT vehicle!");
-                        //vehicle.disposeObstacle();
-                    }
-                ));
-            }
-        }
-    }
+    
 }
 
 export default World;

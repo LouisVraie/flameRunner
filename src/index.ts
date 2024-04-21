@@ -6,7 +6,7 @@ import "@babylonjs/loaders/";
 
 import World from "./World";
 import App from "./App";
-import Spawn from "./Spawn";
+import Spawn from "./Spawner";
 
 const app = new App();
 
@@ -31,7 +31,7 @@ async function createScene(){
     });
 
     //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
-    world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
+    world.addFreeCamera("cam1", new Vector3(26.609, 23.745, 51), true);
 
     const havokInstance = await HavokPhysics();
     const havokPlugin = new HavokPlugin(true, havokInstance);    
