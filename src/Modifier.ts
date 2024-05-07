@@ -20,7 +20,7 @@ class Modifier {
     this._icon = null;
     this._duration = 0;
     this._speedDelta = 1;
-    this._staminaDelta = 1;
+    this._staminaDelta = 0;
     this._staminaRegenDelta = 1;
     this._vision = true;
     this._timeDelta = 0;
@@ -161,7 +161,7 @@ class Modifier {
     this.setDescription("Increase stamina");
     this.setIcon("stamina.png");
     this.setDuration(10);
-    this.setStaminaDelta(2);
+    this.setStaminaDelta(50);
     return this;
   }
 
@@ -171,7 +171,7 @@ class Modifier {
     this.setDescription("Decrease stamina");
     this.setIcon("stamina.png");
     this.setDuration(10);
-    this.setStaminaDelta(0.5);
+    this.setStaminaDelta(-50);
     return this;
   }
 
@@ -217,7 +217,7 @@ class Modifier {
 
   // Get random bonus Modifier
   public getRandomBonusModifier(): Modifier {
-    const randomValue = Math.floor(Math.random() * 5);
+    const randomValue = Math.floor(Math.random() * 3);
 
     switch (randomValue) {
       case 0:
@@ -235,7 +235,7 @@ class Modifier {
 
   // Get random malus modifier
   public getRandomMalusModifier(): Modifier {
-    const randomValue = Math.floor(Math.random() * 5);
+    const randomValue = Math.floor(Math.random() * 3);
 
     switch (randomValue) {
       case 0:

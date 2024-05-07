@@ -188,6 +188,10 @@ class Player {
 
   //--GAME UPDATES--
   private _beforeRenderUpdate(): void {
+
+    // update stamina according to the modifier
+    this._modifier = this._character.updateStamina(this._modifier);
+
     this._character.updateCharacter(this._camRoot, this._controller, this._modifier);
   }
 

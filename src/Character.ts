@@ -449,6 +449,26 @@ class Character extends TransformNode{
     }
   }
 
+  // Update stamina
+  public updateStamina(modifier: Modifier): Modifier {
+    // Apply stamina bonus or malus
+    if (modifier.getStaminaDelta() != 0){
+      this._stamina += modifier.getStaminaDelta();
+      modifier.setStaminaDelta(0);
+
+      // Clamp stamina to 0
+      if (this._stamina < 0) {
+        this._stamina = 0;
+      }
+      // Clamp stamina to Character.MAX_STAMINA
+      if (this._stamina > Character.MAX_STAMINA) {
+        this._stamina = Character.MAX_STAMINA;
+      }
+    }
+
+    return modifier;
+  }
+
   // Update the character
   public updateCharacter(camRoot: TransformNode, controller: Controller, modifier: Modifier): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
