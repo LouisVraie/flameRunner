@@ -184,7 +184,7 @@ class World{
             // for each cube modifier
             for (const cube of this._cubeModifiers) {
                 // Create a trigger for the cube modifier
-                player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                const action = new ExecuteCodeAction(
                     {
                         trigger : ActionManager.OnIntersectionEnterTrigger,
                         parameter : cube.getMesh()
@@ -192,10 +192,17 @@ class World{
                     () => {
                         // Apply the modifier to the player
                         player.setModifierFromRandomValue(cube.getRandomValue());
+                        
+                        // Dispose the action manager related to this cube modifier for this player
+                        player.getCharacter().getHitbox().actionManager.unregisterAction(action);
 
+                        // Remove the cube modifier
                         cube.disposeObstacle();
                     }
-                ));
+                );
+
+                // Add the action manager to the player's hitbox
+                player.getCharacter().getHitbox().actionManager.registerAction(action);
             }
         }
     }
