@@ -89,8 +89,13 @@ class PlayerInterface {
         topLeftSubNameContainer.innerHTML = this._playerName;
         topLeftSubContainer.appendChild(topLeftSubNameContainer);
 
+        // Stamina
         const topLeftSubStaminaContainer = document.createElement('div');
         topLeftSubStaminaContainer.className = "top_left_sub_stamina_container";
+        const staminaBar = document.createElement('div');
+        staminaBar.id = "stamina_bar_"+this._playerName;
+        staminaBar.className = "stamina_bar";
+        topLeftSubStaminaContainer.appendChild(staminaBar);
         topLeftContainer.appendChild(topLeftSubStaminaContainer);
 
         const topLeftSubTimeContainer = document.createElement('div');
@@ -151,6 +156,11 @@ class PlayerInterface {
         this._playerTimeEffect = newPlayerTimeEffect;
     }
 
+
+    public updateStamina(stamina : number) : void {
+        const staminaBar = document.querySelector('#stamina_bar_'+this._playerName) as HTMLDivElement;
+        staminaBar.style.width = stamina + "%";
+    }
 }
 
 export default PlayerInterface;

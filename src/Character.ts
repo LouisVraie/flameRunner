@@ -23,6 +23,10 @@ class Character extends TransformNode{
   private _name: string;
   private _group: Group;
 
+  // Character stats
+  private _stamina: number;
+  private _staminaRegen: number;
+
   // camera variables
   private _cameraRoot: AbstractMesh;
   private _camera: FollowCamera;
@@ -63,6 +67,8 @@ class Character extends TransformNode{
   private static readonly PLAYER_END_ANIMATION_THRESHOLD: number = 0.01;
   private static readonly PLAYER_SPEED: number = 4.5;
   private static readonly PLAYER_SPRINT_MULTIPLIER: number = 1.5;
+  private static readonly MAX_STAMINA: number = 100;
+  private static readonly STAMINA_REGEN: number = 8;
   private static readonly ROTATION_SPEED: number = 2;
   private static readonly JUMP_NUMBER: number = 1;
   private static readonly JUMP_FORCE: number = 0.5;
@@ -109,6 +115,22 @@ class Character extends TransformNode{
     this._group = group;
   }
 
+  // Stamina
+  public getStamina(): number {
+    return this._stamina;
+  }
+  public setStamina(stamina: number): void {
+    this._stamina = stamina;
+  }
+
+  // Stamina Regen
+  public getStaminaRegen(): number {
+    return this._staminaRegen;
+  }
+  public setStaminaRegen(staminaRegen: number): void {
+    this._staminaRegen = staminaRegen;
+  }
+
   // Animations
   private _setAnimations(assets: any): void {
     // Idle animations is a blend of assets.animationGroups[5] and assets.animationGroups[7]
@@ -153,6 +175,8 @@ class Character extends TransformNode{
   public async createCharacterAsync(group: Group): Promise<Character> {
 
     this._group = group;
+    this._stamina = Character.MAX_STAMINA;
+    this._staminaRegen = Character.STAMINA_REGEN;
 
     const assets = await SceneLoader.ImportMeshAsync("", "", player1, this._scene);
 
@@ -309,10 +333,16 @@ class Character extends TransformNode{
       this._run.speedRatio = 1;
       
       // Sprint
-      if (inputMap.get(controller.getSprint())) {
+      if (inputMap.get(controller.getSprint()) && this._stamina > 0) {
         this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
         // Set running animation playing forward
         this._run.speedRatio = 1.25;
+        this._stamina -= Character.STAMINA_REGEN * modifier.getStaminaRegenDelta() * this._deltaTime;
+
+        // Clamp stamina to 0
+        if (this._stamina < 0) {
+          this._stamina = 0;
+        }
       }
 
       // Set the character's velocity
@@ -359,6 +389,16 @@ class Character extends TransformNode{
 
     // Update the character's position
     this.updatePosition(this._capsuleAggregate.transformNode.getAbsolutePosition());
+
+    // Regenerate stamina
+    if (!inputMap.get(controller.getSprint()) && this._stamina < Character.MAX_STAMINA) {
+      this._stamina += Character.STAMINA_REGEN * modifier.getStaminaRegenDelta() * this._deltaTime;
+
+      // Clamp stamina to Character.MAX_STAMINA
+      if (this._stamina > Character.MAX_STAMINA) {
+        this._stamina = Character.MAX_STAMINA;
+      }
+    }
   }
 
   // Animate the character

@@ -141,7 +141,7 @@ class Modifier {
     this.setDescription("Increase stamina");
     this.setIcon("stamina.png");
     this.setDuration(10);
-    this.setStaminaRegenDelta(2);
+    this.setStaminaRegenDelta(0.5);
     return this;
   }
 
@@ -151,7 +151,7 @@ class Modifier {
     this.setDescription("Decrease stamina");
     this.setIcon("stamina.png");
     this.setDuration(10);
-    this.setStaminaRegenDelta(0.5);
+    this.setStaminaRegenDelta(2);
     return this;
   }
 

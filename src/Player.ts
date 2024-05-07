@@ -32,8 +32,6 @@ class Player {
   //const values
   private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.45, 0, 0);
   private static readonly MAX_HEALTH: number = 3;
-  private static readonly MAX_STAMINA: number = 100;
-  private static readonly STAMINA_REGEN: number = 1;
 
   constructor(
     scene: Scene,
@@ -45,8 +43,6 @@ class Player {
     this._score = 0;
 
     this._health = Player.MAX_HEALTH;
-    this._stamina = Player.MAX_STAMINA;
-    this._staminaRegen = Player.STAMINA_REGEN;
     
     this._attachCamera();
     this._attachController();
@@ -195,11 +191,18 @@ class Player {
     this._character.updateCharacter(this._camRoot, this._controller, this._modifier);
   }
 
+  // Update interface
+  public _updatePlayerInterface(): void {
+    this._interface.updateStamina(this._character.getStamina());
+  }
+
   // Update player
   public updatePlayer(): void {
     this._scene.registerBeforeRender(() => {
       this._beforeRenderUpdate();
       this._updateCamera();
+
+      this._updatePlayerInterface();
     })
   }
 
