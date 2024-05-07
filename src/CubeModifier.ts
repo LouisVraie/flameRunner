@@ -1,4 +1,4 @@
-import { Color3, TransformNode, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { Color3, TransformNode, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3, Color4 } from "@babylonjs/core";
 import Obstacle from "./Obstacle";
 import { WORLD_SCALE } from "./World";
 
@@ -8,6 +8,7 @@ class CubeModifier extends Obstacle{
   private static readonly ROTATION_SPEED: number = 1;
 
   private _randomValue: number;
+  private _gradientColor: Color3;
 
   private _mesh : Mesh;
 
@@ -33,18 +34,28 @@ class CubeModifier extends Obstacle{
   //////////////////////////////////////////////////////////
   public createObstacle(): void {
     const parent = new TransformNode("cubeModifierParent", this._scene);
-    parent.position = new Vector3(0, 3, 0);
+    parent.position = new Vector3(0, 3, 3);
+
+    // Generate random value between 20 and 80
+    this._randomValue = Math.floor(Math.random() * 60) + 20;
+
+    // Get the gradient color according to the random value
+    this._gradientColor = this._computeGradientColor(this._randomValue);
 
     // Creating material for the cube
     const cubeMaterial = new StandardMaterial("cubeModifierMaterial", this._scene);
-    cubeMaterial.diffuseColor = new Color3(255, 255, 255);
+    cubeMaterial.diffuseColor = this._gradientColor;
     cubeMaterial.alpha = 0.5; // 50% Transparency
 
     // Creating the cube with the material
     const box = MeshBuilder.CreateBox("cubeModifierBox", {size: CubeModifier.SIZE}, this._scene);
     box.scaling.scaleInPlace(WORLD_SCALE);
     box.material = cubeMaterial;
+    box.enableEdgesRendering();
+    box.edgesWidth = 2.0;
+    box.edgesColor = this._gradientColor.toColor4(0.6);
     box.parent = parent;
+    
     this._mesh = box;
 
     // Adding rotation animation to the cube
@@ -75,23 +86,31 @@ class CubeModifier extends Obstacle{
     const material = new StandardMaterial("textPlaneMaterial", this._scene);
     textPlane.material = material;
 
-    // Generate random value between 20 and 80
-    this._randomValue = Math.floor(Math.random() * 60) + 20;
-
     // Create dynamic texture
     const texture = new DynamicTexture("textTexture", { width: 256, height: 256 }, this._scene);
     // add shadow to the text
     texture.drawText(`${this._randomValue}%`, null, null, "bold 100px Arial", "black", "transparent", true, true);
-    texture.drawText(`${this._randomValue}%`, null, null, "bold 105px Arial", "white", "transparent", true, true);
+    texture.drawText(`${this._randomValue}%`, null, null, "bold 105px Arial", this._gradientColor.toHexString(), "transparent", true, true);
 
     material.diffuseTexture = texture;
     material.diffuseTexture.hasAlpha = true;
     material.specularColor = new Color3(0, 0, 0);
     material.emissiveColor = new Color3(0.5, 0.5, 0.5);
 
-    // TODO : Edge rendering
-
     return textPlane;
+  }
+
+  // Compute the gradient color between red and green
+  private _computeGradientColor(value: number): Color3 {
+    // Red color
+    const red = new Color3(1, 0, 0);
+    // Green color
+    const green = new Color3(0, 1, 0);
+
+    // Calculate the color between red and green according to the value in the range [20-80]
+    const color = red.add(green.subtract(red).scale((value - 20) / 60));
+
+    return color;
   }
 
   public disposeObstacle(): void {
