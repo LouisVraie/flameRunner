@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const appDirectory = fs.realpathSync(process.cwd());
 
@@ -54,6 +55,13 @@ module.exports = {
                 ],
                 type: 'javascript/auto'
             },
+            {
+                test: /\.css$/,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    "css-loader",
+                ],
+            },
         ],
     },
     plugins: [
@@ -62,6 +70,9 @@ module.exports = {
             inject: true,
             favicon: "public/favicon.ico",
             template: path.resolve(appDirectory, "public/index.html"),
+        }),
+        new MiniCssExtractPlugin({
+            filename: "css/[name].css",
         }),
     ],
 };
