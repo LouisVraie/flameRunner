@@ -13,8 +13,6 @@ class Player {
   private _score: number;
 
   private _health: number;
-  private _stamina: number;
-  private _staminaRegen: number;
 
   private _controller: Controller;
   private _character: Character;
@@ -84,18 +82,12 @@ class Player {
 
   // Stamina
   public getStamina(): number {
-    return this._stamina;
-  }
-  public setStamina(stamina: number): void {
-    this._stamina = stamina;
+    return this._character.getStamina();
   }
 
   // StaminaRegen
   public getStaminaRegen(): number {
-    return this._staminaRegen;
-  }
-  public setStaminaRegen(staminaRegen: number): void {
-    this._staminaRegen = staminaRegen;
+    return this._character.getStaminaRegen();
   }
 
   // Controller

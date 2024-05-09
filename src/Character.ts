@@ -337,7 +337,7 @@ class Character extends TransformNode{
         this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
         // Set running animation playing forward
         this._run.speedRatio = 1.25;
-        this._stamina -= Character.STAMINA_REGEN * modifier.getStaminaRegenDelta() * this._deltaTime;
+        this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
 
         // Clamp stamina to 0
         if (this._stamina < 0) {
