@@ -197,16 +197,27 @@ class Player {
 
   // Update interface
   public _updatePlayerInterface(): void {
+
+    // Check if the current modifier duration is over and it is not default
+    if (!this._modifier.isDefault() && this._modifier.getDuration() == 0) {
+      this._modifier = new Modifier();
+    }
+
+    // If a modifier is not default, and the icon is not set, set the icon
+    if (this._modifier.getIcon() != this._interface.getModifierIcon()) {
+      this._interface.setModifierIcon(this._modifier);
+    }
+
     this._interface.updateStamina(this._character.getStamina());
   }
 
   // Update player
   public updatePlayer(): void {
     this._scene.registerBeforeRender(() => {
+      this._updatePlayerInterface();
+
       this._beforeRenderUpdate();
       this._updateCamera();
-
-      this._updatePlayerInterface();
     })
   }
 

@@ -1,3 +1,4 @@
+import Modifier from "./Modifier";
 
 class PlayerInterface {
     
@@ -7,6 +8,8 @@ class PlayerInterface {
     private _playerScore: number;
     private _playerEffect: string; 
     private _playerTimeEffect: number;
+
+    private _currentIcon: string;
 
     constructor(playerName){
         this._gui = document.createElement("div");
@@ -22,6 +25,8 @@ class PlayerInterface {
         this._playerScore = 0;
         this._playerEffect = "";
         this._playerTimeEffect = 0;
+
+        this._currentIcon = null;
     }
 
     addViewport(){
@@ -108,15 +113,26 @@ class PlayerInterface {
         topLeftSubScoreContainer.innerHTML = "Score : "+this._playerScore;
         topLeftContainer.appendChild(topLeftSubScoreContainer);
 
+        /////////////////////////////////////////////
+        // Modifier
+        /////////////////////////////////////////////
+        // Modifier Container
         const topRightSubItemContainer = document.createElement('div');
         topRightSubItemContainer.className = "top_right_sub_item_container";
-        topRightSubItemContainer.innerHTML = "?";
+
+        // Modifier Icon
+        const modifierIcon = document.createElement('img');
+        modifierIcon.id = "modifier_icon_"+this._playerName;
+        modifierIcon.className = "modifier_icon";
+        modifierIcon.alt = "Modifier icon";
+        topRightSubItemContainer.appendChild(modifierIcon);
         topRightContainer.appendChild(topRightSubItemContainer);
 
-        const topRightSubEffectContainer = document.createElement('div');
-        topRightSubEffectContainer.className = "top_right_sub_effect_container";
-        topRightSubEffectContainer.innerHTML = this._playerEffect + " : " + this._playerTimeEffect + " s.";
-        topRightContainer.appendChild(topRightSubEffectContainer);
+        // Modifier Effect
+        const modifierEffect = document.createElement('div');
+        modifierEffect.id = "modifier_effect_"+this._playerName;
+        modifierEffect.className = "modifier_effect";
+        topRightContainer.appendChild(modifierEffect);
     }
 
 
@@ -156,6 +172,29 @@ class PlayerInterface {
         this._playerTimeEffect = newPlayerTimeEffect;
     }
 
+    public getModifierIcon() : string {
+        return this._currentIcon;
+    }
+    public setModifierIcon(modifier: Modifier) : void {
+        this._playerEffect = modifier.getName();
+        this._currentIcon = modifier.getIcon();
+        this._playerTimeEffect = modifier.getDuration();
+
+        // Change the img
+        const modifierIcon = document.querySelector('#modifier_icon_'+this._playerName) as HTMLImageElement;
+        modifierIcon.src = this._currentIcon;
+        modifierIcon.alt = modifier.getName();
+
+        // Change the effect text
+        const modifierEffect = document.querySelector('#modifier_effect_'+this._playerName) as HTMLDivElement;
+
+        // if not default, display the effect
+        if(!modifier.isDefault()) {
+            modifierEffect.innerHTML = modifier.getName() + " : " + this._playerTimeEffect + " s.";
+        } else {
+            modifierEffect.innerHTML = "";
+        }
+    }
 
     public updateStamina(stamina : number) : void {
         const staminaBar = document.querySelector('#stamina_bar_'+this._playerName) as HTMLDivElement;

@@ -1,7 +1,20 @@
 import { Vector3 } from '@babylonjs/core';
 
+import defaultIcon from '../assets/icons/modifiers/defaultIcon.png';
+import speedBonusIcon from '../assets/icons/modifiers/speedBonus.png';
+import speedMalusIcon from '../assets/icons/modifiers/speedMalus.png';
+import staminaBonusIcon from '../assets/icons/modifiers/staminaBonus.png';
+import staminaMalusIcon from '../assets/icons/modifiers/staminaMalus.png';
+import staminaRegenBonusIcon from '../assets/icons/modifiers/staminaRegenBonus.png';
+import staminaRegenMalusIcon from '../assets/icons/modifiers/staminaRegenMalus.png';
+// import visionBonusIcon from '../assets/icons/modifiers/visionBonus.png';
+// import visionMalusIcon from '../assets/icons/modifiers/visionMalus.png';
+// import timeBonusIcon from '../assets/icons/modifiers/timeBonus.png';
+// import timeMalusIcon from '../assets/icons/modifiers/timeMalus.png';
+
 class Modifier {
 
+  private _default: boolean;
   private _name: string;
   private _description: string;
   private _icon: string;
@@ -15,9 +28,10 @@ class Modifier {
   private _jumpDelta: number;
 
   constructor() {
-    this._name = "No name";
+    this._default = true;
+    this._name = "Default name";
     this._description = "No description";
-    this._icon = null;
+    this._icon = defaultIcon;
     this._duration = 0;
     this._speedDelta = 1;
     this._staminaDelta = 0;
@@ -30,6 +44,14 @@ class Modifier {
   //////////////////////////////////////////////////////////
   // getters and setters
   //////////////////////////////////////////////////////////
+
+  // Default
+  public isDefault(): boolean {
+    return this._default;
+  }
+  public setDefault(defaultValue: boolean): void {
+    this._default = defaultValue;
+  }
 
   // Name
   public getName(): string {
@@ -117,9 +139,10 @@ class Modifier {
 
   // Bonus Speed Modifier
   public getBonusSpeed(): Modifier {
+    this.setDefault(false);
     this.setName("Speed bonus");
     this.setDescription("Increase speed");
-    this.setIcon("speed.png");
+    this.setIcon(speedBonusIcon);
     this.setDuration(10);
     this.setSpeedDelta(1.25);
     return this;
@@ -127,9 +150,10 @@ class Modifier {
 
   // Malus Speed Modifier
   public getMalusSpeed(): Modifier {
+    this.setDefault(false);
     this.setName("Speed malus");
     this.setDescription("Decrease speed");
-    this.setIcon("speed.png");
+    this.setIcon(speedMalusIcon);
     this.setDuration(10);
     this.setSpeedDelta(0.85);
     return this;
@@ -137,9 +161,10 @@ class Modifier {
 
   // Bonus Stamina Regen Modifier
   public getBonusStaminaRegen(): Modifier {
+    this.setDefault(false);
     this.setName("Stamina Regen bonus");
     this.setDescription("Increase stamina");
-    this.setIcon("stamina.png");
+    this.setIcon(staminaRegenBonusIcon);
     this.setDuration(10);
     this.setStaminaRegenDelta(0.5);
     return this;
@@ -147,9 +172,10 @@ class Modifier {
 
   // Malus Stamina Regen Modifier
   public getMalusStaminaRegen(): Modifier {
+    this.setDefault(false);
     this.setName("Stamina Regen malus");
     this.setDescription("Decrease stamina");
-    this.setIcon("stamina.png");
+    this.setIcon(staminaRegenMalusIcon);
     this.setDuration(10);
     this.setStaminaRegenDelta(2);
     return this;
@@ -157,9 +183,10 @@ class Modifier {
 
   // Bonus Stamina Modifier
   public getBonusStamina(): Modifier {
+    this.setDefault(false);
     this.setName("Stamina bonus");
     this.setDescription("Increase stamina");
-    this.setIcon("stamina.png");
+    this.setIcon(staminaBonusIcon);
     this.setDuration(10);
     this.setStaminaDelta(50);
     return this;
@@ -167,9 +194,10 @@ class Modifier {
 
   // Malus Stamina Modifier
   public getMalusStamina(): Modifier {
+    this.setDefault(false);
     this.setName("Stamina malus");
     this.setDescription("Decrease stamina");
-    this.setIcon("stamina.png");
+    this.setIcon(staminaMalusIcon);
     this.setDuration(10);
     this.setStaminaDelta(-50);
     return this;
@@ -177,9 +205,10 @@ class Modifier {
 
   // Bonus Vision Modifier
   public getBonusVision(): Modifier {
+    this.setDefault(false);
     this.setName("Vision bonus");
     this.setDescription("Increase vision");
-    this.setIcon("vision.png");
+    this.setIcon("visionBonus.png");
     this.setDuration(10);
     this.setVision(true);
     return this;
@@ -187,9 +216,10 @@ class Modifier {
 
   // Malus Vision Modifier
   public getMalusVision(): Modifier {
+    this.setDefault(false);
     this.setName("Vision malus");
     this.setDescription("Decrease vision");
-    this.setIcon("vision.png");
+    this.setIcon("visionMalus.png");
     this.setDuration(10);
     this.setVision(false);
     return this;
@@ -197,9 +227,10 @@ class Modifier {
 
   // Bonus Time Modifier
   public getBonusTime(): Modifier {
+    this.setDefault(false);
     this.setName("Time bonus");
     this.setDescription("Increase time");
-    this.setIcon("time.png");
+    this.setIcon("timeBonus.png");
     this.setDuration(10);
     this.setTimeDelta(-10);
     return this;
@@ -207,9 +238,10 @@ class Modifier {
 
   // Malus Time Modifier
   public getMalusTime(): Modifier {
+    this.setDefault(false);
     this.setName("Time malus");
     this.setDescription("Decrease time");
-    this.setIcon("time.png");
+    this.setIcon("timeMalus.png");
     this.setDuration(10);
     this.setTimeDelta(10);
     return this;
