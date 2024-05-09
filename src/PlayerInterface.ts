@@ -21,7 +21,7 @@ class PlayerInterface {
         //document.body.appendChild(this._gui);
         
         this._playerName = playerName;
-        this._playerTime = "00:00:00";
+        this._playerTime = "00:00.000";
         this._playerScore = 0;
         this._playerEffect = "";
         this._playerTimeEffect = 0;
@@ -103,10 +103,12 @@ class PlayerInterface {
         topLeftSubStaminaContainer.appendChild(staminaBar);
         topLeftContainer.appendChild(topLeftSubStaminaContainer);
 
-        const topLeftSubTimeContainer = document.createElement('div');
-        topLeftSubTimeContainer.className = "top_left_sub_time_container";
-        topLeftSubTimeContainer.innerHTML = "Time : "+ this._playerTime;
-        topLeftContainer.appendChild(topLeftSubTimeContainer);
+        // Timer
+        const timerContainer = document.createElement('div');
+        timerContainer.id = "timer_container_"+this._playerName;
+        timerContainer.className = "timer_container";
+        timerContainer.innerHTML = "Time : "+ this._playerTime;
+        topLeftContainer.appendChild(timerContainer);
 
         const topLeftSubScoreContainer = document.createElement('div');
         topLeftSubScoreContainer.className = "top_left_sub_score_container";
@@ -194,6 +196,26 @@ class PlayerInterface {
         } else {
             modifierEffect.innerHTML = "";
         }
+    }
+
+    private padLeft(value: number, length: number): string {
+        return value.toString().padStart(length, '0');
+    }
+
+    public updateTimer(timer : number) : void {
+        // Set the timer in the format (minutes:seconds:milliseconds)
+        // Convert timer to milliseconds
+        const milliseconds = timer;
+
+        // Calculate minutes, seconds, and milliseconds
+        const minutes = Math.floor(milliseconds / 60000);
+        const seconds = Math.floor((milliseconds % 60000) / 1000);
+        const millisecondsPart = milliseconds % 1000;
+
+        // Format the time string
+        this._playerTime = `${this.padLeft(minutes, 2)}:${this.padLeft(seconds, 2)}.${this.padLeft(millisecondsPart, 3)}`;
+        const timeContainer = document.querySelector('#timer_container_'+this._playerName) as HTMLDivElement;
+        timeContainer.innerHTML = "Time : "+ this._playerTime;
     }
 
     public updateStamina(stamina : number) : void {

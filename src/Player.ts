@@ -27,6 +27,10 @@ class Player {
   private _modifier: Modifier;
   private _deathCounter: number;
 
+  // Timer
+  private _timer: number;
+  private _startTime: number;
+
   //const values
   private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.45, 0, 0);
   private static readonly MAX_HEALTH: number = 3;
@@ -50,6 +54,10 @@ class Player {
 
     this._modifier = new Modifier();
     this._deathCounter = 0;
+
+    // Get the current time
+    this._startTime = Date.now();
+    this._timer = 0;
   }
 
   //////////////////////////////////////////////////////////
@@ -181,6 +189,9 @@ class Player {
   //--GAME UPDATES--
   private _beforeRenderUpdate(): void {
 
+    // update timer adding the delta time
+    this._timer += this._scene.getEngine().getDeltaTime();
+
     // update stamina according to the modifier
     this._modifier = this._character.updateStamina(this._modifier);
 
@@ -200,16 +211,23 @@ class Player {
       this._interface.setModifierIcon(this._modifier);
     }
 
+    // Update health
+
+
+    // Update stamina
     this._interface.updateStamina(this._character.getStamina());
+
+    // Update timer
+    this._interface.updateTimer(this._timer);
   }
 
   // Update player
   public updatePlayer(): void {
     this._scene.registerBeforeRender(() => {
-      this._updatePlayerInterface();
-
       this._beforeRenderUpdate();
       this._updateCamera();
+
+      this._updatePlayerInterface();
     })
   }
 
