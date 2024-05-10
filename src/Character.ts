@@ -450,9 +450,11 @@ class Character extends TransformNode{
   }
 
   // Update stamina
-  public updateStamina(modifier: Modifier): Modifier {
+  public updateStamina(controller: Controller, modifier: Modifier): Modifier {
+    const inputMap = controller.getInputMap();
     // Apply stamina bonus or malus
-    if (modifier.getStaminaDelta() != 0){
+    if (modifier.getStaminaDelta() != 0 && inputMap.get(controller.getModifier())){
+      console.log("stamina delta : ", modifier.getName());
       this._stamina += modifier.getStaminaDelta();
       modifier.setStaminaDelta(0);
 
@@ -472,6 +474,9 @@ class Character extends TransformNode{
   // Update the character
   public updateCharacter(camRoot: TransformNode, controller: Controller, modifier: Modifier): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
+
+    // update stamina according to the modifier
+    modifier = this.updateStamina(controller, modifier);
 
     // Move the character
     this.moveCharacterMeshDirection(controller, modifier);

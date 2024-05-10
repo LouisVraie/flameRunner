@@ -25,6 +25,7 @@ class Player {
   private _camera: UniversalCamera;
 
   private _modifier: Modifier;
+  private _isModifierActive: boolean;
   private _deathCounter: number;
 
   // Timer
@@ -54,6 +55,7 @@ class Player {
     this._interface.addViewport();
 
     this._modifier = new Modifier();
+    this._isModifierActive = false;
     this._deathCounter = 0;
 
     // Get the current time
@@ -194,14 +196,19 @@ class Player {
     // update timer adding the delta time
     this._timer += this._scene.getEngine().getDeltaTime();
 
-    // update modifier timer adding the delta time
-    if (this._modifierTimer > 0 && this._modifier.getDuration() > 0){
-      this._modifierTimer -= this._scene.getEngine().getDeltaTime();
+    // if the modifier is not active and the modifier key is pressed, set the modifier as active
+    if (!this._isModifierActive && !this._modifier.isDefault() && this._controller.getInputMap().get(this._controller.getModifier())) {
+      this._isModifierActive = true;
     }
 
-    // update stamina according to the modifier
-    this._modifier = this._character.updateStamina(this._modifier);
+    if(this._isModifierActive){
+      // update modifier timer adding the delta time
+      if (this._modifierTimer > 0 && this._modifier.getDuration() > 0 && !this._modifier.isInstant()){
+        this._modifierTimer -= this._scene.getEngine().getDeltaTime();
+      }
+    }
 
+    // update the character
     this._character.updateCharacter(this._camRoot, this._controller, this._modifier);
   }
 
@@ -210,14 +217,19 @@ class Player {
 
     // If the modifier icon is different from the interface icon, update the interface icon
     if (this._modifier.getIcon() != this._interface.getModifierIcon()) {
-      this._modifierTimer = this._modifier.getDuration() * 1000;
+      if (this._modifier.isInstant()) {
+        this._modifierTimer = 10;
+      } else {
+        this._modifierTimer = this._modifier.getDuration() * 1000;
+      }
       this._interface.setModifierIcon(this._modifier);
     }
 
     // Check if the current modifier duration is over and it is not default
-    if (!this._modifier.isDefault() && this._modifierTimer <= 0) {
+    if (!this._modifier.isDefault() && this._modifierTimer <= 0 || this._modifier.isInstant() && this._isModifierActive) {
       this._modifier = new Modifier();
       this._modifierTimer = 0;
+      this._isModifierActive = false;
     }
 
     // Update modifier time

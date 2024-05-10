@@ -19,6 +19,7 @@ class Modifier {
   private _description: string;
   private _icon: string;
   private _duration: number;
+  private _isInstant: boolean;
 
   private _speedDelta: number;
   private _staminaDelta: number;
@@ -33,6 +34,7 @@ class Modifier {
     this._description = "No description";
     this._icon = defaultIcon;
     this._duration = 0;
+    this._isInstant = false;
     this._speedDelta = 1;
     this._staminaDelta = 0;
     this._staminaRegenDelta = 1;
@@ -83,6 +85,14 @@ class Modifier {
   }
   public setDuration(duration: number): void {
     this._duration = duration;
+  }
+
+  // IsInstant
+  public isInstant(): boolean {
+    return this._isInstant;
+  }
+  public setInstant(isInstant: boolean): void {
+    this._isInstant = isInstant;
   }
 
   // SpeedDelta
@@ -187,7 +197,7 @@ class Modifier {
     this.setName("Stamina bonus");
     this.setDescription("Increase stamina");
     this.setIcon(staminaBonusIcon);
-    this.setDuration(10);
+    this.setInstant(true);
     this.setStaminaDelta(50);
     return this;
   }
@@ -198,7 +208,7 @@ class Modifier {
     this.setName("Stamina malus");
     this.setDescription("Decrease stamina");
     this.setIcon(staminaMalusIcon);
-    this.setDuration(10);
+    this.setInstant(true);
     this.setStaminaDelta(-50);
     return this;
   }

@@ -201,16 +201,19 @@ class PlayerInterface {
         // Change the img
         const modifierIcon = document.querySelector('#modifier_icon_'+this._playerName) as HTMLImageElement;
         modifierIcon.src = this._currentIcon;
-        modifierIcon.alt = modifier.getName();
+        modifierIcon.alt = this._playerEffect;
 
         // Change the effect text
         const modifierEffectName = document.querySelector('#modifier_effect_name_'+this._playerName) as HTMLDivElement;
         const modifierEffectTimer = document.querySelector('#modifier_effect_timer_'+this._playerName) as HTMLDivElement;
 
         // if not default, display the effect
-        if(!modifier.isDefault()) {
-            modifierEffectName.innerHTML = modifier.getName();
+        if(!modifier.isDefault() && !modifier.isInstant()) {
+            modifierEffectName.innerHTML = this._playerEffect;
             modifierEffectTimer.innerHTML = this._playerTimeEffect + " s";
+        } else if (!modifier.isDefault() && modifier.isInstant()){
+            modifierEffectName.innerHTML = this._playerEffect;
+            modifierEffectTimer.innerHTML = "";
         } else {
             modifierEffectName.innerHTML = "";
             modifierEffectTimer.innerHTML = "";
@@ -220,7 +223,7 @@ class PlayerInterface {
     public updateModifierTime(timer: number) : void {
         this._playerTimeEffect = timer;
 
-        if(this._playerTimeEffect > 0) {
+        if(this._playerTimeEffect > 0 && !this._currentModifier.isInstant()) {
             // Convert timer to milliseconds
             const seconds = Math.floor((this._playerTimeEffect % 60000) / 1000);
             // Round the milliseconds to 1 decimal
