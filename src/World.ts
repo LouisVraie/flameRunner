@@ -79,7 +79,10 @@ class World{
         }
 
         // world.addSphere("sphere", 32, 3, 0, 15, 0, true);
-        this.addCubeModifier();
+        // 
+        for (let i = 0; i < 5; i++) {
+            this.addCubeModifier(new Vector3(0 + i * 3, 3, 2));
+        }
         const player = await this.addPlayer("player1");
         this.setShadows(player.getCharacter().getMesh());
         //const player2 = await world.addPlayer("player2");
@@ -143,9 +146,10 @@ class World{
         return player;
     }
 
-    addCubeModifier() : void {
+    addCubeModifier(position: Vector3) : void {
         const cubeModifier = new CubeModifier(this._scene);
         cubeModifier.createObstacle();
+        cubeModifier.setPosition(position);
         this._cubeModifiers.push(cubeModifier);
     }
 
@@ -190,14 +194,17 @@ class World{
                         parameter : cube.getMesh()
                     },
                     () => {
-                        // Apply the modifier to the player
-                        player.setModifierFromRandomValue(cube.getRandomValue());
-                        
-                        // Dispose the action manager related to this cube modifier for this player
-                        player.getCharacter().getHitbox().actionManager.unregisterAction(action);
+                        // Check if the player has a modifier
+                        if (player.getModifier().isDefault()) {
+                            // Apply the modifier to the player
+                            player.setModifierFromRandomValue(cube.getRandomValue());
+                            
+                            // Dispose the action manager related to this cube modifier for this player
+                            player.getCharacter().getHitbox().actionManager.unregisterAction(action);
 
-                        // Remove the cube modifier
-                        cube.disposeObstacle();
+                            // Remove the cube modifier
+                            cube.disposeObstacle();
+                        }
                     }
                 );
 

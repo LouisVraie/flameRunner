@@ -4,7 +4,6 @@ abstract class Obstacle{
 
   protected _scene: Scene;
   private _parentNode: TransformNode;
-  private _position: Vector3;
   private _size: Vector3;
   private _tangible: boolean;
   private _visible: boolean;
@@ -28,10 +27,10 @@ abstract class Obstacle{
 
   // Position
   public getPosition(): Vector3 {
-    return this._position;
+    return this._parentNode.position;
   }
   public setPosition(position: Vector3): void {
-    this._position = position;
+    this._parentNode.position = position;
   }
 
   // Size
@@ -62,8 +61,8 @@ abstract class Obstacle{
   // methods
   //////////////////////////////////////////////////////////
   private createDefaultObstacle(): void {
-    this._parentNode = null;
-    this._position =  Vector3.Zero();
+    this._parentNode = new TransformNode("obstacleParent", this._scene);
+    this.setPosition(Vector3.Zero());
     this._size = new Vector3(1, 1, 1);
     this._tangible = false;
     this._visible = true;
