@@ -1,0 +1,43 @@
+:root{
+  --primary-color: #ff0000;
+  --secondary-color: #000000;
+  --main-menu-bg-color: #000000;
+  --default-text-color: #ffffff;
+
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+html,
+body {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#gui{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  display: flex;
+  pointer-events: none;
+
+  top: 0;
+  left: 0;
+  color: white;
+  flex-direction: row;
+}
+
+#fps {
+  position: absolute;
+  background-color: black;
+  border: 2px solid red;
+  text-align: center;
+  font-size: 16px;
+  color: white;
+  top: 15px;
+  right: 10px;
+  width: 60px;
+  height: 20px;
+}

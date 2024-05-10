@@ -2,6 +2,7 @@ import { ArcRotateCamera, Engine, HemisphericLight, Mesh, MeshBuilder, Scene, Ve
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
+import GUI from "./GUI";
 class App {
 
     private _canvas: HTMLCanvasElement;
@@ -10,7 +11,6 @@ class App {
     private _camera: ArcRotateCamera;
     public _light: HemisphericLight;
     private _globalGUI: HTMLDivElement;
-    private _menuContainer: HTMLDivElement;
 
     private _viewportsData: Viewport[] = [
         new Viewport(0.5, 0, 0.5, 1.0),
@@ -26,48 +26,7 @@ class App {
         this._canvas.id = "gameCanvas";
         document.body.appendChild(this._canvas);
 
-        this._globalGUI = document.createElement("div");
-        this._globalGUI.style.width = "100%";
-        this._globalGUI.style.height = "100%";
-        this._globalGUI.style.position = "absolute";
-        this._globalGUI.style.display = "flex";
-        this._globalGUI.style.pointerEvents = "none";
-        this._globalGUI.id = "gui";
-        document.body.appendChild(this._globalGUI);
-
-
-        this._menuContainer = document.createElement('div');
-        this._menuContainer.className = "menu_container";
-        this._menuContainer.style.display = "flex";
-
-        //this.createStartMenu(this._globalGUI);
-        this.createStartMenu(this._globalGUI);
-
-        let toggle = true;
-
-        // fps
-        const fps = document.createElement("div");
-        fps.id = "fps";
-        document.body.appendChild(fps);
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key == "Escape") {
-                
-
-                console.log("toggle", toggle);                
-
-                if(toggle){
-                    this._menuContainer.style.display = 'flex';  
-                    //this._globalGUI.style.pointerEvents = "none";
-                                      
-                } 
-                else{
-                    this._menuContainer.style.display = 'none';
-                    //this._globalGUI.style.pointerEvents = "none";
-                }
-                toggle = !toggle;
-            }
-        });
+        this._globalGUI = new GUI().getGlobalGUI();
 
         // initialize babylon scene and engine
         this._engine = new Engine(this._canvas, true);
@@ -110,34 +69,6 @@ class App {
         }        
     }
 
-    addTitle(parent){
-        const title = document.createElement('h1');
-        title.innerHTML = "Flame Runner";
-        title.id = 'title';
-        parent.appendChild(title);
-    }
-
-    addButtonMenu(parent, content){
-        const button = document.createElement('button');
-        button.className = "menu_btn";
-        button.innerHTML = content;
-        parent.appendChild(button);
-    }
-
-    
-
-    createStartMenu(parent){
-
-        parent.appendChild(this._menuContainer);
-
-        this.addTitle(this._menuContainer);
-        const titles = ["Solo runner", "Dual runners", "Help", "Credits", "Quit"];
-        titles.forEach((t) => {
-            this.addButtonMenu(this._menuContainer, t);
-        });
-    }
-
-
     //////////////////////////////////////////////////////////
     // getters and setters
     //////////////////////////////////////////////////////////
@@ -169,14 +100,6 @@ class App {
     
     public setScene(scene: Scene): void {
         this._scene = scene;
-    }
-
-    public getGlobalGui(): HTMLDivElement {
-        return this._globalGUI;
-    }
-
-    public setGlobalGui(div: HTMLDivElement): void {
-        this._globalGUI = div;
     }
 
     //////////////////////////////////////////////////////////
