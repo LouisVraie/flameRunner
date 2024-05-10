@@ -3,7 +3,7 @@ import { Vector3, HavokPlugin, Color3, MeshBuilder, PhysicsAggregate, PhysicsSha
 
 // import { Inspector } from '@babylonjs/inspector';
 import "@babylonjs/loaders/";
-import "../public/css/interface.css";
+import "../public/css/playerInterface.css";
 import World from "./World";
 import App from "./App";
 

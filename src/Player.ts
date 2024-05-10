@@ -29,6 +29,7 @@ class Player {
 
   // Timer
   private _timer: number;
+  private _modifierTimer: number;
   private _startTime: number;
 
   //const values
@@ -57,6 +58,7 @@ class Player {
 
     // Get the current time
     this._startTime = Date.now();
+    this._modifierTimer = 0;
     this._timer = 0;
   }
 
@@ -192,6 +194,11 @@ class Player {
     // update timer adding the delta time
     this._timer += this._scene.getEngine().getDeltaTime();
 
+    // update modifier timer adding the delta time
+    if (this._modifierTimer > 0 && this._modifier.getDuration() > 0){
+      this._modifierTimer -= this._scene.getEngine().getDeltaTime();
+    }
+
     // update stamina according to the modifier
     this._modifier = this._character.updateStamina(this._modifier);
 
@@ -201,15 +208,20 @@ class Player {
   // Update interface
   public _updatePlayerInterface(): void {
 
-    // Check if the current modifier duration is over and it is not default
-    if (!this._modifier.isDefault() && this._modifier.getDuration() == 0) {
-      this._modifier = new Modifier();
-    }
-
-    // If a modifier is not default, and the icon is not set, set the icon
+    // If the modifier icon is different from the interface icon, update the interface icon
     if (this._modifier.getIcon() != this._interface.getModifierIcon()) {
+      this._modifierTimer = this._modifier.getDuration() * 1000;
       this._interface.setModifierIcon(this._modifier);
     }
+
+    // Check if the current modifier duration is over and it is not default
+    if (!this._modifier.isDefault() && this._modifierTimer <= 0) {
+      this._modifier = new Modifier();
+      this._modifierTimer = 0;
+    }
+
+    // Update modifier time
+    this._interface.updateModifierTime(this._modifierTimer);
 
     // Update health
 

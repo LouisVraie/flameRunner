@@ -9,6 +9,7 @@ class PlayerInterface {
     private _playerEffect: string; 
     private _playerTimeEffect: number;
 
+    private _currentModifier: Modifier;
     private _currentIcon: string;
 
     constructor(playerName){
@@ -26,6 +27,7 @@ class PlayerInterface {
         this._playerEffect = "";
         this._playerTimeEffect = 0;
 
+        this._currentModifier = new Modifier();
         this._currentIcon = null;
     }
 
@@ -119,22 +121,35 @@ class PlayerInterface {
         // Modifier
         /////////////////////////////////////////////
         // Modifier Container
-        const topRightSubItemContainer = document.createElement('div');
-        topRightSubItemContainer.className = "top_right_sub_item_container";
+        const modifierContainer = document.createElement('div');
+        modifierContainer.className = "modifier_container";
 
         // Modifier Icon
         const modifierIcon = document.createElement('img');
         modifierIcon.id = "modifier_icon_"+this._playerName;
         modifierIcon.className = "modifier_icon";
         modifierIcon.alt = "Modifier icon";
-        topRightSubItemContainer.appendChild(modifierIcon);
-        topRightContainer.appendChild(topRightSubItemContainer);
+        modifierContainer.appendChild(modifierIcon);
+        topRightContainer.appendChild(modifierContainer);
 
-        // Modifier Effect
-        const modifierEffect = document.createElement('div');
-        modifierEffect.id = "modifier_effect_"+this._playerName;
-        modifierEffect.className = "modifier_effect";
-        topRightContainer.appendChild(modifierEffect);
+        // Modifier Effect Container
+        const modifierEffectContainer = document.createElement('div');
+        modifierEffectContainer.id = "modifier_effect_container_"+this._playerName;
+        modifierEffectContainer.className = "modifier_effect_container";
+        // Modifier Effect Name
+        const modifierEffectName = document.createElement('div');
+        modifierEffectName.id = "modifier_effect_name_"+this._playerName;
+        modifierEffectName.className = "modifier_effect_name";
+        modifierEffectName.innerHTML = this._playerEffect;
+        // Modifier Effect Timer
+        const modifierEffectTimer = document.createElement('div');
+        modifierEffectTimer.id = "modifier_effect_timer_"+this._playerName;
+        modifierEffectTimer.className = "modifier_effect_timer";
+        modifierEffectTimer.innerHTML = this._playerTimeEffect + " s";
+
+        modifierEffectContainer.appendChild(modifierEffectName);
+        modifierEffectContainer.appendChild(modifierEffectTimer);
+        topRightContainer.appendChild(modifierEffectContainer);
     }
 
 
@@ -178,6 +193,7 @@ class PlayerInterface {
         return this._currentIcon;
     }
     public setModifierIcon(modifier: Modifier) : void {
+        this._currentModifier = modifier;
         this._playerEffect = modifier.getName();
         this._currentIcon = modifier.getIcon();
         this._playerTimeEffect = modifier.getDuration();
@@ -188,13 +204,30 @@ class PlayerInterface {
         modifierIcon.alt = modifier.getName();
 
         // Change the effect text
-        const modifierEffect = document.querySelector('#modifier_effect_'+this._playerName) as HTMLDivElement;
+        const modifierEffectName = document.querySelector('#modifier_effect_name_'+this._playerName) as HTMLDivElement;
+        const modifierEffectTimer = document.querySelector('#modifier_effect_timer_'+this._playerName) as HTMLDivElement;
 
         // if not default, display the effect
         if(!modifier.isDefault()) {
-            modifierEffect.innerHTML = modifier.getName() + " : " + this._playerTimeEffect + " s.";
+            modifierEffectName.innerHTML = modifier.getName();
+            modifierEffectTimer.innerHTML = this._playerTimeEffect + " s";
         } else {
-            modifierEffect.innerHTML = "";
+            modifierEffectName.innerHTML = "";
+            modifierEffectTimer.innerHTML = "";
+        }
+    }
+
+    public updateModifierTime(timer: number) : void {
+        this._playerTimeEffect = timer;
+
+        if(this._playerTimeEffect > 0) {
+            // Convert timer to milliseconds
+            const seconds = Math.floor((this._playerTimeEffect % 60000) / 1000);
+            // Round the milliseconds to 1 decimal
+            const millisecondsPart = Math.round(this._playerTimeEffect % 1000 / 100);
+
+            const modifierEffectTimer = document.querySelector('#modifier_effect_timer_'+this._playerName) as HTMLDivElement;
+            modifierEffectTimer.innerHTML = `${seconds}.${this.padLeft(millisecondsPart, 1)} s`;
         }
     }
 
