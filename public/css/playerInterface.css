@@ -86,10 +86,11 @@
 
 .top_left_sub_name_container {}
 
-.top_left_sub_stamina_container {
+.stamina_container {
   height: 20px;
   width: 50%;
   border: 3px solid orange;
+  transform: skewX(var(--skewX-deg));
 }
 .stamina_bar {
   background-color: yellow;

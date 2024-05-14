@@ -97,13 +97,13 @@ class PlayerInterface {
         topLeftSubContainer.appendChild(topLeftSubNameContainer);
 
         // Stamina
-        const topLeftSubStaminaContainer = document.createElement('div');
-        topLeftSubStaminaContainer.className = "top_left_sub_stamina_container";
+        const staminaContainer = document.createElement('div');
+        staminaContainer.className = "stamina_container";
         const staminaBar = document.createElement('div');
         staminaBar.id = "stamina_bar_"+this._playerName;
         staminaBar.className = "stamina_bar";
-        topLeftSubStaminaContainer.appendChild(staminaBar);
-        topLeftContainer.appendChild(topLeftSubStaminaContainer);
+        staminaContainer.appendChild(staminaBar);
+        topLeftContainer.appendChild(staminaContainer);
 
         // Timer
         const timerContainer = document.createElement('div');

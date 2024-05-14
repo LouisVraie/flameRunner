@@ -91,15 +91,19 @@ class GUI {
     parent.appendChild(title);
   }
 
-  private _addButtonMenu(parent: HTMLDivElement, content: string, onClickAction: () => void): void {
-    const button = document.createElement('button');
+  private _addButtonMenu(parent: HTMLDivElement, content: string, onClickAction: () => void, additionalClass?: string): void {
+    const button = document.createElement('div');
     button.className = "menu_btn";
     button.onclick = onClickAction;
+
+    if (additionalClass) {
+      button.classList.add(additionalClass);
+    }
 
     const spanContent = document.createElement('span');
     spanContent.className = "menu_btn_content";
     spanContent.innerHTML = content;
-    
+
     button.appendChild(spanContent);
     parent.appendChild(button);
   }
@@ -115,7 +119,7 @@ class GUI {
 
       // Show the class menu
       this._classMenuContainer.style.display = 'flex';
-    });
+    }, "primary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Dual runners", () => {
       console.log("Dual runners");
       // Hide the main menu
@@ -123,7 +127,7 @@ class GUI {
 
       // Show the class menu
       this._classMenuContainer.style.display = 'flex';
-    });
+    }, "primary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Help", () => { 
       console.log("Help");
       // Hide the main menu
@@ -132,15 +136,15 @@ class GUI {
       // Show the help menu
 
 
-    });
+    }, "secondary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Settings", () => {
       console.log("Settings");
-    });
+    }, "secondary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Quit", () => {
       console.log("Quit");
       // Close the game
       window.close();
-    });
+    }, "tertiary_btn");
   }
 }
 

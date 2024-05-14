@@ -1,8 +1,15 @@
 :root{
-  --primary-color: #ff0000;
-  --secondary-color: #000000;
-  --main-menu-bg-color: #000000;
+  --primary-color: #ba660f;
+  --primary-background-color: #f6b26b;
+  --secondary-color: #bf9000;
+  --secondary-background-color: #ffd966;
+  --tertiary-color: #990000;
+  --tertiary-background-color: #e06666;
   --default-text-color: #ffffff;
+  --default-background-color: #000000;
+
+  --skewX-deg: -20deg;
+  --skewX-deg-cancel: 20deg;
 
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
