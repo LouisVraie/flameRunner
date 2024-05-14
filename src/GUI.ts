@@ -94,8 +94,13 @@ class GUI {
   private _addButtonMenu(parent: HTMLDivElement, content: string, onClickAction: () => void): void {
     const button = document.createElement('button');
     button.className = "menu_btn";
-    button.innerHTML = content;
     button.onclick = onClickAction;
+
+    const spanContent = document.createElement('span');
+    spanContent.className = "menu_btn_content";
+    spanContent.innerHTML = content;
+    
+    button.appendChild(spanContent);
     parent.appendChild(button);
   }
 
