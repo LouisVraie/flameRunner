@@ -1,4 +1,5 @@
 import Modifier from "./Modifier";
+import "../public/css/playerInterface.css";
 
 class PlayerInterface {
     

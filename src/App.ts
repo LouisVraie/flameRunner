@@ -1,8 +1,12 @@
-import { ArcRotateCamera, Engine, HemisphericLight, Mesh, MeshBuilder, Scene, Vector3, Viewport } from "@babylonjs/core";
+import { ArcRotateCamera, Engine, HavokPlugin, HemisphericLight, MeshBuilder, PhysicsAggregate, PhysicsShapeType, Scene, Vector3, Viewport } from "@babylonjs/core";
+import HavokPhysics from "@babylonjs/havok";
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
+import "@babylonjs/loaders/";
+
 import GUI from "./GUI";
+import World from "./World";
 class App {
 
     private _canvas: HTMLCanvasElement;
@@ -10,7 +14,7 @@ class App {
     private _scene: Scene;
     private _camera: ArcRotateCamera;
     public _light: HemisphericLight;
-    private _globalGUI: HTMLDivElement;
+    private _gui: GUI;
 
     private _viewportsData: Viewport[] = [
         new Viewport(0.5, 0, 0.5, 1.0),
@@ -26,7 +30,7 @@ class App {
         this._canvas.id = "gameCanvas";
         document.body.appendChild(this._canvas);
 
-        this._globalGUI = new GUI().getGlobalGUI();
+        this._gui = new GUI();
 
         // initialize babylon scene and engine
         this._engine = new Engine(this._canvas, true);
@@ -38,14 +42,19 @@ class App {
 
         window.addEventListener("resize", () => {
             this._engine.resize();
-            this._globalGUI.style.width = `${window.innerWidth}px`;
-            this._globalGUI.style.height = `${window.innerHeight}px`;
+            const globalGUI = this._gui.getGlobalGUI();
+            globalGUI.style.width = `${window.innerWidth}px`;
+            globalGUI.style.height = `${window.innerHeight}px`;
         });
 
         const divFPS = document.getElementById("fps");
 
         // run the main render loop
         this._engine.runRenderLoop(() => {
+
+            // if the game is paused, don't render the scene
+            if (!this._isGamePaused()) return;
+
             this.addViewports();
             this._scene.render();
 
@@ -105,5 +114,30 @@ class App {
     //////////////////////////////////////////////////////////
     // methods
     //////////////////////////////////////////////////////////
+    private _isGamePaused(): boolean {
+        return this._gui.isPaused();
+    }
+
+    // Create the scene
+    public async createScene(): Promise<Scene>{
+        const world = new World(this._scene);
+    
+        const ground = MeshBuilder.CreateGround("ground", {width: 100, height: 100}, this._scene);
+        ground.position = new Vector3(0, -5, 0);
+        ground.receiveShadows = true;
+    
+        //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
+        world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
+    
+        const havokInstance = await HavokPhysics();
+        const havokPlugin = new HavokPlugin(true, havokInstance);    
+        world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
+        world.loadWorld();
+    
+        const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);
+        
+        return this._scene;
+    }
+
 }
 export default App;

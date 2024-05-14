@@ -11,7 +11,8 @@ class GUI {
   private _pauseMenuContainer: HTMLDivElement;
   private _helpMenuContainer: HTMLDivElement;
   private _settingsMenuContainer: HTMLDivElement;
-
+  
+  private _isPaused: boolean;
   private _activeMenu: Menu;
 
   constructor() {
@@ -42,7 +43,7 @@ class GUI {
     // Create the main menu
     this._createMainMenu(this._globalGUI);
 
-    let toggle = true;
+    this._isPaused = false;
 
     // fps
     const fps = document.createElement("div");
@@ -52,15 +53,15 @@ class GUI {
     // Toggle the current menu
     document.addEventListener("keydown", (event) => {
         if (event.key == "Escape") {
-            console.log("toggle", toggle);                
+            console.log("isPaused", this._isPaused);                
 
-            if(toggle){
+            if(this._isPaused){
                 this._mainMenuContainer.style.display = 'flex';  
             } 
             else{
                 this._mainMenuContainer.style.display = 'none';
             }
-            toggle = !toggle;
+            this._isPaused = !this._isPaused;
         }
     });
   }
@@ -72,6 +73,11 @@ class GUI {
   // GlobalGUI
   public getGlobalGUI(): HTMLDivElement {
     return this._globalGUI;
+  }
+
+  // IsPaused
+  public isPaused(): boolean {
+    return this._isPaused;
   }
 
   //////////////////////////////////////////////////////////
