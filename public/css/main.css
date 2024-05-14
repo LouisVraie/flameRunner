@@ -6,7 +6,7 @@
   --tertiary-color: #990000;
   --tertiary-background-color: #e06666;
   --default-text-color: #ffffff;
-  --default-background-color: #000000;
+  --default-background-color: rgba(0, 0, 0, 0.5);
 
   --skewX-deg: -20deg;
   --skewX-deg-cancel: 20deg;
