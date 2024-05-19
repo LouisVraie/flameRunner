@@ -1,4 +1,5 @@
 export enum Menu {
+  NONE_MENU = "none_menu",
   MAIN_MENU = "main_menu",
   CLASS_MENU = "class_menu",
   PAUSE_MENU = "pause_menu",

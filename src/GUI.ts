@@ -1,7 +1,5 @@
 import "../public/css/main.css";
-import "../public/css/mainMenu.css";
-import "../public/css/classMenu.css";
-import "../public/css/pauseMenu.css";
+import "../public/css/menus.css";
 import { Menu } from "./enum/Menu";
 
 class GUI {
@@ -13,13 +11,14 @@ class GUI {
   private _settingsMenuContainer: HTMLDivElement;
   
   private _isPaused: boolean;
+  private _isInGame: boolean;
   private _activeMenu: Menu;
   
   private _players: string[];
 
   private static _modeSelectedEvent = new CustomEvent('modeselected', {
     detail: {
-      message: 'This is a custom event!'
+      message: 'modeselected custom event!'
     },
     bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
     cancelable: true // Optional: Specify whether the event is cancelable or not
@@ -33,6 +32,7 @@ class GUI {
     // Create the main menu container
     this._mainMenuContainer = this._buildBaseMenuElement("main_menu_container", "menu_container");
     this._mainMenuContainer.style.display = 'flex';
+    this._globalGUI.appendChild(this._mainMenuContainer);
 
     // Create the class menu container
     this._classMenuContainer = this._buildBaseMenuElement("class_menu_container", "menu_container");
@@ -41,19 +41,26 @@ class GUI {
     // Create the pause menu container
     this._pauseMenuContainer = this._buildBaseMenuElement("pause_menu_container", "menu_container");
     this._pauseMenuContainer.style.display = 'none';
+    this._globalGUI.appendChild(this._pauseMenuContainer);
 
     // Create the help menu container
     this._helpMenuContainer = this._buildBaseMenuElement("help_menu_container", "menu_container");
     this._helpMenuContainer.style.display = 'none';
+    this._globalGUI.appendChild(this._helpMenuContainer);
 
     // Create the settings menu container
     this._settingsMenuContainer = this._buildBaseMenuElement("settings_menu_container", "menu_container");
     this._settingsMenuContainer.style.display = 'none';
+    this._globalGUI.appendChild(this._settingsMenuContainer);
 
     // Create the main menu
-    this._createMainMenu(this._globalGUI);
+    this._createMainMenu();
+
+    // Create the pause menu
+    this._createPauseMenu();
 
     this._isPaused = true;
+    this._isInGame = false;
     this._activeMenu = Menu.MAIN_MENU;
 
     // Default players
@@ -68,13 +75,21 @@ class GUI {
     document.addEventListener("keydown", (event) => {
       if (event.key == "Escape") {
         this._isPaused = !this._isPaused;
-        console.log("isPaused", this._isPaused);              
+        console.log("isPaused", this._isPaused);
 
-        if(this._isPaused){
-          this._mainMenuContainer.style.display = 'flex';  
-        } 
-        else{
-          this._mainMenuContainer.style.display = 'none';
+        // If the game is in progress
+        if (this._isInGame) {         
+          // If the game is paused, set the active menu to pause menu
+          if (this._isPaused) {
+            this.setActiveMenu(Menu.PAUSE_MENU);
+          } else {
+            this.setActiveMenu(Menu.NONE_MENU);
+          }
+        } else {
+          if (this._isPaused) {
+            this.setActiveMenu(Menu.MAIN_MENU);
+            return;
+          }
         }
       }
     });
@@ -119,6 +134,9 @@ class GUI {
       case Menu.SETTINGS_MENU:
         this._settingsMenuContainer.style.display = 'none';
         break;
+      case Menu.NONE_MENU:
+      default:
+        break;
     }
 
     switch (newMenu) {
@@ -138,6 +156,9 @@ class GUI {
         break;
       case Menu.SETTINGS_MENU:
         this._settingsMenuContainer.style.display = 'flex';
+        break;
+      case Menu.NONE_MENU:
+      default:
         break;
     }
 
@@ -178,8 +199,7 @@ class GUI {
     parent.appendChild(button);
   }
 
-  private _createMainMenu(globalGUI: HTMLDivElement): void {
-    globalGUI.appendChild(this._mainMenuContainer);
+  private _createMainMenu(): void {
     this._addTitle(this._mainMenuContainer);
     // Generate buttons with onclick event
     this._addButtonMenu(this._mainMenuContainer, "Solo runner", () => {
@@ -195,6 +215,7 @@ class GUI {
       this.setActiveMenu(Menu.CLASS_MENU);
 
       this._isPaused = false;
+      this._isInGame = true;
     }, "primary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Dual runners", () => {
       console.log("Dual runners");
@@ -210,6 +231,7 @@ class GUI {
       this.setActiveMenu(Menu.CLASS_MENU);
 
       this._isPaused = false;
+      this._isInGame = true;
     }, "primary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Help", () => { 
       console.log("Help");
@@ -229,6 +251,27 @@ class GUI {
       // Close the game
       window.close();
     }, "tertiary_btn");
+  }
+
+  private _createPauseMenu(): void {
+    this._addTitle(this._pauseMenuContainer);
+    this._addButtonMenu(this._pauseMenuContainer, "Resume", () => {
+      console.log("Resume");
+      this._isPaused = false;
+      this.setActiveMenu(Menu.NONE_MENU);
+    }, "primary_btn");
+    this._addButtonMenu(this._pauseMenuContainer, "Help", () => {
+      console.log("Help");
+      this.setActiveMenu(Menu.HELP_MENU);
+    }, "secondary_btn");
+    this._addButtonMenu(this._pauseMenuContainer, "Settings", () => {
+      console.log("Settings");
+      this.setActiveMenu(Menu.SETTINGS_MENU);
+    }, "secondary_btn");
+    this._addButtonMenu(this._pauseMenuContainer, "Back to Main menu", () => {
+      console.log("Back to Main menu");
+      window.location.reload();
+    }, "tertiary_btn"); 
   }
 }
 
