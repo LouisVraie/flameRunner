@@ -35,7 +35,6 @@ class Controller {
     this._inputMap = new Map<string, boolean>();
 
     document.addEventListener("keybindings", (e) => {
-      console.log("keybindings updated !");
       this._setDefaultKeys();
     });
 
@@ -176,33 +175,38 @@ class Controller {
   // setDefaultKeys
   private _setDefaultKeys(): void {
     // Get the local storage to check if the player has already set his keys
-    const keyBindings = JSON.parse(localStorage.getItem("keyBindings"));
+    let keyBindings = null
+    try {
+      keyBindings = JSON.parse(localStorage.getItem("keyBindings"));
+    } catch (e) {
+      console.warn("No key bindings found in local storage. Using default keys.");
+    }
 
     if (this._isPlayer1) {
-      this._forward = keyBindings.player1["forward"] || "KeyW";
-      this._backward = keyBindings.player1["backward"] || "KeyS";
-      this._left = keyBindings.player1["left"] || "KeyA";
-      this._right = keyBindings.player1["right"] || "KeyD";
+      this._forward = keyBindings?.player1["forward"] || "KeyW";
+      this._backward = keyBindings?.player1["backward"] || "KeyS";
+      this._left = keyBindings?.player1["left"] || "KeyA";
+      this._right = keyBindings?.player1["right"] || "KeyD";
       
-      this._sprint = keyBindings.player1["sprint"] || "ShiftLeft";
-      this._jump = keyBindings.player1["jump"] || "Space";
-      this._slide = keyBindings.player1["slide"] || "KeyC";
+      this._sprint = keyBindings?.player1["sprint"] || "ShiftLeft";
+      this._jump = keyBindings?.player1["jump"] || "Space";
+      this._slide = keyBindings?.player1["slide"] || "KeyC";
 
-      this._modifier = keyBindings.player1["modifier"] || "KeyQ";
-      this._capacity = keyBindings.player1["capacity"] || "KeyE";
+      this._modifier = keyBindings?.player1["modifier"] || "KeyQ";
+      this._capacity = keyBindings?.player1["capacity"] || "KeyE";
       
     } else {
-      this._forward = keyBindings.player2["forward"] || "ArrowUp";
-      this._backward = keyBindings.player2["backward"] || "ArrowDown";
-      this._left = keyBindings.player2["left"] || "ArrowLeft";
-      this._right = keyBindings.player2["right"] || "ArrowRight";
+      this._forward = keyBindings?.player2["forward"] || "ArrowUp";
+      this._backward = keyBindings?.player2["backward"] || "ArrowDown";
+      this._left = keyBindings?.player2["left"] || "ArrowLeft";
+      this._right = keyBindings?.player2["right"] || "ArrowRight";
 
-      this._sprint = keyBindings.player2["sprint"] || "ShiftRight";
-      this._jump = keyBindings.player2["jump"] || "ControlRight";
-      this._slide = keyBindings.player2["slide"] || "Numpad0";
+      this._sprint = keyBindings?.player2["sprint"] || "ShiftRight";
+      this._jump = keyBindings?.player2["jump"] || "ControlRight";
+      this._slide = keyBindings?.player2["slide"] || "Numpad0";
 
-      this._modifier = keyBindings.player2["modifier"] || "Numpad1";
-      this._capacity = keyBindings.player2["capacity"] || "Enter";
+      this._modifier = keyBindings?.player2["modifier"] || "Numpad1";
+      this._capacity = keyBindings?.player2["capacity"] || "Enter";
     }
   }
 
