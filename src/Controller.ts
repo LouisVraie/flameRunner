@@ -6,6 +6,7 @@ import "@babylonjs/core/Debug/debugLayer";
 class Controller {
 
   private _scene: Scene;
+  private _isPlayer1: boolean;
   private _inputMap: Map<string, boolean>;
 
   private _forward: string;
@@ -25,37 +26,45 @@ class Controller {
 
   constructor(scene: Scene, isPlayer1: boolean) {
     this._scene = scene;
+    this._isPlayer1 = isPlayer1;
 
     // set up the default keys of the keyboard for AZERTY
-    this._setDefaultKeys(isPlayer1);
+    this._setDefaultKeys();
 
     // set up the input map event listener
     this._inputMap = new Map<string, boolean>();
 
-    // add the event listener and update the input map with the key pressed or released with BabylonJS methods
-    this._scene.onKeyboardObservable.add((kbInfo) => {
-      switch (kbInfo.type) {
-        case KeyboardEventTypes.KEYDOWN:
-          this._inputMap.set(kbInfo.event.code, true);
-          // if key i is pressed, toggle the inspector
-          if (kbInfo.event.code == "KeyI") {
-            if (this._scene.debugLayer.isVisible()) {
-              this._scene.debugLayer.hide();
-            } else {
-              this._scene.debugLayer.show();
-            }
-          }
-          break;
-        case KeyboardEventTypes.KEYUP:
-          this._inputMap.set(kbInfo.event.code, false);
-          break;
-      }
+    document.addEventListener("keybindings", (e) => {
+      console.log("keybindings updated !");
+      this._setDefaultKeys();
     });
 
-    //add to the scene an observable that calls updateFromKeyboard before rendering
-    this._scene.onBeforeRenderObservable.add(() => {
-      this._updateFromKeyboard();
-    });
+    if (this._scene !== null) {
+      // add the event listener and update the input map with the key pressed or released with BabylonJS methods
+      this._scene.onKeyboardObservable.add((kbInfo) => {
+        switch (kbInfo.type) {
+          case KeyboardEventTypes.KEYDOWN:
+            this._inputMap.set(kbInfo.event.code, true);
+            // if key i is pressed, toggle the inspector
+            if (kbInfo.event.code == "KeyI") {
+              if (this._scene.debugLayer.isVisible()) {
+                this._scene.debugLayer.hide();
+              } else {
+                this._scene.debugLayer.show();
+              }
+            }
+            break;
+          case KeyboardEventTypes.KEYUP:
+            this._inputMap.set(kbInfo.event.code, false);
+            break;
+        }
+      });
+
+      //add to the scene an observable that calls updateFromKeyboard before rendering
+      this._scene.onBeforeRenderObservable.add(() => {
+        this._updateFromKeyboard();
+      });
+    }
   }
 
   //////////////////////////////////////////////////////////
@@ -65,6 +74,11 @@ class Controller {
   // InputMap
   public getInputMap(): Map<string, boolean> {
     return this._inputMap;
+  }
+
+  // IsPlayer1
+  public isPlayer1(): boolean {
+    return this._isPlayer1;
   }
 
   // Forward
@@ -160,32 +174,35 @@ class Controller {
   //////////////////////////////////////////////////////////
 
   // setDefaultKeys
-  private _setDefaultKeys(isPlayer1: boolean): void {
-    if (isPlayer1) {
-      this._forward = "KeyW";
-      this._backward = "KeyS";
-      this._left = "KeyA";
-      this._right = "KeyD";
-      
-      this._sprint = "ShiftLeft";
-      this._jump = "Space";
-      this._slide = "KeyC";
+  private _setDefaultKeys(): void {
+    // Get the local storage to check if the player has already set his keys
+    const keyBindings = JSON.parse(localStorage.getItem("keyBindings"));
 
-      this._modifier = "KeyQ";
-      this._capacity = "KeyE";
+    if (this._isPlayer1) {
+      this._forward = keyBindings.player1["forward"] || "KeyW";
+      this._backward = keyBindings.player1["backward"] || "KeyS";
+      this._left = keyBindings.player1["left"] || "KeyA";
+      this._right = keyBindings.player1["right"] || "KeyD";
+      
+      this._sprint = keyBindings.player1["sprint"] || "ShiftLeft";
+      this._jump = keyBindings.player1["jump"] || "Space";
+      this._slide = keyBindings.player1["slide"] || "KeyC";
+
+      this._modifier = keyBindings.player1["modifier"] || "KeyQ";
+      this._capacity = keyBindings.player1["capacity"] || "KeyE";
       
     } else {
-      this._forward = "ArrowUp";
-      this._backward = "ArrowDown";
-      this._left = "ArrowLeft";
-      this._right = "ArrowRight";
-      
-      this._sprint = "ShiftRight";
-      this._jump = "ControlRight";
-      this._slide = "Numpad0";
+      this._forward = keyBindings.player2["forward"] || "ArrowUp";
+      this._backward = keyBindings.player2["backward"] || "ArrowDown";
+      this._left = keyBindings.player2["left"] || "ArrowLeft";
+      this._right = keyBindings.player2["right"] || "ArrowRight";
 
-      this._modifier = "Numpad1";
-      this._capacity = "Enter";
+      this._sprint = keyBindings.player2["sprint"] || "ShiftRight";
+      this._jump = keyBindings.player2["jump"] || "ControlRight";
+      this._slide = keyBindings.player2["slide"] || "Numpad0";
+
+      this._modifier = keyBindings.player2["modifier"] || "Numpad1";
+      this._capacity = keyBindings.player2["capacity"] || "Enter";
     }
   }
 

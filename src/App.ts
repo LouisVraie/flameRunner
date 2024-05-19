@@ -17,8 +17,8 @@ class App {
     private _gui: GUI;
 
     private _viewportsData: Viewport[] = [
-        new Viewport(0.5, 0, 0.5, 1.0),
-        new Viewport(0, 0, 0.5, 1.0)
+        new Viewport(0, 0, 0.5, 1.0),
+        new Viewport(0.5, 0, 0.5, 1.0)
     ];
 
     constructor() {
@@ -36,9 +36,9 @@ class App {
         this._engine = new Engine(this._canvas, true);
         this._scene = new Scene(this._engine);
 
-        this._camera = new ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, new Vector3(0, 5, -40), this._scene);
-        this._camera.setTarget(Vector3.Zero());
-        this._camera.attachControl(this._canvas, true);
+        // this._camera = new ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, new Vector3(0, 5, -40), this._scene);
+        // this._camera.setTarget(Vector3.Zero());
+        // this._camera.attachControl(this._canvas, true);
 
         window.addEventListener("resize", () => {
             this._engine.resize();
@@ -127,7 +127,7 @@ class App {
         ground.receiveShadows = true;
     
         //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
-        world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
+        // world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
     
         const havokInstance = await HavokPhysics();
         const havokPlugin = new HavokPlugin(true, havokInstance);    

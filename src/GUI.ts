@@ -1,5 +1,6 @@
 import "../public/css/main.css";
 import "../public/css/menus.css";
+import Controller from "./Controller";
 import { Menu } from "./enum/Menu";
 
 class GUI {
@@ -19,6 +20,14 @@ class GUI {
   private static _modeSelectedEvent = new CustomEvent('modeselected', {
     detail: {
       message: 'modeselected custom event!'
+    },
+    bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
+    cancelable: true // Optional: Specify whether the event is cancelable or not
+  });
+
+  private static _keyBindingsEvent = new CustomEvent('keybindings', {
+    detail: {
+      message: 'keybindings custom event!'
     },
     bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
     cancelable: true // Optional: Specify whether the event is cancelable or not
@@ -61,6 +70,9 @@ class GUI {
 
     // Create the help menu
     this._createHelpMenu();
+
+    // Create local storage for key bindings
+    this._createSettingsKeyBindings();
 
     // Create the settings menu
     this._createSettingsMenu();
@@ -184,14 +196,14 @@ class GUI {
   private _addTitle(parent: HTMLDivElement): void {
     const title = document.createElement('h1');
     title.innerHTML = "Flame Runner";
-    title.className = 'title';
+    title.className = 'menu_title';
     parent.appendChild(title);
   }
 
   private _addSubtitle(parent: HTMLDivElement, content: string): void {
     const subtitle = document.createElement('h2');
     subtitle.innerHTML = content;
-    subtitle.className = 'subtitle';
+    subtitle.className = 'menu_subtitle';
     parent.appendChild(subtitle);
   }
 
@@ -314,12 +326,149 @@ class GUI {
     this._helpMenuContainer.appendChild(buttonContainer);
   }
 
+  private _createSettingsKeyBindings(): void {
+    // Create local storage for key bindings
+    // Check if the key bindings exist
+    if (localStorage.getItem("keyBindings")) {
+      return;
+    }
+
+    const player1Controller = new Controller(null, true);
+    const player2Controller = new Controller(null, false);
+
+    // Create the key bindings for the players
+    localStorage.setItem("keyBindings", JSON.stringify({
+      player1: {
+        forward: player1Controller.getForward(),
+        backward: player1Controller.getBackward(),
+        left: player1Controller.getLeft(),
+        right: player1Controller.getRight(),
+        sprint: player1Controller.getSprint(),
+        jump: player1Controller.getJump(),
+        slide: player1Controller.getSlide(),
+        modifier: player1Controller.getModifier(),
+        capacity: player1Controller.getCapacity(),
+      },
+      player2: {
+        forward: player2Controller.getForward(),
+        backward: player2Controller.getBackward(),
+        left: player2Controller.getLeft(),
+        right: player2Controller.getRight(),
+        sprint: player2Controller.getSprint(),
+        jump: player2Controller.getJump(),
+        slide: player2Controller.getSlide(),
+        modifier: player2Controller.getModifier(),
+        capacity: player2Controller.getCapacity(),
+      }
+    }));
+
+  }
+
+  private _createSettingsKeyContainer(parent: HTMLDivElement, action: string, key: string, onClickAction: () => Promise<string>): void {
+    const keyContainer = document.createElement('div');
+    keyContainer.className = "key_container";
+
+    const keyAction = document.createElement('span');
+    keyAction.className = "key_action";
+    keyAction.innerHTML = action;
+
+    const keyBind = document.createElement('button');
+    keyBind.className = "key_bind";
+    keyBind.innerHTML = key;
+    keyBind.onclick = async () => {
+      // Wait for the key to be pressed and update the key binding
+      const newKey = await onClickAction();
+      // Update the key binding
+      keyBind.innerHTML = newKey;
+    };
+
+    keyContainer.appendChild(keyAction);
+    keyContainer.appendChild(keyBind);
+
+    parent.appendChild(keyContainer);
+  }
+  
+
   private _createSettingsMenu(): void {
-    this._addTitle(this._settingsMenuContainer);
     this._addSubtitle(this._settingsMenuContainer, "Settings");
+
+    const keyBindingsContainer = document.createElement('div');
+    keyBindingsContainer.className = "key_bindings_container";
+
+    const changeKeyContainer = document.createElement('div');
+    changeKeyContainer.className = "change_key_container";
+    changeKeyContainer.innerHTML = "Press a key...";
+
+    this._settingsMenuContainer.appendChild(changeKeyContainer);
+
+    const createKeyBinding = (parent: HTMLDivElement, action: string, controller: Controller, getKey: () => string, setKey: (key: string) => void) => {
+      this._createSettingsKeyContainer(parent, action, getKey(), () => {
+        return new Promise((resolve, reject) => {
+          // show the change key container
+          changeKeyContainer.style.display = "flex";
+          const keyListener = (event: KeyboardEvent) => {
+            setKey(event.code);
+            // update the key binding in the local storage
+            const keyBindings = JSON.parse(localStorage.getItem("keyBindings"));
+            if(controller.isPlayer1()) {
+              keyBindings.player1[action.toLowerCase()] = event.code;
+            } else {
+              keyBindings.player2[action.toLowerCase()] = event.code;
+            }
+            localStorage.setItem("keyBindings", JSON.stringify(keyBindings));
+            
+            // Dispatch the mode selected event
+            document.dispatchEvent(GUI._keyBindingsEvent);
+
+            // remove the event listener
+            document.removeEventListener("keydown", keyListener);
+            // hide the change key container
+            changeKeyContainer.style.display = "none";
+            resolve(event.code);
+          };
+          document.addEventListener("keydown", keyListener);
+        });
+      });
+    };
+
+    const setKeyBindFields = (parent: HTMLDivElement, playerController: Controller) => {
+      createKeyBinding(parent, "Forward", playerController, playerController.getForward.bind(playerController), playerController.setForward.bind(playerController));
+      createKeyBinding(parent, "Backward", playerController, playerController.getBackward.bind(playerController), playerController.setBackward.bind(playerController));
+      createKeyBinding(parent, "Left", playerController, playerController.getLeft.bind(playerController), playerController.setLeft.bind(playerController));
+      createKeyBinding(parent, "Right", playerController, playerController.getRight.bind(playerController), playerController.setRight.bind(playerController));
+      createKeyBinding(parent, "Sprint", playerController, playerController.getSprint.bind(playerController), playerController.setSprint.bind(playerController));
+      createKeyBinding(parent, "Jump", playerController, playerController.getJump.bind(playerController), playerController.setJump.bind(playerController));
+      // createKeyBinding(parent, "Slide", playerController, playerController.getSlide.bind(playerController), playerController.setSlide.bind(playerController));
+      createKeyBinding(parent, "Modifier", playerController, playerController.getModifier.bind(playerController), playerController.setModifier.bind(playerController));
+      createKeyBinding(parent, "Capacity", playerController, playerController.getCapacity.bind(playerController), playerController.setCapacity.bind(playerController));
+    }
+
+    // player 1
+    const player1Controller = new Controller(null, true);
+    const player1Container = document.createElement('div');
+    player1Container.className = "player_container";
+    const player1Title = document.createElement('h3');
+    player1Title.innerHTML = "Player 1";
+    player1Container.appendChild(player1Title);
+    setKeyBindFields(player1Container, player1Controller);
+
+    // player 2
+    const player2Controller = new Controller(null, false);
+    const player2Container = document.createElement('div');
+    player2Container.className = "player_container";
+    const player2Title = document.createElement('h3');
+    player2Title.innerHTML = "Player 2";
+    player2Container.appendChild(player2Title);
+    setKeyBindFields(player2Container, player2Controller);
+
+    keyBindingsContainer.appendChild(player1Container);
+    keyBindingsContainer.appendChild(player2Container);
+
+    this._settingsMenuContainer.appendChild(keyBindingsContainer);
+
     const buttonContainer = document.createElement('div');
     buttonContainer.className = "menu_btn_container";
-    
+
     this._addButtonMenu(buttonContainer, "Back", () => {
       console.log("Back");
       if (this._isInGame) {
