@@ -59,6 +59,12 @@ class GUI {
     // Create the pause menu
     this._createPauseMenu();
 
+    // Create the help menu
+    this._createHelpMenu();
+
+    // Create the settings menu
+    this._createSettingsMenu();
+
     this._isPaused = true;
     this._isInGame = false;
     this._activeMenu = Menu.MAIN_MENU;
@@ -178,8 +184,15 @@ class GUI {
   private _addTitle(parent: HTMLDivElement): void {
     const title = document.createElement('h1');
     title.innerHTML = "Flame Runner";
-    title.id = 'title';
+    title.className = 'title';
     parent.appendChild(title);
+  }
+
+  private _addSubtitle(parent: HTMLDivElement, content: string): void {
+    const subtitle = document.createElement('h2');
+    subtitle.innerHTML = content;
+    subtitle.className = 'subtitle';
+    parent.appendChild(subtitle);
   }
 
   private _addButtonMenu(parent: HTMLDivElement, content: string, onClickAction: () => void, additionalClass?: string): void {
@@ -201,8 +214,11 @@ class GUI {
 
   private _createMainMenu(): void {
     this._addTitle(this._mainMenuContainer);
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = "menu_btn_container";
+
     // Generate buttons with onclick event
-    this._addButtonMenu(this._mainMenuContainer, "Solo runner", () => {
+    this._addButtonMenu(buttonContainer, "Solo runner", () => {
       console.log("Solo runner");
 
       // Add 1 player
@@ -217,7 +233,7 @@ class GUI {
       this._isPaused = false;
       this._isInGame = true;
     }, "primary_btn");
-    this._addButtonMenu(this._mainMenuContainer, "Dual runners", () => {
+    this._addButtonMenu(buttonContainer, "Dual runners", () => {
       console.log("Dual runners");
 
       // Add 2 players
@@ -233,45 +249,87 @@ class GUI {
       this._isPaused = false;
       this._isInGame = true;
     }, "primary_btn");
-    this._addButtonMenu(this._mainMenuContainer, "Help", () => { 
+    this._addButtonMenu(buttonContainer, "Help", () => { 
       console.log("Help");
 
       // Set the active menu
       this.setActiveMenu(Menu.HELP_MENU);
 
     }, "secondary_btn");
-    this._addButtonMenu(this._mainMenuContainer, "Settings", () => {
+    this._addButtonMenu(buttonContainer, "Settings", () => {
       console.log("Settings");
 
       // Set the active menu
       this.setActiveMenu(Menu.SETTINGS_MENU);
     }, "secondary_btn");
-    this._addButtonMenu(this._mainMenuContainer, "Quit", () => {
+    this._addButtonMenu(buttonContainer, "Quit", () => {
       console.log("Quit");
       // Close the game
       window.close();
     }, "tertiary_btn");
+
+    this._mainMenuContainer.appendChild(buttonContainer);
   }
 
   private _createPauseMenu(): void {
     this._addTitle(this._pauseMenuContainer);
-    this._addButtonMenu(this._pauseMenuContainer, "Resume", () => {
+    this._addSubtitle(this._pauseMenuContainer, "Game paused");
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = "menu_btn_container";
+
+    this._addButtonMenu(buttonContainer, "Resume", () => {
       console.log("Resume");
       this._isPaused = false;
       this.setActiveMenu(Menu.NONE_MENU);
     }, "primary_btn");
-    this._addButtonMenu(this._pauseMenuContainer, "Help", () => {
+    this._addButtonMenu(buttonContainer, "Help", () => {
       console.log("Help");
       this.setActiveMenu(Menu.HELP_MENU);
     }, "secondary_btn");
-    this._addButtonMenu(this._pauseMenuContainer, "Settings", () => {
+    this._addButtonMenu(buttonContainer, "Settings", () => {
       console.log("Settings");
       this.setActiveMenu(Menu.SETTINGS_MENU);
     }, "secondary_btn");
-    this._addButtonMenu(this._pauseMenuContainer, "Back to Main menu", () => {
+    this._addButtonMenu(buttonContainer, "Back to Main menu", () => {
       console.log("Back to Main menu");
       window.location.reload();
-    }, "tertiary_btn"); 
+    }, "tertiary_btn");
+    this._pauseMenuContainer.appendChild(buttonContainer);
+  }
+
+  private _createHelpMenu(): void {
+    this._addTitle(this._helpMenuContainer);
+    this._addSubtitle(this._helpMenuContainer, "Help");
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = "menu_btn_container";
+
+    this._addButtonMenu(buttonContainer, "Back", () => {
+      console.log("Back");
+      if (this._isInGame) {
+        this.setActiveMenu(Menu.PAUSE_MENU);
+      } else {
+        this.setActiveMenu(Menu.MAIN_MENU);
+      }
+    }, "primary_btn");
+    this._helpMenuContainer.appendChild(buttonContainer);
+  }
+
+  private _createSettingsMenu(): void {
+    this._addTitle(this._settingsMenuContainer);
+    this._addSubtitle(this._settingsMenuContainer, "Settings");
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = "menu_btn_container";
+    
+    this._addButtonMenu(buttonContainer, "Back", () => {
+      console.log("Back");
+      if (this._isInGame) {
+        this.setActiveMenu(Menu.PAUSE_MENU);
+      } else {
+        this.setActiveMenu(Menu.MAIN_MENU);
+      }
+    }, "primary_btn");
+
+    this._settingsMenuContainer.appendChild(buttonContainer);
   }
 }
 
