@@ -83,12 +83,8 @@ class World{
         for (let i = 0; i < 5; i++) {
             this.addCubeModifier(new Vector3(0 + i * 3, 3, 2));
         }
-        const player = await this.addPlayer("player1");
-        this.setShadows(player.getCharacter().getMesh());
+        // const player = await this.addPlayer("player1");
         //const player2 = await world.addPlayer("player2");
-        
-        // Set the character's collision on the cube modifier
-        this._setCubeModifierCollision();
     }
 
     async initGame(){
@@ -135,8 +131,8 @@ class World{
         this._light.shadowOrthoScale = 2;
     }
 
-    async addPlayer(identifier: string): Promise<Player> {
-        const player = new Player(this._scene, identifier);
+    public async addPlayer(identifier: string, isPlayer1: boolean): Promise<Player> {
+        const player = new Player(this._scene, identifier, isPlayer1);
         await player.addCharacterAsync("Wall-E", Group.getSprinter());
 
         player.updatePlayer();
@@ -146,16 +142,11 @@ class World{
         return player;
     }
 
-    addCubeModifier(position: Vector3) : void {
+    public addCubeModifier(position: Vector3) : void {
         const cubeModifier = new CubeModifier(this._scene);
         cubeModifier.createObstacle();
         cubeModifier.setPosition(position);
         this._cubeModifiers.push(cubeModifier);
-    }
-
-    moveCharacter(characterMesh: AbstractMesh, direction: Vector3): void {
-        const speed = 0.1;
-        characterMesh.moveWithCollisions(direction.multiplyByFloats(speed, speed, speed));
     }
 
     setPhysicsPlugin(gravity : Vector3, plugin: HavokPlugin): void {
@@ -181,7 +172,7 @@ class World{
     }
 
     // Set the character's collision on the cube modifier
-    private _setCubeModifierCollision(): void {
+    public setCubeModifierCollision(): void {
 
         // for each player
         for (const player of this._players) {

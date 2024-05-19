@@ -40,6 +40,7 @@ class Player {
   constructor(
     scene: Scene,
     identifier: string,
+    isPlayer1: boolean
   ) {
     this._scene = scene;
     
@@ -49,7 +50,7 @@ class Player {
     this._health = Player.MAX_HEALTH;
     
     this._attachCamera();
-    this._attachController();
+    this._attachController(isPlayer1);
 
     this._interface = new PlayerInterface(identifier);
     this._interface.addViewport();
@@ -159,8 +160,8 @@ class Player {
   }
 
   // Attach controller to the player
-  private _attachController(): void {
-    this._controller = new Controller(this._scene, true);
+  private _attachController(isPlayer1: boolean): void {
+    this._controller = new Controller(this._scene, isPlayer1);
   }
 
   // Attach camera to the player

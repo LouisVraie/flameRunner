@@ -53,7 +53,7 @@ class App {
         this._engine.runRenderLoop(() => {
 
             // if the game is paused, don't render the scene
-            if (!this._isGamePaused()) return;
+            if (this._isGamePaused()) return;
 
             this.addViewports();
             this._scene.render();
@@ -132,7 +132,28 @@ class App {
         const havokInstance = await HavokPhysics();
         const havokPlugin = new HavokPlugin(true, havokInstance);    
         world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
+
+        // Load the world
         world.loadWorld();
+
+        document.addEventListener("modeselected", async (event) => {
+            const playerList = this._gui.getPlayers();
+
+            const promiseList = [];
+
+            // Create Players
+            for (const player of playerList) {
+                // Odd players are player 1
+                const isPlayer1 = playerList.indexOf(player) % 2 == 0;
+
+                promiseList.push(world.addPlayer(player, isPlayer1));
+            }
+
+            await Promise.all(promiseList);
+               
+            // Set the character's collision on the cube modifier
+            world.setCubeModifierCollision();
+        });
     
         const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);
         

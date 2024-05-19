@@ -14,6 +14,16 @@ class GUI {
   
   private _isPaused: boolean;
   private _activeMenu: Menu;
+  
+  private _players: string[];
+
+  private static _modeSelectedEvent = new CustomEvent('modeselected', {
+    detail: {
+      message: 'This is a custom event!'
+    },
+    bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
+    cancelable: true // Optional: Specify whether the event is cancelable or not
+  });
 
   constructor() {
     this._globalGUI = document.createElement("div");
@@ -43,7 +53,11 @@ class GUI {
     // Create the main menu
     this._createMainMenu(this._globalGUI);
 
-    this._isPaused = false;
+    this._isPaused = true;
+    this._activeMenu = Menu.MAIN_MENU;
+
+    // Default players
+    this._players = [];
 
     // fps
     const fps = document.createElement("div");
@@ -52,17 +66,17 @@ class GUI {
 
     // Toggle the current menu
     document.addEventListener("keydown", (event) => {
-        if (event.key == "Escape") {
-            console.log("isPaused", this._isPaused);                
+      if (event.key == "Escape") {
+        this._isPaused = !this._isPaused;
+        console.log("isPaused", this._isPaused);              
 
-            if(this._isPaused){
-                this._mainMenuContainer.style.display = 'flex';  
-            } 
-            else{
-                this._mainMenuContainer.style.display = 'none';
-            }
-            this._isPaused = !this._isPaused;
+        if(this._isPaused){
+          this._mainMenuContainer.style.display = 'flex';  
+        } 
+        else{
+          this._mainMenuContainer.style.display = 'none';
         }
+      }
     });
   }
 
@@ -78,6 +92,56 @@ class GUI {
   // IsPaused
   public isPaused(): boolean {
     return this._isPaused;
+  }
+
+  // Players
+  public getPlayers(): string[] {
+    return this._players;
+  }
+
+  // ActiveMenu
+  public setActiveMenu(newMenu: Menu): void {
+    console.log("new Menu", newMenu);
+    console.log("active Menu", this._activeMenu);
+    switch (this._activeMenu) {
+      case Menu.MAIN_MENU:
+        this._mainMenuContainer.style.display = 'none';
+        break;
+      case Menu.CLASS_MENU:
+        this._classMenuContainer.style.display = 'none';
+        break;
+      case Menu.PAUSE_MENU:
+        this._pauseMenuContainer.style.display = 'none';
+        break;
+      case Menu.HELP_MENU:
+        this._helpMenuContainer.style.display = 'none';
+        break;
+      case Menu.SETTINGS_MENU:
+        this._settingsMenuContainer.style.display = 'none';
+        break;
+    }
+
+    switch (newMenu) {
+      case Menu.MAIN_MENU:
+        this._mainMenuContainer.style.display = 'flex';
+        this._isPaused = true;
+        this._players = [];
+        break;
+      case Menu.CLASS_MENU:
+        this._classMenuContainer.style.display = 'flex';
+        break;
+      case Menu.PAUSE_MENU:
+        this._pauseMenuContainer.style.display = 'flex';
+        break;
+      case Menu.HELP_MENU:
+        this._helpMenuContainer.style.display = 'flex';
+        break;
+      case Menu.SETTINGS_MENU:
+        this._settingsMenuContainer.style.display = 'flex';
+        break;
+    }
+
+    this._activeMenu = newMenu;
   }
 
   //////////////////////////////////////////////////////////
@@ -120,31 +184,45 @@ class GUI {
     // Generate buttons with onclick event
     this._addButtonMenu(this._mainMenuContainer, "Solo runner", () => {
       console.log("Solo runner");
-      // Hide the main menu
-      this._mainMenuContainer.style.display = 'none';
 
-      // Show the class menu
-      this._classMenuContainer.style.display = 'flex';
+      // Add 1 player
+      this._players.push("player1");
+
+      // Dispatch the mode selected event
+      document.dispatchEvent(GUI._modeSelectedEvent);
+
+      // Set the active menu
+      this.setActiveMenu(Menu.CLASS_MENU);
+
+      this._isPaused = false;
     }, "primary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Dual runners", () => {
       console.log("Dual runners");
-      // Hide the main menu
-      this._mainMenuContainer.style.display = 'none';
 
-      // Show the class menu
-      this._classMenuContainer.style.display = 'flex';
+      // Add 2 players
+      this._players.push("player1");
+      this._players.push("player2");
+
+      // Dispatch the mode selected event
+      document.dispatchEvent(GUI._modeSelectedEvent);
+
+      // Set the active menu
+      this.setActiveMenu(Menu.CLASS_MENU);
+
+      this._isPaused = false;
     }, "primary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Help", () => { 
       console.log("Help");
-      // Hide the main menu
-      this._mainMenuContainer.style.display = 'none';
 
-      // Show the help menu
-
+      // Set the active menu
+      this.setActiveMenu(Menu.HELP_MENU);
 
     }, "secondary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Settings", () => {
       console.log("Settings");
+
+      // Set the active menu
+      this.setActiveMenu(Menu.SETTINGS_MENU);
     }, "secondary_btn");
     this._addButtonMenu(this._mainMenuContainer, "Quit", () => {
       console.log("Quit");
