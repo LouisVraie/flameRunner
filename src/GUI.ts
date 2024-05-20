@@ -91,7 +91,7 @@ class GUI {
 
     // Toggle the current menu
     document.addEventListener("keydown", (event) => {
-      if (event.key == "Escape") {
+      if (event.key == "Escape" && this._activeMenu != Menu.SETTINGS_MENU) {
         this._isPaused = !this._isPaused;
         console.log("isPaused", this._isPaused);
 
@@ -407,6 +407,11 @@ class GUI {
           // show the change key container
           changeKeyContainer.style.display = "flex";
           const keyListener = (event: KeyboardEvent) => {
+            if (event.code === "Escape") {
+              document.removeEventListener("keydown", keyListener);
+              changeKeyContainer.style.display = "none";
+              resolve(getKey());
+            }
             setKey(event.code);
             // update the key binding in the local storage
             const keyBindings = JSON.parse(localStorage.getItem("keyBindings"));
