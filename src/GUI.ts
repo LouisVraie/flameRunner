@@ -411,6 +411,7 @@ class GUI {
               document.removeEventListener("keydown", keyListener);
               changeKeyContainer.style.display = "none";
               resolve(getKey());
+              return;
             }
             setKey(event.code);
             // update the key binding in the local storage
