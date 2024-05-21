@@ -91,12 +91,13 @@ class GUI {
 
     // Toggle the current menu
     document.addEventListener("keydown", (event) => {
-      if (event.key == "Escape" && this._activeMenu != Menu.SETTINGS_MENU) {
-        this._isPaused = !this._isPaused;
-        console.log("isPaused", this._isPaused);
+      if (event.key == "Escape" && this._activeMenu != Menu.MAIN_MENU) {
 
         // If the game is in progress
         if (this._isInGame) {         
+          this._isPaused = !this._isPaused;
+          console.log("isPaused", this._isPaused);
+
           // If the game is paused, set the active menu to pause menu
           if (this._isPaused) {
             this.setActiveMenu(Menu.PAUSE_MENU);
@@ -104,10 +105,7 @@ class GUI {
             this.setActiveMenu(Menu.NONE_MENU);
           }
         } else {
-          if (this._isPaused) {
-            this.setActiveMenu(Menu.MAIN_MENU);
-            return;
-          }
+          this.setActiveMenu(Menu.MAIN_MENU);
         }
       }
     });
@@ -177,6 +175,7 @@ class GUI {
         break;
       case Menu.NONE_MENU:
       default:
+
         break;
     }
 
@@ -310,7 +309,6 @@ class GUI {
   }
 
   private _createHelpMenu(): void {
-    this._addTitle(this._helpMenuContainer);
     this._addSubtitle(this._helpMenuContainer, "Help");
     const buttonContainer = document.createElement('div');
     buttonContainer.className = "menu_btn_container";
