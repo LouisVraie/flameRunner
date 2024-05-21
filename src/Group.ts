@@ -3,23 +3,26 @@ import Modifier from "./Modifier";
 
 class Group {
 
-  private name: string;
-  private description: string;
-  private icon: string;
+  private _name: string;
+  private _description: string;
+  private _icon: string;
 
-  private capacityName: string;
-  private capacity: Modifier;
-  private capacityDuration: number;
-  private capacityDelay: number;
+  private _capacityName: string;
+  private _capacity: Modifier;
+  private _capacityDuration: number;
+  private _capacityDelay: number;
+
+  private _subGroups: Group[];
 
   constructor(name: string, description: string, icon: string, capacityName: string, capacity: Modifier, capacityDuration: number, capacityDelay: number) {
-    this.name = name || "No name";
-    this.description = description || "No description";
-    this.icon = icon || null;
-    this.capacityName = capacityName || "No capacity";
-    this.capacity = capacity || null;
-    this.capacityDuration = capacityDuration || null;
-    this.capacityDelay = capacityDelay || null;
+    this._name = name || "No name";
+    this._description = description || "No description";
+    this._icon = icon || null;
+    this._capacityName = capacityName || "No capacity";
+    this._capacity = capacity || null;
+    this._capacityDuration = capacityDuration || null;
+    this._capacityDelay = capacityDelay || null;
+    this._subGroups = [];
   }
 
   //////////////////////////////////////////////////////////
@@ -28,58 +31,66 @@ class Group {
 
   // Name
   public getName(): string {
-    return this.name;
+    return this._name;
   }
   public setName(name: string): void {
-    this.name = name;
+    this._name = name;
   }
 
   // Description
   public getDescription(): string {
-    return this.description;
+    return this._description;
   }
   public setDescription(description: string): void {
-    this.description = description;
+    this._description = description;
   }
 
   // Icon
   public getIcon(): string {
-    return this.icon;
+    return this._icon;
   }
   public setIcon(icon: string): void {
-    this.icon = icon;
+    this._icon = icon;
   }
 
   // CapacityName
   public getCapacityName(): string {
-    return this.capacityName;
+    return this._capacityName;
   }
   public setCapacityName(capacityName: string): void {
-    this.capacityName = capacityName;
+    this._capacityName = capacityName;
   }
 
   // Capacity
   public getCapacity(): Modifier {
-    return this.capacity;
+    return this._capacity;
   }
   public setCapacity(capacity: Modifier): void {
-    this.capacity = capacity;
+    this._capacity = capacity;
   }
 
   // CapacityDuration
   public getCapacityDuration(): number {
-    return this.capacityDuration;
+    return this._capacityDuration;
   }
   public setCapacityDuration(capacityDuration: number): void {
-    this.capacityDuration = capacityDuration;
+    this._capacityDuration = capacityDuration;
   }
 
   // CapacityDelay
   public getCapacityDelay(): number {
-    return this.capacityDelay;
+    return this._capacityDelay;
   }
   public setCapacityDelay(capacityDelay: number): void {
-    this.capacityDelay = capacityDelay;
+    this._capacityDelay = capacityDelay;
+  }
+
+  // SubGroups
+  public getSubGroups(): Group[] {
+    return this._subGroups;
+  }
+  public setSubGroups(subGroups: Group[]): void {
+    this._subGroups = subGroups;
   }
 
   //////////////////////////////////////////////////////////
@@ -150,6 +161,11 @@ class Group {
 
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
   
+    const hotEndurance = new Group("Hot Endurance", "Endurance in heat", "heat.png", "Heat endurance boost", capacity, capacityDuration, capacityDelay);
+    const coldEndurance = new Group("Cold Endurance", "Endurance in cold", "cold.png", "Cold endurance boost", capacity, capacityDuration, capacityDelay);
+    
+    group.setSubGroups([hotEndurance, coldEndurance]);
+    
     return group;
   }
   

@@ -34,13 +34,7 @@ class PlayerInterface {
 
     addViewport(){
 
-        console.log("hello")
-
         const gui = document.querySelector("#gui");
-        //gui.classList.add('in_game');
-
-        // const view = document.createElement('div');
-        // view.className = 'viewport';
         gui.appendChild(this._gui);
 
         const topContainer = document.createElement('div')
@@ -55,10 +49,6 @@ class PlayerInterface {
         const bottomContainer = document.createElement('div');
         bottomContainer.className = "bottom_container";
         this._gui.appendChild(bottomContainer);
-
-        const classAbilityContainer = document.createElement('div');
-        classAbilityContainer.className = "class_ability_container";
-        bottomContainer.appendChild(classAbilityContainer);
 
         const topLeftContainer = document.createElement('div');
         topLeftContainer.className = "top_left_container";
@@ -151,9 +141,14 @@ class PlayerInterface {
         modifierEffectContainer.appendChild(modifierEffectName);
         modifierEffectContainer.appendChild(modifierEffectTimer);
         topRightContainer.appendChild(modifierEffectContainer);
+
+        /////////////////////////////////////////////
+        // Class ability
+        /////////////////////////////////////////////
+        const classAbilityContainer = document.createElement('div');
+        classAbilityContainer.className = "class_ability_container";
+        bottomContainer.appendChild(classAbilityContainer);
     }
-
-
 
     public getPlayerName() : string {
         return this._playerName;

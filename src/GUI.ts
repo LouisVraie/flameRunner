@@ -1,6 +1,7 @@
 import "../public/css/main.css";
 import "../public/css/menus.css";
 import Controller from "./Controller";
+import Group from "./Group";
 import { Menu } from "./enum/Menu";
 
 class GUI {
@@ -20,6 +21,14 @@ class GUI {
   private static _modeSelectedEvent = new CustomEvent('modeselected', {
     detail: {
       message: 'modeselected custom event!'
+    },
+    bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
+    cancelable: true // Optional: Specify whether the event is cancelable or not
+  });
+
+  private static _classSelectedEvent = new CustomEvent('classselected', {
+    detail: {
+      message: 'classselected custom event!'
     },
     bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
     cancelable: true // Optional: Specify whether the event is cancelable or not
@@ -46,6 +55,7 @@ class GUI {
     // Create the class menu container
     this._classMenuContainer = this._buildBaseMenuElement("class_menu_container", "menu_container");
     this._classMenuContainer.style.display = 'none';
+    this._globalGUI.appendChild(this._classMenuContainer);
 
     // Create the pause menu container
     this._pauseMenuContainer = this._buildBaseMenuElement("pause_menu_container", "menu_container");
@@ -64,6 +74,9 @@ class GUI {
 
     // Create the main menu
     this._createMainMenu();
+
+    // Create the class menu
+    this._createClassMenu();
 
     // Create the pause menu
     this._createPauseMenu();
@@ -219,11 +232,77 @@ class GUI {
       button.classList.add(additionalClass);
     }
 
-    const spanContent = document.createElement('span');
-    spanContent.className = "menu_btn_content";
-    spanContent.innerHTML = content;
+    const buttonContent = document.createElement('div');
+    buttonContent.className = "menu_btn_content";
+    buttonContent.innerHTML = content;
 
-    button.appendChild(spanContent);
+    button.appendChild(buttonContent);
+    parent.appendChild(button);
+  }
+
+  private _addClassButton(parent: HTMLDivElement, group: Group, onClickAction: () => void, additionalClass?: string): void {
+    const button = document.createElement('div');
+    button.className = "menu_btn";
+    button.onclick = onClickAction;
+
+    if (additionalClass) {
+      button.classList.add(additionalClass);
+    }
+
+    const buttonContent = document.createElement('div');
+    buttonContent.className = "menu_btn_content";
+
+    const insideContent = document.createElement('div');
+    insideContent.className = "class_btn_content";
+
+    // Image
+    const imageContainers = document.createElement('div');
+    imageContainers.className = "class_img_containers";
+
+    const imagePrimaryContainer = document.createElement('div');
+    imagePrimaryContainer.className = "class_img_container";
+
+    const imageContent = document.createElement('img');
+    imageContent.className = "class_img";
+    imageContent.src = group.getIcon();
+    imageContent.alt = group.getName();
+    imagePrimaryContainer.appendChild(imageContent);
+
+    imageContainers.appendChild(imagePrimaryContainer);
+
+    if (group.getName() === Group.getEndurance().getName()) {
+      const imageSecondaryContainer = document.createElement('div');
+      imageSecondaryContainer.className = "class_img_secondary_container";
+
+      for (const subGroup of group.getSubGroups()) {
+        const imageSecondaryContent = document.createElement('div');
+        imageSecondaryContent.className = "class_img_secondary";
+
+        const imageContent = document.createElement('img');
+        imageContent.className = "class_img";
+        imageContent.src = subGroup.getIcon();
+        imageContent.alt = subGroup.getName();
+        imageSecondaryContent.appendChild(imageContent);
+        imageSecondaryContainer.appendChild(imageSecondaryContent);
+      }
+      imageContainers.appendChild(imageSecondaryContainer);
+    } else {
+      imageContainers.style.paddingRight = "50px";
+    }
+
+    insideContent.appendChild(imageContainers);
+
+    // Text
+    const buttonTextContainer = document.createElement('div');
+    buttonTextContainer.className = "class_btn_text_container";
+
+    const buttonText = document.createElement('span');
+    buttonText.innerHTML = group.getName();
+    buttonTextContainer.appendChild(buttonText);
+    insideContent.appendChild(buttonTextContainer);
+
+    buttonContent.appendChild(insideContent);
+    button.appendChild(buttonContent);
     parent.appendChild(button);
   }
 
@@ -236,20 +315,23 @@ class GUI {
     this._addButtonMenu(buttonContainer, "Solo runner", () => {
       console.log("Solo runner");
 
-      // Add 1 player
-      this._players.push("player1");
-
-      // Dispatch the mode selected event
-      document.dispatchEvent(GUI._modeSelectedEvent);
-
       // Set the active menu
       this.setActiveMenu(Menu.CLASS_MENU);
+      
+      // Add 1 player
+      // this._players.push("player1");
 
-      this._isPaused = false;
-      this._isInGame = true;
+      // // Dispatch the mode selected event
+      // document.dispatchEvent(GUI._modeSelectedEvent);
+
+      // this._isPaused = false;
+      // this._isInGame = true;
     }, "primary_btn");
     this._addButtonMenu(buttonContainer, "Dual runners", () => {
       console.log("Dual runners");
+
+      // Set the active menu
+      this.setActiveMenu(Menu.CLASS_MENU);
 
       // Add 2 players
       this._players.push("player1");
@@ -257,9 +339,6 @@ class GUI {
 
       // Dispatch the mode selected event
       document.dispatchEvent(GUI._modeSelectedEvent);
-
-      // Set the active menu
-      this.setActiveMenu(Menu.CLASS_MENU);
 
       this._isPaused = false;
       this._isInGame = true;
@@ -284,6 +363,35 @@ class GUI {
     }, "tertiary_btn");
 
     this._mainMenuContainer.appendChild(buttonContainer);
+  }
+
+  private _createClassMenu(): void {
+    this._addSubtitle(this._classMenuContainer, "Choose your class");
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = "menu_btn_container";
+
+    this._addClassButton(buttonContainer, Group.getSprinter(), () => {
+      console.log("Sprinter");
+      this.setActiveMenu(Menu.NONE_MENU);
+    }, "class_btn");
+    this._addClassButton(buttonContainer, Group.getGhost(), () => {
+      console.log("Ghost");
+      this.setActiveMenu(Menu.NONE_MENU);
+    }, "class_btn");
+    this._addClassButton(buttonContainer, Group.getEndurance(), () => {
+      console.log("Endurance");
+      this.setActiveMenu(Menu.NONE_MENU);
+    }, "class_btn");
+    this._addClassButton(buttonContainer, Group.getGymnast(), () => {
+      console.log("Gymnast");
+      this.setActiveMenu(Menu.NONE_MENU);
+    }, "class_btn");
+    this._addButtonMenu(buttonContainer, "Back", () => {
+      console.log("Back");
+      this.setActiveMenu(Menu.MAIN_MENU);
+    }, "tertiary_btn");
+
+    this._classMenuContainer.appendChild(buttonContainer);
   }
 
   private _createPauseMenu(): void {

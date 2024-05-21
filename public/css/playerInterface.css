@@ -28,22 +28,11 @@
 .bottom_container {
   width: 100%;
   /* background-color: violet; */
-  height: 40%;
+  height: 20%;
   display: flex;
   padding: 3% 0px;
   align-items: center;
   justify-content: center;
-}
-
-.class_ability_container {
-  border: 1px solid white;
-  border-radius: 50%;
-  width: 100px;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
 }
 
 .top_left_container {
@@ -109,7 +98,7 @@
   height: 150px;
   border: 1px solid white;
   border-radius: 12px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--default-background-color);
 }
 
 .modifier_effect_container {
@@ -125,4 +114,17 @@
 
 .modifier_effect_timer {
   font-size: 20px;
+}
+
+
+.class_ability_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid white;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  background-color: var(--default-background-color);
 }
