@@ -26,13 +26,19 @@ class GUI {
     cancelable: true // Optional: Specify whether the event is cancelable or not
   });
 
-  private static _classSelectedEvent = new CustomEvent('classselected', {
-    detail: {
-      message: 'classselected custom event!'
-    },
-    bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
-    cancelable: true // Optional: Specify whether the event is cancelable or not
-  });
+  private static dispatchClassSelectedEvent(group: Group) {
+    // Create a new CustomEvent with the specific parameter included in the detail
+    const event = new CustomEvent('classselected', {
+      detail: {
+        message: 'classselected custom event!',
+        group: group
+      },
+      bubbles: true,
+      cancelable: true
+    });
+    // Dispatch the event on a target element, e.g., document or a specific element
+    document.dispatchEvent(event);
+  }
 
   private static _keyBindingsEvent = new CustomEvent('keybindings', {
     detail: {
@@ -243,7 +249,10 @@ class GUI {
   private _addClassButton(parent: HTMLDivElement, group: Group, onClickAction: () => void, additionalClass?: string): void {
     const button = document.createElement('div');
     button.className = "menu_btn";
-    button.onclick = onClickAction;
+    button.onclick = () => {
+      onClickAction();
+      GUI.dispatchClassSelectedEvent(group);
+    };
 
     if (additionalClass) {
       button.classList.add(additionalClass);
@@ -372,20 +381,52 @@ class GUI {
 
     this._addClassButton(buttonContainer, Group.getSprinter(), () => {
       console.log("Sprinter");
-      this.setActiveMenu(Menu.NONE_MENU);
+      // this.setActiveMenu(Menu.NONE_MENU);
     }, "class_btn");
     this._addClassButton(buttonContainer, Group.getGhost(), () => {
       console.log("Ghost");
-      this.setActiveMenu(Menu.NONE_MENU);
+      // this.setActiveMenu(Menu.NONE_MENU);
     }, "class_btn");
     this._addClassButton(buttonContainer, Group.getEndurance(), () => {
       console.log("Endurance");
-      this.setActiveMenu(Menu.NONE_MENU);
+      // this.setActiveMenu(Menu.NONE_MENU);
     }, "class_btn");
     this._addClassButton(buttonContainer, Group.getGymnast(), () => {
       console.log("Gymnast");
-      this.setActiveMenu(Menu.NONE_MENU);
+      // this.setActiveMenu(Menu.NONE_MENU);
     }, "class_btn");
+
+    const classDescriptionContainer = document.createElement('div');
+    classDescriptionContainer.className = "class_description_container";
+
+    // Title
+    const classTitle = document.createElement('div');
+    classTitle.className = "class_title";
+    classTitle.innerHTML = "Title : ";
+
+    // Description
+    const classDescription = document.createElement('div');
+    classDescription.className = "class_description";
+    classDescription.innerHTML = "Description : ";
+
+    // Duration
+    const classDuration = document.createElement('div');
+    classDuration.className = "class_duration";
+    classDuration.innerHTML = "Duration : ";
+
+    document.addEventListener("classselected", (event: CustomEvent) => {
+      const group = event.detail.group as Group;
+      classTitle.innerHTML = group.getName();
+      classDescription.innerHTML = `Description : ${group.getDescription()}`;
+      classDuration.innerHTML = `Delay : ${group.getCapacityDelay()}`;
+    });
+
+    classDescriptionContainer.appendChild(classTitle);
+    classDescriptionContainer.appendChild(classDescription);
+    classDescriptionContainer.appendChild(classDuration);
+
+    buttonContainer.appendChild(classDescriptionContainer);
+
     this._addButtonMenu(buttonContainer, "Back", () => {
       console.log("Back");
       this.setActiveMenu(Menu.MAIN_MENU);
