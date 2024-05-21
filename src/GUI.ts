@@ -155,6 +155,8 @@ class GUI {
         break;
     }
 
+    const gameCanvas = document.getElementById("gameCanvas");
+
     switch (newMenu) {
       case Menu.MAIN_MENU:
         this._mainMenuContainer.style.display = 'flex';
@@ -175,7 +177,9 @@ class GUI {
         break;
       case Menu.NONE_MENU:
       default:
-
+        if (gameCanvas) {
+          gameCanvas.focus();
+        }
         break;
     }
 
