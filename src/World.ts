@@ -131,9 +131,9 @@ class World{
         this._light.shadowOrthoScale = 2;
     }
 
-    public async addPlayer(identifier: string, isPlayer1: boolean): Promise<Player> {
+    public async addPlayer(identifier: string, group: Group, isPlayer1: boolean): Promise<Player> {
         const player = new Player(this._scene, identifier, isPlayer1);
-        await player.addCharacterAsync("Wall-E", Group.getSprinter());
+        await player.addCharacterAsync(identifier, group);
 
         player.updatePlayer();
         this._shadowGenerator.addShadowCaster(player.getCharacter().getMesh())

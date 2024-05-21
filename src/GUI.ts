@@ -2,6 +2,7 @@ import "../public/css/main.css";
 import "../public/css/menus.css";
 import Controller from "./Controller";
 import Group from "./Group";
+import PlayerSelection from "./PlayerSelection";
 import { Menu } from "./enum/Menu";
 
 class GUI {
@@ -16,15 +17,20 @@ class GUI {
   private _isInGame: boolean;
   private _activeMenu: Menu;
   
-  private _players: string[];
+  private _playersSelection: PlayerSelection[];
 
-  private static _modeSelectedEvent = new CustomEvent('modeselected', {
-    detail: {
-      message: 'modeselected custom event!'
-    },
-    bubbles: true, // Optional: Specify whether the event bubbles up through the DOM or not
-    cancelable: true // Optional: Specify whether the event is cancelable or not
-  });
+  private static dispatchPlayerSelectedEvent() {
+    // Create a new CustomEvent with the specific parameter included in the detail
+    const event = new CustomEvent('playerselected', {
+      detail: {
+        message: 'playerselected custom event!'
+      },
+      bubbles: true,
+      cancelable: true
+    });
+    // Dispatch the event on a target element, e.g., document or a specific element
+    document.dispatchEvent(event);
+  }
 
   private static dispatchClassSelectedEvent(group: Group) {
     // Create a new CustomEvent with the specific parameter included in the detail
@@ -101,7 +107,7 @@ class GUI {
     this._activeMenu = Menu.MAIN_MENU;
 
     // Default players
-    this._players = [];
+    this._playersSelection = [];
 
     // fps
     const fps = document.createElement("div");
@@ -144,9 +150,9 @@ class GUI {
     return this._isPaused;
   }
 
-  // Players
-  public getPlayers(): string[] {
-    return this._players;
+  // PlayersSelection
+  public getPlayersSelection(): PlayerSelection[] {
+    return this._playersSelection;
   }
 
   // ActiveMenu
@@ -180,7 +186,7 @@ class GUI {
       case Menu.MAIN_MENU:
         this._mainMenuContainer.style.display = 'flex';
         this._isPaused = true;
-        this._players = [];
+        this._playersSelection = [];
         break;
       case Menu.CLASS_MENU:
         this._classMenuContainer.style.display = 'flex';
@@ -343,11 +349,11 @@ class GUI {
       this.setActiveMenu(Menu.CLASS_MENU);
 
       // Add 2 players
-      this._players.push("player1");
-      this._players.push("player2");
+      this._playersSelection.push(new PlayerSelection("player1", Group.getSprinter()));
+      this._playersSelection.push(new PlayerSelection("player2", Group.getGhost()));
 
       // Dispatch the mode selected event
-      document.dispatchEvent(GUI._modeSelectedEvent);
+      GUI.dispatchPlayerSelectedEvent();
 
       this._isPaused = false;
       this._isInGame = true;
@@ -427,11 +433,26 @@ class GUI {
 
     buttonContainer.appendChild(classDescriptionContainer);
 
-    this._addButtonMenu(buttonContainer, "Back", () => {
+    const confirmContainer = document.createElement('div');
+    confirmContainer.className = "menu_btn_confirm_container";
+
+    this._addButtonMenu(confirmContainer, "Start", () => {
+      console.log("Start");
+      this.setActiveMenu(Menu.NONE_MENU);
+
+      // Dispatch the mode selected event
+      GUI.dispatchPlayerSelectedEvent();
+
+      this._isPaused = false;
+      this._isInGame = true;
+    }, "confirm_btn");
+
+    this._addButtonMenu(confirmContainer, "Back", () => {
       console.log("Back");
       this.setActiveMenu(Menu.MAIN_MENU);
     }, "tertiary_btn");
 
+    buttonContainer.appendChild(confirmContainer);
     this._classMenuContainer.appendChild(buttonContainer);
   }
 

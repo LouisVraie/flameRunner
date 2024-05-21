@@ -136,8 +136,8 @@ class App {
         // Load the world
         world.loadWorld();
 
-        document.addEventListener("modeselected", async (event) => {
-            const playerList = this._gui.getPlayers();
+        document.addEventListener("playerselected", async (event) => {
+            const playerList = this._gui.getPlayersSelection();
 
             const promiseList = [];
 
@@ -146,11 +146,11 @@ class App {
                 // Odd players are player 1
                 const isPlayer1 = playerList.indexOf(player) % 2 == 0;
 
-                promiseList.push(world.addPlayer(player, isPlayer1));
+                promiseList.push(world.addPlayer(player.getIdentifier(), player.getGroup(), isPlayer1));
             }
 
             await Promise.all(promiseList);
-               
+
             // Set the character's collision on the cube modifier
             world.setCubeModifierCollision();
         });

@@ -8,10 +8,14 @@
   --class-color: #333333;
   --class-background-color: whitesmoke;
 
+  --confirm-color: #38761d;
+  --confirm-background-color: #93c47d;
+
   --default-text-color: #ffffff;
   --default-background-color: rgba(0, 0, 0, 0.5);
 
   --border-width: 2px;
+  --width-container: 40%;
 
   --skewX-deg: -20deg;
   --skewX-deg-cancel: 20deg;
