@@ -332,15 +332,7 @@ class GUI {
 
       // Set the active menu
       this.setActiveMenu(Menu.CLASS_MENU);
-      
-      // Add 1 player
-      // this._players.push("player1");
-
-      // // Dispatch the mode selected event
-      // document.dispatchEvent(GUI._modeSelectedEvent);
-
-      // this._isPaused = false;
-      // this._isInGame = true;
+            
     }, "primary_btn");
     this._addButtonMenu(buttonContainer, "Dual runners", () => {
       console.log("Dual runners");
@@ -425,6 +417,8 @@ class GUI {
       classTitle.innerHTML = group.getName();
       classDescription.innerHTML = `Description : ${group.getDescription()}`;
       classDuration.innerHTML = `Delay : ${group.getCapacityDelay()}`;
+
+      // TODO : Add the class to the player selection
     });
 
     classDescriptionContainer.appendChild(classTitle);
@@ -439,6 +433,9 @@ class GUI {
     this._addButtonMenu(confirmContainer, "Start", () => {
       console.log("Start");
       this.setActiveMenu(Menu.NONE_MENU);
+
+      // TODO : Add 1 players
+      this._playersSelection.push(new PlayerSelection("player1", Group.getSprinter()));
 
       // Dispatch the mode selected event
       GUI.dispatchPlayerSelectedEvent();
