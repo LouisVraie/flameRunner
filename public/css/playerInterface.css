@@ -122,10 +122,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+}
+
+.class_ability_icon_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid white;
   border-radius: 50%;
   width: 100px;
   height: 100px;
   overflow: hidden;
   background-color: var(--default-background-color);
+}
+
+.class_ability_icon {
+
+}
+
+.class_ability_name {
+  font-size: 15px;
 }

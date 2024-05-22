@@ -157,6 +157,8 @@ class Player {
   public async addCharacterAsync(name: string, group: Group): Promise<void> {
     const character = new Character(this._scene, name);
     this._character = await character.createCharacterAsync(group);
+    // Set the class ability to the interface
+    this._interface.setClassAbility(group);
   }
 
   // Attach controller to the player

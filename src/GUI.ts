@@ -17,6 +17,7 @@ class GUI {
   private _isInGame: boolean;
   private _activeMenu: Menu;
   
+  private _numberOfPlayers: number;
   private _playersSelection: PlayerSelection[];
 
   private static dispatchNumberOfPlayersEvent(numberOfPlayers: number) {
@@ -124,6 +125,7 @@ class GUI {
     this._activeMenu = Menu.MAIN_MENU;
 
     // Default players
+    this._numberOfPlayers = 0;
     this._playersSelection = [];
 
     // fps
@@ -174,11 +176,11 @@ class GUI {
 
       // Description
       const classDescription = document.getElementById(`${eventPlayerIdentifier}_class_description`) as HTMLDivElement;
-      classDescription.innerHTML = `Description : ${group.getDescription()}`;
+      classDescription.innerHTML = `<b>Description :</b> ${group.getDescription()}`;
       
-      // Duration
-      const classDuration = document.getElementById(`${eventPlayerIdentifier}_class_duration`) as HTMLDivElement;
-      classDuration.innerHTML = `Delay : ${group.getCapacityDelay()}`;
+      // Delay
+      const classDelay = document.getElementById(`${eventPlayerIdentifier}_class_Delay`) as HTMLDivElement;
+      classDelay.innerHTML = `<b>Delay :</b> ${group.getCapacityDelay()}`;
 
       // Check if the player selection already exists
       const playerSelection = this._playersSelection.find(player => player.getIdentifier() === eventPlayerIdentifier);
@@ -194,7 +196,7 @@ class GUI {
 
       // Check if the confirm button should be enabled
       const confirmButton = document.getElementById("confirm_menu_btn_container").firstChild as HTMLDivElement;
-      if (this._playersSelection.length > 0) {
+      if (this._playersSelection.length > 0 && this._numberOfPlayers === this._playersSelection.length) {
         confirmButton.style.pointerEvents = "all";
       } else {
         confirmButton.style.pointerEvents = "none";
@@ -252,6 +254,7 @@ class GUI {
       case Menu.MAIN_MENU:
         this._mainMenuContainer.style.display = 'flex';
         this._isPaused = true;
+        this._numberOfPlayers = 0;
         this._playersSelection = [];
         break;
       case Menu.CLASS_MENU:
@@ -443,11 +446,13 @@ class GUI {
     menuContentContainer.className = "menu_content_container";
     
     document.addEventListener("numberofplayers", (event: CustomEvent) => {
+      
       // Clear the previous content
       menuContentContainer.replaceChildren();
 
       // Get the number of players
       const numberOfPlayers = event.detail.numberOfPlayers as number;
+      this._numberOfPlayers = numberOfPlayers;
 
       for (let i = 0; i < numberOfPlayers; i++) {
         const playerIdentifier = `player${i + 1}`;
@@ -481,23 +486,23 @@ class GUI {
         const classTitle = document.createElement('div');
         classTitle.id = `${playerIdentifier}_class_title`;
         classTitle.className = "class_title";
-        classTitle.innerHTML = "Title : ";
+        classTitle.innerHTML = "Title";
 
         // Description
         const classDescription = document.createElement('div');
         classDescription.id = `${playerIdentifier}_class_description`;
         classDescription.className = "class_description";
-        classDescription.innerHTML = "Description : ";
+        classDescription.innerHTML = "<b>Description</b>";
 
-        // Duration
-        const classDuration = document.createElement('div');
-        classDuration.id = `${playerIdentifier}_class_duration`;
-        classDuration.className = "class_duration";
-        classDuration.innerHTML = "Duration : ";
+        // Delay
+        const classDelay = document.createElement('div');
+        classDelay.id = `${playerIdentifier}_class_Delay`;
+        classDelay.className = "class_Delay";
+        classDelay.innerHTML = "<b>Delay</b>";
 
         classDescriptionContainer.appendChild(classTitle);
         classDescriptionContainer.appendChild(classDescription);
-        classDescriptionContainer.appendChild(classDuration);
+        classDescriptionContainer.appendChild(classDelay);
 
         buttonContainer.appendChild(classDescriptionContainer);
         menuContentContainer.appendChild(buttonContainer);

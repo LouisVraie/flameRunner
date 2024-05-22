@@ -1,5 +1,6 @@
 import Modifier from "./Modifier";
 import "../public/css/playerInterface.css";
+import Group from "./Group";
 
 class PlayerInterface {
     
@@ -146,7 +147,29 @@ class PlayerInterface {
         // Class ability
         /////////////////////////////////////////////
         const classAbilityContainer = document.createElement('div');
+        classAbilityContainer.id = "class_ability_container_"+this._playerName;
         classAbilityContainer.className = "class_ability_container";
+
+        // Icon
+        const classAbilityIconContainer = document.createElement('div');
+        classAbilityIconContainer.id = "class_ability_icon_container_"+this._playerName;
+        classAbilityIconContainer.className = "class_ability_icon_container";
+        classAbilityContainer.appendChild(classAbilityIconContainer);
+
+        const classAbilityIcon = document.createElement('img');
+        classAbilityIcon.id = "class_ability_icon_"+this._playerName;
+        classAbilityIcon.className = "class_ability_icon";
+        classAbilityIcon.src = "";
+        classAbilityIcon.alt = "Class ability icon";
+        classAbilityIconContainer.appendChild(classAbilityIcon);
+
+        // Name
+        const classAbilityName = document.createElement('div');
+        classAbilityName.id = "class_ability_name_"+this._playerName;
+        classAbilityName.className = "class_ability_name";
+        classAbilityName.innerHTML = "Class ability";
+        classAbilityContainer.appendChild(classAbilityName);
+
         bottomContainer.appendChild(classAbilityContainer);
     }
 
@@ -214,6 +237,17 @@ class PlayerInterface {
             modifierEffectName.innerHTML = "";
             modifierEffectTimer.innerHTML = "";
         }
+    }
+
+    public setClassAbility(group: Group) : void {
+        // Set icon
+        const classAbilityIcon = document.querySelector('#class_ability_icon_'+this._playerName) as HTMLImageElement;
+        classAbilityIcon.src = group.getIcon();
+        classAbilityIcon.alt = group.getName();
+
+        // Set name
+        const classAbilityName = document.querySelector('#class_ability_name_'+this._playerName) as HTMLDivElement;
+        classAbilityName.innerHTML = group.getName();
     }
 
     public updateModifierTime(timer: number) : void {
