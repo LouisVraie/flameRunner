@@ -13,12 +13,16 @@
 
 .menu_title {
   font-size: 4rem;
+  margin-top: 0;
+  margin-bottom: var(--gap);
   color: var(--primary-color);
   text-shadow: 1px 1px 2px var(--shadow-color);
 }
 
 .menu_subtitle {
   font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: var(--gap);
   color: var(--secondary-color);
   text-shadow: 1px 1px 1px var(--shadow-color);
 }
@@ -53,8 +57,11 @@
 .menu_btn {
   color: black;
   width: var(--width-container);
-  min-width: 200px;
+  min-width: 400px;
+  max-width: 600px;
   height: 7vh;
+  min-height: 40px;
+  max-height: 80px;
   font-size: 1.5rem;
   transform: skewX(var(--skewX-deg));
   border: var(--border-width) solid;
@@ -109,11 +116,21 @@
 }
 
 /* Class selection menu */
+.player_title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 0;
+  color: var(--default-text-color);
+  text-shadow: 1px 1px 1px var(--shadow-color);
+}
+
 .class_btn {
   background-color: var(--class-background-color);
   border-color: var(--class-color);
   color: var(--class-color);
   height: 10vh;
+  min-height: 110px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -157,8 +174,8 @@
 }
 
 .class_img_container {
-  width: 80px;
-  height: 100%;
+  width: 100px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,6 +210,7 @@
 
 .class_description_container {
   width: var(--width-container);
+  min-width: 400px;
   background-color: var(--primary-background-color);
   border: var(--border-width) solid var(--primary-color);
   padding: 10px;
@@ -231,7 +249,6 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--gap);
-
 }
 
 .key_container {

@@ -140,7 +140,6 @@ class GUI {
         // If the game is in progress
         if (this._isInGame) {         
           this._isPaused = !this._isPaused;
-          console.log("isPaused", this._isPaused);
 
           // If the game is paused, set the active menu to pause menu
           if (this._isPaused) {
@@ -225,8 +224,6 @@ class GUI {
 
   // ActiveMenu
   public setActiveMenu(newMenu: Menu): void {
-    console.log("new Menu", newMenu);
-    console.log("active Menu", this._activeMenu);
     switch (this._activeMenu) {
       case Menu.MAIN_MENU:
         this._mainMenuContainer.style.display = 'none';
@@ -398,8 +395,6 @@ class GUI {
 
     // Generate buttons with onclick event
     this._addButtonMenu(buttonContainer, "Solo runner", () => {
-      console.log("Solo runner");
-
       // Dispatch the number of players event
       GUI.dispatchNumberOfPlayersEvent(1);
 
@@ -408,8 +403,6 @@ class GUI {
             
     }, "primary_btn");
     this._addButtonMenu(buttonContainer, "Dual runners", () => {
-      console.log("Dual runners");
-
       // Dispatch the number of players event
       GUI.dispatchNumberOfPlayersEvent(2);
 
@@ -418,20 +411,15 @@ class GUI {
 
     }, "primary_btn");
     this._addButtonMenu(buttonContainer, "Help", () => { 
-      console.log("Help");
-
       // Set the active menu
       this.setActiveMenu(Menu.HELP_MENU);
 
     }, "secondary_btn");
     this._addButtonMenu(buttonContainer, "Settings", () => {
-      console.log("Settings");
-
       // Set the active menu
       this.setActiveMenu(Menu.SETTINGS_MENU);
     }, "secondary_btn");
     this._addButtonMenu(buttonContainer, "Quit", () => {
-      console.log("Quit");
       // Close the game
       window.close();
     }, "tertiary_btn");
@@ -455,28 +443,23 @@ class GUI {
       this._numberOfPlayers = numberOfPlayers;
 
       for (let i = 0; i < numberOfPlayers; i++) {
-        const playerIdentifier = `player${i + 1}`;
+        const playerIdentifier = `Player${i + 1}`;
 
         const buttonContainer = document.createElement('div');
         buttonContainer.id = `${playerIdentifier}_menu_btn_container`;
         buttonContainer.className = "menu_btn_container";
 
-        this._addClassButton(buttonContainer, Group.getSprinter(), playerIdentifier, () => {
-          console.log("Sprinter");
-          // this.setActiveMenu(Menu.NONE_MENU);
-        }, "class_btn");
-        this._addClassButton(buttonContainer, Group.getGhost(), playerIdentifier, () => {
-          console.log("Ghost");
-          // this.setActiveMenu(Menu.NONE_MENU);
-        }, "class_btn");
-        this._addClassButton(buttonContainer, Group.getEndurance(), playerIdentifier, () => {
-          console.log("Endurance");
-          // this.setActiveMenu(Menu.NONE_MENU);
-        }, "class_btn");
-        this._addClassButton(buttonContainer, Group.getGymnast(), playerIdentifier, () => {
-          console.log("Gymnast");
-          // this.setActiveMenu(Menu.NONE_MENU);
-        }, "class_btn");
+        // Title
+        const playerTitle = document.createElement('h3');
+        playerTitle.id = `${playerIdentifier}_title`;
+        playerTitle.className = "player_title";
+        playerTitle.innerHTML = playerIdentifier;
+        buttonContainer.appendChild(playerTitle);
+
+        this._addClassButton(buttonContainer, Group.getSprinter(), playerIdentifier, () => {}, "class_btn");
+        this._addClassButton(buttonContainer, Group.getGhost(), playerIdentifier, () => {}, "class_btn");
+        this._addClassButton(buttonContainer, Group.getEndurance(), playerIdentifier, () => {}, "class_btn");
+        this._addClassButton(buttonContainer, Group.getGymnast(), playerIdentifier, () => {}, "class_btn");
 
         const classDescriptionContainer = document.createElement('div');
         classDescriptionContainer.id = `${playerIdentifier}_class_description_container`;
@@ -513,7 +496,7 @@ class GUI {
     confirmContainer.className = "menu_btn_confirm_container";
 
     this._addButtonMenu(confirmContainer, "Start", () => {
-      console.log("Start");
+      // Set the active menu
       this.setActiveMenu(Menu.NONE_MENU);
 
       // Dispatch the mode selected event
@@ -524,7 +507,7 @@ class GUI {
     }, "confirm_btn");
 
     this._addButtonMenu(confirmContainer, "Back", () => {
-      console.log("Back");
+      // Set the active menu
       this.setActiveMenu(Menu.MAIN_MENU);
     }, "tertiary_btn");
 
@@ -539,20 +522,19 @@ class GUI {
     buttonContainer.className = "menu_btn_container";
 
     this._addButtonMenu(buttonContainer, "Resume", () => {
-      console.log("Resume");
       this._isPaused = false;
+      // Set the active menu
       this.setActiveMenu(Menu.NONE_MENU);
     }, "primary_btn");
     this._addButtonMenu(buttonContainer, "Help", () => {
-      console.log("Help");
+      // Set the active menu
       this.setActiveMenu(Menu.HELP_MENU);
     }, "secondary_btn");
     this._addButtonMenu(buttonContainer, "Settings", () => {
-      console.log("Settings");
+      // Set the active menu
       this.setActiveMenu(Menu.SETTINGS_MENU);
     }, "secondary_btn");
     this._addButtonMenu(buttonContainer, "Back to Main menu", () => {
-      console.log("Back to Main menu");
       window.location.reload();
     }, "tertiary_btn");
     this._pauseMenuContainer.appendChild(buttonContainer);
@@ -564,7 +546,7 @@ class GUI {
     buttonContainer.className = "menu_btn_container";
 
     this._addButtonMenu(buttonContainer, "Back", () => {
-      console.log("Back");
+      // Set the active menu
       if (this._isInGame) {
         this.setActiveMenu(Menu.PAUSE_MENU);
       } else {
@@ -724,7 +706,7 @@ class GUI {
     buttonContainer.className = "menu_btn_container";
 
     this._addButtonMenu(buttonContainer, "Back", () => {
-      console.log("Back");
+      // Set the active menu
       if (this._isInGame) {
         this.setActiveMenu(Menu.PAUSE_MENU);
       } else {
