@@ -19,6 +19,20 @@ class GUI {
   
   private _playersSelection: PlayerSelection[];
 
+  private static dispatchNumberOfPlayersEvent(numberOfPlayers: number) {
+    // Create a new CustomEvent with the specific parameter included in the detail
+    const event = new CustomEvent('numberofplayers', {
+      detail: {
+        message: 'numberofplayers custom event!',
+        numberOfPlayers: numberOfPlayers
+      },
+      bubbles: true,
+      cancelable: true
+    });
+    // Dispatch the event on a target element, e.g., document or a specific element
+    document.dispatchEvent(event);
+  }
+
   private static dispatchPlayerSelectedEvent() {
     // Create a new CustomEvent with the specific parameter included in the detail
     const event = new CustomEvent('playerselected', {
@@ -32,12 +46,15 @@ class GUI {
     document.dispatchEvent(event);
   }
 
-  private static dispatchClassSelectedEvent(group: Group) {
+  private static dispatchClassSelectedEvent(playerIdentifier: string, group: Group, parent: HTMLDivElement, button: HTMLDivElement) {
     // Create a new CustomEvent with the specific parameter included in the detail
     const event = new CustomEvent('classselected', {
       detail: {
         message: 'classselected custom event!',
-        group: group
+        playerIdentifier: playerIdentifier,
+        group: group,
+        parent: parent,
+        button: button
       },
       bubbles: true,
       cancelable: true
@@ -132,6 +149,55 @@ class GUI {
         } else {
           this.setActiveMenu(Menu.MAIN_MENU);
         }
+      }
+    });
+
+    document.addEventListener("classselected", (event: CustomEvent) => {
+      const eventPlayerIdentifier = event.detail.playerIdentifier as string;
+      const group = event.detail.group as Group;
+      const parent = event.detail.parent as HTMLDivElement;
+      const button = event.detail.button as HTMLDivElement;      
+
+      // Reset the class button style
+      for (let i = 0; i < parent.children.length; i++) {
+        const buttonContent = parent.children[i] as HTMLDivElement;
+        buttonContent.classList.remove("class_btn_selected");
+      }
+
+      // Update the class button style
+      button.classList.add("class_btn_selected");
+
+      // Update the class description
+      // Title
+      const classTitle = document.getElementById(`${eventPlayerIdentifier}_class_title`) as HTMLDivElement;
+      classTitle.innerHTML = group.getName();
+
+      // Description
+      const classDescription = document.getElementById(`${eventPlayerIdentifier}_class_description`) as HTMLDivElement;
+      classDescription.innerHTML = `Description : ${group.getDescription()}`;
+      
+      // Duration
+      const classDuration = document.getElementById(`${eventPlayerIdentifier}_class_duration`) as HTMLDivElement;
+      classDuration.innerHTML = `Delay : ${group.getCapacityDelay()}`;
+
+      // Check if the player selection already exists
+      const playerSelection = this._playersSelection.find(player => player.getIdentifier() === eventPlayerIdentifier);
+
+      // Remove the previous player selection
+      if (playerSelection) {
+        const index = this._playersSelection.indexOf(playerSelection);
+        this._playersSelection.splice(index, 1);
+      }
+
+      // Add the class to the player selection
+      this._playersSelection.push(new PlayerSelection(eventPlayerIdentifier, group));
+
+      // Check if the confirm button should be enabled
+      const confirmButton = document.getElementById("confirm_menu_btn_container").firstChild as HTMLDivElement;
+      if (this._playersSelection.length > 0) {
+        confirmButton.style.pointerEvents = "all";
+      } else {
+        confirmButton.style.pointerEvents = "none";
       }
     });
   }
@@ -252,12 +318,13 @@ class GUI {
     parent.appendChild(button);
   }
 
-  private _addClassButton(parent: HTMLDivElement, group: Group, onClickAction: () => void, additionalClass?: string): void {
+  private _addClassButton(parent: HTMLDivElement, group: Group, playerIdentifier: string, onClickAction: () => void, additionalClass?: string): void {
     const button = document.createElement('div');
+    button.id = `${playerIdentifier}_${group.getName().toLowerCase()}_btn`;
     button.className = "menu_btn";
     button.onclick = () => {
       onClickAction();
-      GUI.dispatchClassSelectedEvent(group);
+      GUI.dispatchClassSelectedEvent(playerIdentifier, group, parent, button);
     };
 
     if (additionalClass) {
@@ -330,6 +397,9 @@ class GUI {
     this._addButtonMenu(buttonContainer, "Solo runner", () => {
       console.log("Solo runner");
 
+      // Dispatch the number of players event
+      GUI.dispatchNumberOfPlayersEvent(1);
+
       // Set the active menu
       this.setActiveMenu(Menu.CLASS_MENU);
             
@@ -337,18 +407,12 @@ class GUI {
     this._addButtonMenu(buttonContainer, "Dual runners", () => {
       console.log("Dual runners");
 
+      // Dispatch the number of players event
+      GUI.dispatchNumberOfPlayersEvent(2);
+
       // Set the active menu
       this.setActiveMenu(Menu.CLASS_MENU);
 
-      // Add 2 players
-      this._playersSelection.push(new PlayerSelection("player1", Group.getSprinter()));
-      this._playersSelection.push(new PlayerSelection("player2", Group.getGhost()));
-
-      // Dispatch the mode selected event
-      GUI.dispatchPlayerSelectedEvent();
-
-      this._isPaused = false;
-      this._isInGame = true;
     }, "primary_btn");
     this._addButtonMenu(buttonContainer, "Help", () => { 
       console.log("Help");
@@ -374,68 +438,78 @@ class GUI {
 
   private _createClassMenu(): void {
     this._addSubtitle(this._classMenuContainer, "Choose your class");
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = "menu_btn_container";
 
-    this._addClassButton(buttonContainer, Group.getSprinter(), () => {
-      console.log("Sprinter");
-      // this.setActiveMenu(Menu.NONE_MENU);
-    }, "class_btn");
-    this._addClassButton(buttonContainer, Group.getGhost(), () => {
-      console.log("Ghost");
-      // this.setActiveMenu(Menu.NONE_MENU);
-    }, "class_btn");
-    this._addClassButton(buttonContainer, Group.getEndurance(), () => {
-      console.log("Endurance");
-      // this.setActiveMenu(Menu.NONE_MENU);
-    }, "class_btn");
-    this._addClassButton(buttonContainer, Group.getGymnast(), () => {
-      console.log("Gymnast");
-      // this.setActiveMenu(Menu.NONE_MENU);
-    }, "class_btn");
+    const menuContentContainer = document.createElement('div');
+    menuContentContainer.className = "menu_content_container";
+    
+    document.addEventListener("numberofplayers", (event: CustomEvent) => {
+      // Clear the previous content
+      menuContentContainer.replaceChildren();
 
-    const classDescriptionContainer = document.createElement('div');
-    classDescriptionContainer.className = "class_description_container";
+      // Get the number of players
+      const numberOfPlayers = event.detail.numberOfPlayers as number;
 
-    // Title
-    const classTitle = document.createElement('div');
-    classTitle.className = "class_title";
-    classTitle.innerHTML = "Title : ";
+      for (let i = 0; i < numberOfPlayers; i++) {
+        const playerIdentifier = `player${i + 1}`;
 
-    // Description
-    const classDescription = document.createElement('div');
-    classDescription.className = "class_description";
-    classDescription.innerHTML = "Description : ";
+        const buttonContainer = document.createElement('div');
+        buttonContainer.id = `${playerIdentifier}_menu_btn_container`;
+        buttonContainer.className = "menu_btn_container";
 
-    // Duration
-    const classDuration = document.createElement('div');
-    classDuration.className = "class_duration";
-    classDuration.innerHTML = "Duration : ";
+        this._addClassButton(buttonContainer, Group.getSprinter(), playerIdentifier, () => {
+          console.log("Sprinter");
+          // this.setActiveMenu(Menu.NONE_MENU);
+        }, "class_btn");
+        this._addClassButton(buttonContainer, Group.getGhost(), playerIdentifier, () => {
+          console.log("Ghost");
+          // this.setActiveMenu(Menu.NONE_MENU);
+        }, "class_btn");
+        this._addClassButton(buttonContainer, Group.getEndurance(), playerIdentifier, () => {
+          console.log("Endurance");
+          // this.setActiveMenu(Menu.NONE_MENU);
+        }, "class_btn");
+        this._addClassButton(buttonContainer, Group.getGymnast(), playerIdentifier, () => {
+          console.log("Gymnast");
+          // this.setActiveMenu(Menu.NONE_MENU);
+        }, "class_btn");
 
-    document.addEventListener("classselected", (event: CustomEvent) => {
-      const group = event.detail.group as Group;
-      classTitle.innerHTML = group.getName();
-      classDescription.innerHTML = `Description : ${group.getDescription()}`;
-      classDuration.innerHTML = `Delay : ${group.getCapacityDelay()}`;
+        const classDescriptionContainer = document.createElement('div');
+        classDescriptionContainer.id = `${playerIdentifier}_class_description_container`;
+        classDescriptionContainer.className = "class_description_container";
 
-      // TODO : Add the class to the player selection
+        // Title
+        const classTitle = document.createElement('div');
+        classTitle.id = `${playerIdentifier}_class_title`;
+        classTitle.className = "class_title";
+        classTitle.innerHTML = "Title : ";
+
+        // Description
+        const classDescription = document.createElement('div');
+        classDescription.id = `${playerIdentifier}_class_description`;
+        classDescription.className = "class_description";
+        classDescription.innerHTML = "Description : ";
+
+        // Duration
+        const classDuration = document.createElement('div');
+        classDuration.id = `${playerIdentifier}_class_duration`;
+        classDuration.className = "class_duration";
+        classDuration.innerHTML = "Duration : ";
+
+        classDescriptionContainer.appendChild(classTitle);
+        classDescriptionContainer.appendChild(classDescription);
+        classDescriptionContainer.appendChild(classDuration);
+
+        buttonContainer.appendChild(classDescriptionContainer);
+        menuContentContainer.appendChild(buttonContainer);
+      }
     });
-
-    classDescriptionContainer.appendChild(classTitle);
-    classDescriptionContainer.appendChild(classDescription);
-    classDescriptionContainer.appendChild(classDuration);
-
-    buttonContainer.appendChild(classDescriptionContainer);
-
     const confirmContainer = document.createElement('div');
+    confirmContainer.id = "confirm_menu_btn_container";
     confirmContainer.className = "menu_btn_confirm_container";
 
     this._addButtonMenu(confirmContainer, "Start", () => {
       console.log("Start");
       this.setActiveMenu(Menu.NONE_MENU);
-
-      // TODO : Add 1 players
-      this._playersSelection.push(new PlayerSelection("player1", Group.getSprinter()));
 
       // Dispatch the mode selected event
       GUI.dispatchPlayerSelectedEvent();
@@ -449,8 +523,8 @@ class GUI {
       this.setActiveMenu(Menu.MAIN_MENU);
     }, "tertiary_btn");
 
-    buttonContainer.appendChild(confirmContainer);
-    this._classMenuContainer.appendChild(buttonContainer);
+    this._classMenuContainer.appendChild(menuContentContainer);
+    this._classMenuContainer.appendChild(confirmContainer);
   }
 
   private _createPauseMenu(): void {

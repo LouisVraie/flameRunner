@@ -11,11 +11,15 @@
   --confirm-color: #38761d;
   --confirm-background-color: #93c47d;
 
-  --default-text-color: #ffffff;
+  --default-text-color: whitesmoke;
   --default-background-color: rgba(0, 0, 0, 0.5);
 
+  --shadow-color: rgba(0, 0, 0, 1);
+
   --border-width: 2px;
-  --width-container: 40%;
+  --width-container: 60%;
+
+  --gap: 15px;
 
   --skewX-deg: -20deg;
   --skewX-deg-cancel: 20deg;
@@ -43,7 +47,7 @@ body {
 
   top: 0;
   left: 0;
-  color: white;
+  color: var(--default-text-color);
   flex-direction: row;
 }
 
@@ -53,7 +57,7 @@ body {
   border: 2px solid red;
   text-align: center;
   font-size: 16px;
-  color: white;
+  color: var(--default-text-color);
   top: 15px;
   right: 10px;
   width: 60px;
