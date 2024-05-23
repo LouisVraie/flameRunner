@@ -209,10 +209,13 @@ class Player {
       if (this._modifierTimer > 0 && this._modifier.getDuration() > 0 && !this._modifier.isInstant()){
         this._modifierTimer -= this._scene.getEngine().getDeltaTime();
       }
+
+      // update the character
+      this._character.updateCharacter(this._camRoot, this._controller, this._modifier);
+    } else {
+      this._character.updateCharacter(this._camRoot, this._controller, new Modifier());
     }
 
-    // update the character
-    this._character.updateCharacter(this._camRoot, this._controller, this._modifier);
   }
 
   // Update interface

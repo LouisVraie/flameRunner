@@ -210,14 +210,10 @@ class World{
         this._scene.freeActiveMeshes();
         this._scene.blockMaterialDirtyMechanism = true;
 
-        // world.addSphere("sphere", 32, 3, 0, 15, 0, true);
-        // 
+        // Add Cube Modifiers
         for (let i = 0; i < 5; i++) {
-            this.addCubeModifier(new Vector3(0 + i * 3, 3, 2));
+            this.addCubeModifier(new Vector3(0 + i * 3, 1, 10));
         }
-        // const player = await this.addPlayer("player1");
-        //const player2 = await world.addPlayer("player2");
-
 
         // Set up spawners
         this._spawnerTab.forEach((spawner) => {

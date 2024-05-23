@@ -67,8 +67,7 @@ class Character extends TransformNode{
   private static readonly PLAYER_HEIGHT: number = 1.5;
   private static readonly PLAYER_RADIUS: number = 0.25;
   private static readonly PLAYER_END_ANIMATION_THRESHOLD: number = 0.01;
-  // private static readonly PLAYER_SPEED: number = 4.5;
-  private static readonly PLAYER_SPEED: number = 45;
+  private static readonly PLAYER_SPEED: number = 4.5;
   private static readonly PLAYER_SPRINT_MULTIPLIER: number = 1.5;
   private static readonly MAX_STAMINA: number = 100;
   private static readonly STAMINA_REGEN: number = 8;

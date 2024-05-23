@@ -1,10 +1,9 @@
-import { Color3, TransformNode, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3, Color4 } from "@babylonjs/core";
+import { Color3, TransformNode, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import Obstacle from "./Obstacle";
-import { WORLD_SCALE } from "./World";
 
 class CubeModifier extends Obstacle{
 
-  private static readonly SIZE: number = 0.5;
+  private static readonly SIZE: number = 1;
   private static readonly ROTATION_SPEED: number = 1;
 
   private _randomValue: number;
@@ -49,7 +48,7 @@ class CubeModifier extends Obstacle{
 
     // Creating the cube with the material
     const box = MeshBuilder.CreateBox("cubeModifierBox", {size: CubeModifier.SIZE}, this._scene);
-    box.scaling.scaleInPlace(WORLD_SCALE);
+    // box.scaling.scaleInPlace(WORLD_SCALE);
     box.material = cubeMaterial;
     box.enableEdgesRendering();
     box.edgesWidth = 2.0;
@@ -79,7 +78,7 @@ class CubeModifier extends Obstacle{
     const textPlane = MeshBuilder.CreatePlane("textPlane", {size: CubeModifier.SIZE}, this._scene);
     textPlane.position = new Vector3(0, 1, 0); // Adjust position as needed
     textPlane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-    textPlane.scaling.scaleInPlace(WORLD_SCALE);
+    textPlane.scaling.scaleInPlace(CubeModifier.SIZE);
     // textPlane.scaling.y = 0.5; // Adjust scale as needed
 
     // Create material for the text plane
