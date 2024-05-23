@@ -142,7 +142,7 @@ class Player {
     this._camera.fov = 0.47350045992678597;
     this._camera.parent = yTilt;
 
-    this._scene.activeCamera = this._camera;
+    //this._scene.activeCamera = this._camera;
   }
 
   private _updateCamera(): void {

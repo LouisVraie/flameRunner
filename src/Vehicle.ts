@@ -124,9 +124,7 @@ class Vehicle extends Obstacle {
         return this._lastPosition;
     }
 
-    public setLastPosition(pos:Vector3){
-        this._lastPosition= pos;
-    }
+    
 
     public getHitbox() : Mesh {
         return  this._hitbox;
@@ -136,21 +134,10 @@ class Vehicle extends Obstacle {
         return  this._hitboxAggregate;
     }
 
-    public getLastPosition() : Vector3{
-        return this._lastPosition;
-    }
-
     public setLastPosition(pos:Vector3){
         this._lastPosition= pos;
     }
 
-    public getHitbox() : Mesh {
-        return  this._hitbox;
-    }
-
-    public getHitboxAggregate(): PhysicsAggregate {
-        return  this._hitboxAggregate;
-    }
 
     //////////////////////////////////////////////////////////
     // methods

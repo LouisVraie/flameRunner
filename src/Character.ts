@@ -300,7 +300,7 @@ class Character extends TransformNode{
     camera.lockedTarget = this._cameraRoot; // target to follow
     this._camera = camera;
 
-    this._scene.activeCameras.push(this._camera);
+    //this._scene.activeCameras.push(this._camera);
   }
 
   // Update the character's grounded state
