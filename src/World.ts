@@ -10,6 +10,7 @@ import Vehicle from "./Vehicle";
 import Spawner from "./Spawner";
 
 import mesh8 from '../assets/models/animals/carp.glb';
+import mesh9 from '../assets/models/animals/thon.glb';
 
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
@@ -217,8 +218,8 @@ class World{
         this.addCubeModifier();
 
 
-        //const player = await this.addPlayer("player1", this._worldSpawn);
-        //this.setShadows(player.getCharacter().getMesh());
+        const player = await this.addPlayer("player1", this._worldSpawn);
+        this.setShadows(player.getCharacter().getMesh());
         //const player2 = await world.addPlayer("player2");
 
 
@@ -260,6 +261,11 @@ class World{
         carBody.position = new Vector3(0, 18, 0)
         carBody.scaling = new Vector3(5, 5, 5)
         carBody.id = "Carpe"
+
+        // let carBody = assets.meshes[0] as Mesh;
+        // carBody.position = new Vector3(0, 18, 0)
+        // carBody.scaling = new Vector3(5, 5, 5)
+        // carBody.id = "Carpe"
 
 
         let nbPoints = 25;
@@ -543,7 +549,6 @@ class World{
     
     async addPlayer(identifier: string, position : Vector3): Promise<Player> {
         const player = new Player(this._scene, identifier);
-        await player.addCharacterAsync("Wall-E", position, Group.getSprinter());
         await player.addCharacterAsync("Wall-E", position, Group.getSprinter());
         player.updatePlayer();
         this._shadowGenerator.addShadowCaster(player.getCharacter().getMesh())
