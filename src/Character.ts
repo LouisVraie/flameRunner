@@ -27,6 +27,8 @@ class Character extends TransformNode{
   private _stamina: number;
   private _staminaRegen: number;
 
+  private _spawnLocation : Vector3;
+
   // camera variables
   private _cameraRoot: AbstractMesh;
   private _camera: FollowCamera;
@@ -65,7 +67,8 @@ class Character extends TransformNode{
   private static readonly PLAYER_HEIGHT: number = 1.5;
   private static readonly PLAYER_RADIUS: number = 0.25;
   private static readonly PLAYER_END_ANIMATION_THRESHOLD: number = 0.01;
-  private static readonly PLAYER_SPEED: number = 4.5;
+  // private static readonly PLAYER_SPEED: number = 4.5;
+  private static readonly PLAYER_SPEED: number = 45;
   private static readonly PLAYER_SPRINT_MULTIPLIER: number = 1.5;
   private static readonly MAX_STAMINA: number = 100;
   private static readonly STAMINA_REGEN: number = 8;
@@ -76,7 +79,7 @@ class Character extends TransformNode{
   private static readonly SLIDE_FACTOR: number = 2.5;
   private static readonly SLIDE_TIME: number = 10; //how many frames the slide lasts
 
-  constructor(scene: Scene, name: string) {
+  constructor(scene: Scene, name: string, spawnLocation : Vector3) {
     super("character", scene);
     this._scene = scene;
     
@@ -85,6 +88,8 @@ class Character extends TransformNode{
     this._moveDirection = new Vector3(0, 0, 1);
 
     this._jumpCount = 0;
+
+    this._spawnLocation = spawnLocation;
   }
 
   //////////////////////////////////////////////////////////
@@ -155,6 +160,15 @@ class Character extends TransformNode{
     this._mesh.position = position;
   }
 
+  // Spawn Location
+  public getSpawnLocation(): Vector3 {
+    return this._spawnLocation;
+  }
+
+  public setSpawnLocation(spawnLocation: Vector3): void {
+    this._spawnLocation = spawnLocation;
+  }
+
   // Hitbox
   public getHitbox(): Mesh {
     return this._hitbox;
@@ -166,6 +180,20 @@ class Character extends TransformNode{
   }
   public setMesh(mesh: Mesh): void {
     this._mesh = mesh;
+  }
+
+  public getLastPosition(){
+    return this._lastPosition;
+  }
+  public setLastPosition(lastPosition: Vector3): void{
+    this._lastPosition = lastPosition;
+  }
+
+  public getCapsuleAggregate(){
+    return this._capsuleAggregate;
+  }
+  public setCapsuleAggregate(capsuleAggregate: PhysicsAggregate): void{
+    this._capsuleAggregate = capsuleAggregate;
   }
 
   //////////////////////////////////////////////////////////
@@ -207,11 +235,14 @@ class Character extends TransformNode{
     // Create capsule
     this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: Character.PLAYER_HEIGHT, radius: Character.PLAYER_RADIUS }, this._scene);
     this._hitbox.visibility = 0.4;
-    this._hitbox.position = new Vector3(0, 8, 0);
+    this._hitbox.position = this._spawnLocation;
     this._hitbox.isPickable = false;
     this._hitbox.actionManager = new ActionManager(this._scene);
     this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1000, friction:0.5, restitution: 0.01 }, this._scene);
     this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+
+    // Important for relocation of aggregated mesh
+    this._capsuleAggregate.body.disablePreStep = false;
 
     this._capsuleAggregate.body.setMassProperties({
       inertia: new Vector3(0, 0, 0),
@@ -224,6 +255,7 @@ class Character extends TransformNode{
     this._setAnimations(assets);
     this._mesh = characterMesh;
     this._mesh.parent = this._hitbox;
+    this._mesh.rotation.y = Math.PI/2;
 
     // Create the follow camera
     this.createFollowCamera();

@@ -1,7 +1,5 @@
 # Flame Runner
 
-> *Testez le jeu **[ici](https://louisvraie.github.io/flameRunner/).***
-
 ## Description du jeu
 
 Jeu de course à pied avec un style low poly dans lequel vous traversez différents environnements (Ville, Campagne, Désert, ...) où l'objectif est d'arriver au bout du chemin en terminant par l'ascension de la montagne sacrée avec à son sommet la flamme olympique.
@@ -63,10 +61,9 @@ Celui qui possède le temps de course le plus court l'emporte.
 - Création du personnage 3D :
   - Trouver un modèle 3D;
   - Lui ajouter toutes les animations souhaitées ([voir Détails => Animations](#détails));
-  - Associer une caméra avec vue en troisième personne avec un offset;
+  - Associer une caméra avec vue en troisième personne;
   - Appliquer de la physique au personnage;
   - Début des déplacements du personnage (ZQSD);
-- Gestion des viewports pour le split screen;
 
 ## Crédits
 

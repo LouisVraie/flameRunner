@@ -134,7 +134,7 @@ class App {
         world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
 
         // Load the world
-        world.loadWorld();
+        await world.loadWorld();
 
         document.addEventListener("playerselected", async (event) => {
             const playerList = this._gui.getPlayersSelection();
@@ -146,13 +146,13 @@ class App {
                 // Odd players are player 1
                 const isPlayer1 = playerList.indexOf(player) % 2 == 0;
 
-                promiseList.push(world.addPlayer(player.getIdentifier(), player.getGroup(), isPlayer1));
+                promiseList.push(world.addPlayer(player.getIdentifier(), world.getWorldSpawn(), player.getGroup(), isPlayer1));
             }
 
             await Promise.all(promiseList);
 
-            // Set the character's collision on the cube modifier
-            world.setCubeModifierCollision();
+            // Set the collision between players
+            world.setCollisionWithPlayers();
         });
     
         const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);

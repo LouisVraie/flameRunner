@@ -154,8 +154,8 @@ class Player {
   //////////////////////////////////////////////////////////
 
   // Add character to the scene
-  public async addCharacterAsync(name: string, group: Group): Promise<void> {
-    const character = new Character(this._scene, name);
+  public async addCharacterAsync(name: string, spawnLocation : Vector3, group: Group): Promise<void> {
+    const character = new Character(this._scene, name, spawnLocation);
     this._character = await character.createCharacterAsync(group);
     // Set the class ability to the interface
     this._interface.setClassAbility(group);
@@ -185,7 +185,7 @@ class Player {
     this._camera.fov = 0.47350045992678597;
     this._camera.parent = yTilt;
 
-    this._scene.activeCamera = this._camera;
+    //this._scene.activeCamera = this._camera;
   }
 
   private _updateCamera(): void {
