@@ -136,9 +136,26 @@ class Vehicle extends Obstacle {
         return  this._hitboxAggregate;
     }
 
+    public getLastPosition() : Vector3{
+        return this._lastPosition;
+    }
+
+    public setLastPosition(pos:Vector3){
+        this._lastPosition= pos;
+    }
+
+    public getHitbox() : Mesh {
+        return  this._hitbox;
+    }
+
+    public getHitboxAggregate(): PhysicsAggregate {
+        return  this._hitboxAggregate;
+    }
+
     //////////////////////////////////////////////////////////
     // methods
     //////////////////////////////////////////////////////////
+    
     
     public async createObstacle(): Promise<void> {
         const parent = new TransformNode("vehicule", this._scene);
@@ -154,7 +171,9 @@ class Vehicle extends Obstacle {
 
         this._mesh = assets.meshes[0] as Mesh;
         
+        
         this._mesh.scaling = new Vector3(Vehicle.VEHICLE_SCALING, Vehicle.VEHICLE_SCALING, Vehicle.VEHICLE_SCALING);
+        
         
         
 
@@ -199,6 +218,7 @@ class Vehicle extends Obstacle {
         for(const childMesh of assets.meshes){
             childMesh.refreshBoundingInfo(true);
             //console.log(childMesh.id);
+            //console.log(childMesh.id);
             if (childMesh.getTotalVertices() > 0) {
                 if(childMesh.id.includes("wheel")) {
                     
@@ -212,6 +232,7 @@ class Vehicle extends Obstacle {
             }
         }
         
+       
        
         //this._mesh = vehicule;
         //this._mesh.parent = this._hitbox;
@@ -234,6 +255,7 @@ class Vehicle extends Obstacle {
         this.setTangible(true);
         this.setParentNode(parent);
     }
+
 
     
     

@@ -40,34 +40,33 @@ class App {
         this._menuContainer.className = "menu_container";
         this._menuContainer.style.display = "flex";
 
-        //this.createStartMenu(this._globalGUI);
-        this.createStartMenu(this._globalGUI);
+        // this.createStartMenu(this._globalGUI);
 
-        let toggle = false;
+        // let toggle = false;
 
         // fps
         const fps = document.createElement("div");
         fps.id = "fps";
         document.body.appendChild(fps);
 
-        document.addEventListener("keydown", (event) => {
-            if (event.key == "Escape") {
+        // document.addEventListener("keydown", (event) => {
+        //     if (event.key == "Escape") {
                 
 
-                console.log("toggle", toggle);                
+        //         console.log("toggle", toggle);                
 
-                if(toggle){
-                    this._menuContainer.style.display = 'flex';  
-                    //this._globalGUI.style.pointerEvents = "none";
+        //         if(toggle){
+        //             this._menuContainer.style.display = 'flex';  
+        //             //this._globalGUI.style.pointerEvents = "none";
                                       
-                } 
-                else{
-                    this._menuContainer.style.display = 'none';
-                    //this._globalGUI.style.pointerEvents = "none";
-                }
-                toggle = !toggle;
-            }
-        });
+        //         } 
+        //         else{
+        //             this._menuContainer.style.display = 'none';
+        //             //this._globalGUI.style.pointerEvents = "none";
+        //         }
+        //         toggle = !toggle;
+        //     }
+        // });
 
         // initialize babylon scene and engine
         this._engine = new Engine(this._canvas, true);

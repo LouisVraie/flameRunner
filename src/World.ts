@@ -32,6 +32,7 @@ class World{
     private _players: Player[] = [];
     private _cubeModifiers: CubeModifier[] = [];
     private _vehicleObstacles: Vehicle[] = [];
+    private _vehicleObstacles: Vehicle[] = [];
     private _gameObject: TransformNode;
     private _light: DirectionalLight;
     private _shadowGenerator: ShadowGenerator;
@@ -81,6 +82,11 @@ class World{
         env.gammaSpace = false;
         env.rotationY = 4.0823;
         this._scene.environmentTexture = env;
+
+        this._worldSpawn = Vector3.Zero();
+
+        // Pour afficher un background
+        //var layer = new Layer('','https://i.imgur.com/mBBxGJH.jpg', this._scene, true);
 
         this._worldSpawn = Vector3.Zero();
 
@@ -142,6 +148,8 @@ class World{
         for (const childMesh of result.meshes) {
 
             childMesh.refreshBoundingInfo(true);
+
+            //console.log(childMesh.id)
             
             if (childMesh.getTotalVertices() > 0) {
 
@@ -210,6 +218,7 @@ class World{
         this.addCubeModifier();
 
 
+        const player = await this.addPlayer("player1", this._worldSpawn);
         const player = await this.addPlayer("player1", this._worldSpawn);
         this.setShadows(player.getCharacter().getMesh());
         //const player2 = await world.addPlayer("player2");
@@ -534,7 +543,9 @@ class World{
     }
 
     async addPlayer(identifier: string, position : Vector3): Promise<Player> {
+    async addPlayer(identifier: string, position : Vector3): Promise<Player> {
         const player = new Player(this._scene, identifier);
+        await player.addCharacterAsync("Wall-E", position, Group.getSprinter());
         await player.addCharacterAsync("Wall-E", position, Group.getSprinter());
         player.updatePlayer();
         this._shadowGenerator.addShadowCaster(player.getCharacter().getMesh())
@@ -584,6 +595,7 @@ class World{
             // for each cube modifier
             for (const cube of this._cubeModifiers) {
                 //console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and cube: " + cube.getMesh().name);
+                //console.log("Setting collision for player: " + player.getCharacter().getMesh().name + " and cube: " + cube.getMesh().name);
                 // Create a trigger for the cube modifier
                 player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
                     {
@@ -591,6 +603,7 @@ class World{
                         parameter : cube.getMesh()
                     },
                     () => {
+                        //console.log("HIT Cube!");
                         //console.log("HIT Cube!");
                         cube.disposeObstacle();
                     }
