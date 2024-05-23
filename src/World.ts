@@ -2,7 +2,7 @@ import { AbstractMesh, ActionManager, Animation, Color3, Color4, CubeTexture, Cu
 import Player from "./Player";
 import Group from "./Group";
 
-import map from "../assets/models/MapDefinitive2.glb";
+// import map from "../assets/models/MapDefinitive2.glb";
 import HavokPhysics from "@babylonjs/havok";
 import CubeModifier from "./CubeModifier";
 
@@ -16,15 +16,12 @@ import mesh9 from '../assets/models/animals/thon.glb';
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
 export const WORLD_SCALE: number = 0.3;
 
-const worldMap = {
-    name: "map",
-    model: map
-}
-
 //filtering happens here
 export const FILTER_GROUP_GROUND = 1;
 export const FILTER_GROUP_LIMIT = 2;
 export const FILTER_GROUP_OBSTACLE = 3;
+
+const MAP_URL = "https://dl.dropbox.com/scl/fi/y3orekwg8oyf0acin4mfu/MapDefinitive2.glb?rlkey=izr7r9j1311rldo23ocrit4f6"
 
 class World{
     private _scene: Scene;
@@ -104,8 +101,7 @@ class World{
     }
 
     async loadWorld(){
-        const result = await SceneLoader.ImportMeshAsync("", "", worldMap.model, this._scene);
-
+        const result = await SceneLoader.ImportMeshAsync("", "", MAP_URL, this._scene);
 
         this._worldMesh = result.meshes[0];
         this._worldMesh.receiveShadows = true;
