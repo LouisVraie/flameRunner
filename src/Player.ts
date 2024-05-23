@@ -113,8 +113,8 @@ class Player {
   //////////////////////////////////////////////////////////
 
   // Add character to the scene
-  public async addCharacterAsync(name: string, group: Group): Promise<void> {
-    const character = new Character(this._scene, name);
+  public async addCharacterAsync(name: string, spawn: Vector3, group: Group): Promise<void> {
+    const character = new Character(this._scene, name, spawn);
     this._character = await character.createCharacterAsync(group);
   }
 

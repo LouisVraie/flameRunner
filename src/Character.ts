@@ -3,6 +3,7 @@ import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
+import { Vector } from "babylonjs";
 
 enum MovingState {
   DEFAULT = 0,
@@ -25,6 +26,8 @@ class Character extends TransformNode{
   private _health: number;
   private _stamina: number;
   private _staminaRegen: number;
+
+  private _spawnLocation : Vector3;
 
   // camera variables
   private _cameraRoot: AbstractMesh;
@@ -73,7 +76,7 @@ class Character extends TransformNode{
   private static readonly SLIDE_FACTOR: number = 2.5;
   private static readonly SLIDE_TIME: number = 10; //how many frames the slide lasts
 
-  constructor(scene: Scene, name: string) {
+  constructor(scene: Scene, name: string, spawnLocation : Vector3) {
     super("character", scene);
     this._scene = scene;
     
@@ -85,6 +88,8 @@ class Character extends TransformNode{
     this._moveDirection = new Vector3(0, 0, 1);
 
     this._jumpCount = 0;
+
+    this._spawnLocation = spawnLocation;
   }
 
   //////////////////////////////////////////////////////////
@@ -163,6 +168,15 @@ class Character extends TransformNode{
     this._mesh.position = position;
   }
 
+  // Spawn Location
+  public getSpawnLocation(): Vector3 {
+    return this._spawnLocation;
+  }
+
+  public setSpawnLocation(spawnLocation: Vector3): void {
+    this._spawnLocation = spawnLocation;
+  }
+
   // Hitbox
   public getHitbox(): Mesh {
     return this._hitbox;
@@ -174,6 +188,20 @@ class Character extends TransformNode{
   }
   public setMesh(mesh: Mesh): void {
     this._mesh = mesh;
+  }
+
+  public getLastPosition(){
+    return this._lastPosition;
+  }
+  public setLastPosition(lastPosition: Vector3): void{
+    this._lastPosition = lastPosition;
+  }
+
+  public getCapsuleAggregate(){
+    return this._capsuleAggregate;
+  }
+  public setCapsuleAggregate(capsuleAggregate: PhysicsAggregate): void{
+    this._capsuleAggregate = capsuleAggregate;
   }
 
   //////////////////////////////////////////////////////////
@@ -213,11 +241,14 @@ class Character extends TransformNode{
     // Create capsule
     this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: Character.PLAYER_HEIGHT, radius: Character.PLAYER_RADIUS }, this._scene);
     this._hitbox.visibility = 0.4;
-    this._hitbox.position = new Vector3(0, 8, 0);
+    this._hitbox.position = this._spawnLocation;
     this._hitbox.isPickable = false;
     this._hitbox.actionManager = new ActionManager(this._scene);
     this._capsuleAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.CAPSULE, { mass: 1000, friction:0.5, restitution: 0.01 }, this._scene);
     this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+
+    // Important for relocation of aggregated mesh
+    this._capsuleAggregate.body.disablePreStep = false;
 
     this._capsuleAggregate.body.setMassProperties({
       inertia: new Vector3(0, 0, 0),
