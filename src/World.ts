@@ -10,6 +10,7 @@ import Vehicle from "./Vehicle";
 import Spawner from "./Spawner";
 
 import mesh8 from '../assets/models/animals/carp.glb';
+import mesh9 from '../assets/models/animals/thon.glb';
 
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
@@ -252,6 +253,11 @@ class World{
         carBody.position = new Vector3(0, 18, 0)
         carBody.scaling = new Vector3(5, 5, 5)
         carBody.id = "Carpe"
+
+        // let carBody = assets.meshes[0] as Mesh;
+        // carBody.position = new Vector3(0, 18, 0)
+        // carBody.scaling = new Vector3(5, 5, 5)
+        // carBody.id = "Carpe"
 
 
         const nbPoints = 25;
@@ -548,7 +554,7 @@ class World{
         this._scene.enablePhysics(gravity, this._physicsPlugin);
     }
 
-    public setShadows(mesh: AbstractMesh){
+    private _setShadows(mesh: AbstractMesh){
         this._shadowGenerator.addShadowCaster(mesh);
     }
 
@@ -666,6 +672,7 @@ class World{
     // Set all the collisions with the players
     public setCollisionWithPlayers() {
         for (const player of this._players) {
+            this._setShadows(player.getCharacter().getMesh());
             this._setCubeModifierCollision(player);
             this._checkPointManager(player);
             this._deathManager(player);
