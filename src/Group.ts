@@ -1,6 +1,13 @@
 import { Vector3 } from "@babylonjs/core";
 import Modifier from "./Modifier";
 
+import sprinterIcon from '../assets/icons/groups/sprinter.png';
+import ghostIcon from '../assets/icons/groups/ghost.png';
+import enduranceIcon from '../assets/icons/groups/endurance.png';
+import enduranceHotIcon from '../assets/icons/groups/enduranceHot.png';
+import enduranceColdIcon from '../assets/icons/groups/enduranceCold.png';
+import gymnastIcon from '../assets/icons/groups/gymnast.png';
+
 class Group {
 
   private _name: string;
@@ -101,7 +108,7 @@ class Group {
   public static getSprinter(): Group {
     const name = "Sprinter";
     const description = "Run faster";
-    const icon = "sprinter.png";
+    const icon = sprinterIcon;
     const capacityName = "Fast runner";
     const capacityDuration = 10;
     const capacityDelay = 10;
@@ -124,7 +131,7 @@ class Group {
   public static getGhost(): Group {
     const name = "Ghost";
     const description = "Run through obstacles";
-    const icon = "ghost.png";
+    const icon = ghostIcon;
     const capacityName = name;
     const capacityDuration = 10;
     const capacityDelay = 10;
@@ -146,7 +153,7 @@ class Group {
   public static getEndurance(): Group {
     const name = "Endurance";
     const description = "Improved stamina";
-    const icon = "endurance.png";
+    const icon = enduranceIcon;
     const capacityName = "Endurance boost";
     const capacityDuration = 15;
     const capacityDelay = 15;
@@ -161,8 +168,8 @@ class Group {
 
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
   
-    const hotEndurance = new Group("Hot Endurance", "Endurance in heat", "heat.png", "Heat endurance boost", capacity, capacityDuration, capacityDelay);
-    const coldEndurance = new Group("Cold Endurance", "Endurance in cold", "cold.png", "Cold endurance boost", capacity, capacityDuration, capacityDelay);
+    const hotEndurance = new Group("Hot Endurance", "Endurance in heat", enduranceHotIcon, "Heat endurance boost", capacity, capacityDuration, capacityDelay);
+    const coldEndurance = new Group("Cold Endurance", "Endurance in cold", enduranceColdIcon, "Cold endurance boost", capacity, capacityDuration, capacityDelay);
     
     group.setSubGroups([hotEndurance, coldEndurance]);
     
@@ -173,7 +180,7 @@ class Group {
   public static getGymnast(): Group {
     const name = "Gymnast";
     const description = "Jump higher and longer";
-    const icon = "gymnast.png";
+    const icon = gymnastIcon;
     const capacityName = "Extension";
     const capacityDuration = 12;
     const capacityDelay = 12;
