@@ -75,6 +75,7 @@ class GUI {
   constructor() {
     this._globalGUI = document.createElement("div");
     this._globalGUI.id = "gui";
+    this._globalGUI.style.display="none";
     document.body.appendChild(this._globalGUI);
 
     // Create the main menu container
@@ -220,6 +221,11 @@ class GUI {
   // PlayersSelection
   public getPlayersSelection(): PlayerSelection[] {
     return this._playersSelection;
+  }
+
+  // IsInGame
+  public isInGame(): boolean {
+    return this._isInGame;
   }
 
   // ActiveMenu

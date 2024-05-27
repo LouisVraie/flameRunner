@@ -5,4 +5,5 @@ window.onload = async () => {
     const app = new App();
     
     const sc = await app.createScene();
+    app.start();
 }

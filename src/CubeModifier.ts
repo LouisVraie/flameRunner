@@ -1,5 +1,6 @@
 import { Color3, TransformNode, DynamicTexture, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core";
 import Obstacle from "./Obstacle";
+import World from "./World";
 
 class CubeModifier extends Obstacle{
 
@@ -10,9 +11,11 @@ class CubeModifier extends Obstacle{
   private _gradientColor: Color3;
 
   private _mesh : Mesh;
+  private world: World;
 
-  constructor(scene: Scene) {
+  constructor(scene: Scene, world: World) {
     super(scene);
+    this.world = world;
   }
 
   //////////////////////////////////////////////////////////
@@ -56,6 +59,7 @@ class CubeModifier extends Obstacle{
     box.parent = parent;
     
     this._mesh = box;
+    this.world._setShadows(this._mesh)
 
     // Adding rotation animation to the cube
     this._scene.registerBeforeRender(() => {

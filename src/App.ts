@@ -1,4 +1,4 @@
-import { ArcRotateCamera, Engine, HavokPlugin, HemisphericLight, MeshBuilder, PhysicsAggregate, PhysicsShapeType, Scene, Vector3, Viewport } from "@babylonjs/core";
+import { ArcRotateCamera, Animation, Engine, HavokPlugin, HemisphericLight, MeshBuilder, PhysicsAggregate, PhysicsShapeType, Scene, Vector3, Viewport, Mesh, StandardMaterial, DynamicTexture, Color3, AbstractMesh } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
@@ -15,6 +15,7 @@ class App {
     private _camera: ArcRotateCamera;
     public _light: HemisphericLight;
     private _gui: GUI;
+    private _world: World;
 
     private _viewportsData: Viewport[] = [
         new Viewport(0, 0, 0.5, 1.0),
@@ -61,6 +62,12 @@ class App {
             // display fps
             divFPS.innerText = this._engine.getFps().toFixed() + " fps";
         });
+
+        this._world = new World(this._scene);
+    }
+
+    showMenu(){        
+        this._gui.getGlobalGUI().style.display = "flex";
     }
 
 
@@ -111,19 +118,82 @@ class App {
         this._scene = scene;
     }
 
+    public getGUI(): GUI{
+        return this._gui;
+    }
+
     //////////////////////////////////////////////////////////
     // methods
     //////////////////////////////////////////////////////////
+    
     private _isGamePaused(): boolean {
         return this._gui.isPaused();
     }
 
+    // Fonction de lancement du jeu
+    public async start(){
+
+        await this.waitGameLoaded();
+
+        // Attendre 10 secondes le temps d'afficher les modèles
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        
+        console.log("Le jeu peut commencer")
+
+        let countdownContainers = [];
+        let countdownDivs = [];
+
+        // Création des éléments html pour le compte à rebours
+        this._world.getPlayers().forEach(player =>{
+            const container = document.querySelector('#middle_container_'+player.getIdentifier()) as HTMLElement;
+            const countDownContainer = document.createElement('div')
+            countDownContainer.setAttribute('class', 'countdown');
+            container.appendChild(countDownContainer);
+            countdownContainers.push(container);
+            countdownDivs.push(countDownContainer)
+        })
+             
+            
+        // Lancer le décompte de 3 à 0
+        for (let i = 3; i >= 0; i--) {
+            countdownDivs.forEach(div => div.innerHTML = i.toString())
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+           
+        countdownDivs.forEach(div => div.innerHTML = "GO")
+            
+        // Supprimer la barrière du spawn
+        this._world.getStartWall().dispose();
+
+        // Déclencher les timers des joueurs
+        this._world.getPlayers().forEach(player =>{
+            player.setTimer(0);
+            player.setArrived(false);
+        })
+
+        // Attendre 2 secondes puis supprimer les éléments html du compte à rebours
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        countdownContainers.forEach(container => container.innerHTML = "")
+    }
+
+    // Fonction pour attendre que la variable soit true pour lancer le jeu
+    public async waitGameLoaded(): Promise<void> {
+        return new Promise((resolve) => {
+            const interval = setInterval(() => {
+                if (this._gui.isInGame()) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 100); // Vérifie toutes les 100 ms
+        });
+    }
+
     // Create the scene
     public async createScene(): Promise<Scene>{
-        const world = new World(this._scene);
+        
     
-        const ground = MeshBuilder.CreateGround("ground", {width: 100, height: 100}, this._scene);
-        ground.position = new Vector3(0, -5, 0);
+        const ground = MeshBuilder.CreateGround("ground", {width: 300, height: 500}, this._scene);
+        ground.position = new Vector3(85, -30, -180);
         ground.receiveShadows = true;
     
         //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
@@ -131,31 +201,38 @@ class App {
     
         const havokInstance = await HavokPhysics();
         const havokPlugin = new HavokPlugin(true, havokInstance);    
-        world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
+        this._world.setPhysicsPlugin(new Vector3(0, -9.81, 0), havokPlugin); // Set the physics plugin to use for this world
 
         // Load the world
-        await world.loadWorld();
+        await this._world.loadWorld();
 
         document.addEventListener("playerselected", async (event) => {
             const playerList = this._gui.getPlayersSelection();
 
             const promiseList = [];
 
+            let i = -2;
             // Create Players
             for (const player of playerList) {
                 // Odd players are player 1
                 const isPlayer1 = playerList.indexOf(player) % 2 == 0;
 
-                promiseList.push(world.addPlayer(player.getIdentifier(), world.getWorldSpawn(), player.getGroup(), isPlayer1));
+                promiseList.push(this._world.addPlayer(player.getIdentifier(), new Vector3(this._world.getWorldSpawn().x, this._world.getWorldSpawn().y, this._world.getWorldSpawn().z  + i ), player.getGroup(), isPlayer1));
+
+                i += 4
             }
 
             await Promise.all(promiseList);
 
             // Set the collision between players
-            world.setCollisionWithPlayers();
+            this._world.setCollisionWithPlayers();
+
         });
     
-        const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);
+        //const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);
+        
+        //this.start();
+        this.showMenu();
         
         return this._scene;
     }

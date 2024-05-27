@@ -24,6 +24,8 @@ class Controller {
   private _jumping: boolean;
   private _sliding: boolean;
 
+  private _jumpKeyPressed: boolean = false;
+
   constructor(scene: Scene, isPlayer1: boolean) {
     this._scene = scene;
     this._isPlayer1 = isPlayer1;
@@ -64,6 +66,14 @@ class Controller {
         this._updateFromKeyboard();
       });
     }
+  }
+
+  public setJumpKeyPressed(isPressed: boolean): void {
+    this._jumpKeyPressed = isPressed;
+  }
+
+  public getJumpKeyPressed(): boolean {
+      return this._jumpKeyPressed;
   }
 
   //////////////////////////////////////////////////////////
@@ -212,26 +222,44 @@ class Controller {
 
   // Keyboard controls & Mobile controls
   //handles what is done when keys are pressed or if on mobile, when buttons are pressed
+  // private _updateFromKeyboard(): void {
+
+  //   // Jump
+  //   if(!this._jumping){
+  //     if (this._inputMap.get(this._jump)) {
+  //       this._jumping = true;
+  //     } else {
+  //       this._jumping = false;
+  //     }
+  //   }
+
+  //   // slide
+  //   if(!this._sliding){
+  //     if (this._inputMap.get(this._slide)) {
+  //       this._sliding = true;
+  //     } else {
+  //       this._sliding = false;
+  //     }
+  //   }
+  // }
+
   private _updateFromKeyboard(): void {
-
     // Jump
-    if(!this._jumping){
-      if (this._inputMap.get(this._jump)) {
-        this._jumping = true;
-      } else {
-        this._jumping = false;
-      }
+    if (this._inputMap.get(this._jump)) {
+        this.setJumpKeyPressed(true);
+    } else {
+        this.setJumpKeyPressed(false);
     }
 
-    // slide
-    if(!this._sliding){
-      if (this._inputMap.get(this._slide)) {
-        this._sliding = true;
-      } else {
-        this._sliding = false;
-      }
+    // Slide
+    if (!this._sliding) {
+        if (this._inputMap.get(this._slide)) {
+            this._sliding = true;
+        } else {
+            this._sliding = false;
+        }
     }
-  }
+}
 
 }
 

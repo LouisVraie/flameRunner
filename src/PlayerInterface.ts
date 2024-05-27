@@ -1,6 +1,7 @@
 import Modifier from "./Modifier";
 import "../public/css/playerInterface.css";
 import Group from "./Group";
+import { AbstractMesh } from "babylonjs";
 
 class PlayerInterface {
     
@@ -44,6 +45,7 @@ class PlayerInterface {
 
         const middleContainer = document.createElement('div')
         middleContainer.className = 'middle_container';
+        middleContainer.id = 'middle_container_'+this._playerName;
         middleContainer.innerHTML = this._playerEffect;
         this._gui.appendChild(middleContainer)
 
@@ -279,9 +281,20 @@ class PlayerInterface {
         const millisecondsPart = milliseconds % 1000;
 
         // Format the time string
-        this._playerTime = `${this.padLeft(minutes, 2)}:${this.padLeft(seconds, 2)}.${this.padLeft(millisecondsPart, 3)}`;
+        this._playerTime = `${this.padLeft(minutes, 2)}:${this.padLeft(seconds, 2)}:${this.padLeft(millisecondsPart, 3)}`;
         const timeContainer = document.querySelector('#timer_container_'+this._playerName) as HTMLDivElement;
         timeContainer.innerHTML = "Time : "+ this._playerTime;
+    }
+
+    public showFinalScreen(isWinner : boolean, isBestScore : boolean){
+        const container = document.querySelector('#middle_container_'+this._playerName) as HTMLElement;
+
+        if(isWinner){
+            container.innerHTML = `<div class="winner">You won!</div>`;
+        }
+        else{
+            container.innerHTML = `<div class="loser">You lost!</div>`;           
+        }
     }
 
     public updateStamina(stamina : number) : void {

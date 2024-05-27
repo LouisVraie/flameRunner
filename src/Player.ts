@@ -33,6 +33,8 @@ class Player {
   private _modifierTimer: number;
   private _startTime: number;
 
+  private _isArrived: boolean = true;
+
   //const values
   private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.45, 0, 0);
   private static readonly MAX_HEALTH: number = 3;
@@ -75,6 +77,19 @@ class Player {
   }
   public setIdentifier(identifier: string): void {
     this._identifier = identifier;
+  }
+
+  // Interface
+  public getInterface(): PlayerInterface {
+    return this._interface;
+  }
+
+  // Timer
+  public getTimer() : number{
+    return this._timer;
+  }
+  public setTimer(timer: number): void {
+    this._timer = timer;
   }
 
   // Score
@@ -149,6 +164,13 @@ class Player {
     console.log("CubeModifier : ", randomValue, "%, ", this._modifier.getName());
   }
 
+  public getArrived(): boolean{
+    return this._isArrived;
+  }
+  public setArrived(isArrived : boolean) : void {
+    this._isArrived = isArrived;
+  }
+
   //////////////////////////////////////////////////////////
   // Methods
   //////////////////////////////////////////////////////////
@@ -185,7 +207,7 @@ class Player {
     this._camera.fov = 0.47350045992678597;
     this._camera.parent = yTilt;
 
-    //this._scene.activeCamera = this._camera;
+    this._scene.activeCamera = this._camera;
   }
 
   private _updateCamera(): void {
@@ -248,7 +270,10 @@ class Player {
     this._interface.updateStamina(this._character.getStamina());
 
     // Update timer
-    this._interface.updateTimer(this._timer);
+    if(!this._isArrived){
+      this._interface.updateTimer(this._timer);
+    }
+    
   }
 
   // Update player

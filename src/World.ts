@@ -1,4 +1,4 @@
-import { AbstractMesh, ActionManager, Animation, Color3, Color4, CubeTexture, Curve3, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, Layer, Mesh, MeshBuilder, NodeMaterial,  ParticleSystem,  Path3D,  PhysicsAggregate,  PhysicsMotionType,  PhysicsShapeType,  Quaternion,  Scene,  SceneLoader,  SceneOptimizer,  SceneOptimizerOptions,  ScenePerformancePriority,  ShadowGenerator,  Space,  StandardMaterial,  Texture,  TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, ActionManager, Animation, Axis, Color3, Color4, CubeTexture, Curve3, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, Layer, Matrix, Mesh, MeshBuilder, NodeMaterial,  ParticleHelper,  ParticleSystem,  Path3D,  PhysicsAggregate,  PhysicsMotionType,  PhysicsShapeType,  Quaternion,  Scene,  SceneLoader,  SceneOptimizer,  SceneOptimizerOptions,  ScenePerformancePriority,  ShadowGenerator,  Space,  StandardMaterial,  Texture,  TransformNode, Vector3 } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
 
@@ -11,6 +11,7 @@ import Spawner from "./Spawner";
 
 import mesh8 from '../assets/models/animals/carp.glb';
 import mesh9 from '../assets/models/animals/thon.glb';
+import flare from '../assets/textures/Flare.png';
 
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
@@ -21,7 +22,14 @@ export const FILTER_GROUP_GROUND = 1;
 export const FILTER_GROUP_LIMIT = 2;
 export const FILTER_GROUP_OBSTACLE = 3;
 
-const MAP_URL = "https://dl.dropbox.com/scl/fi/y3orekwg8oyf0acin4mfu/MapDefinitive2.glb?rlkey=izr7r9j1311rldo23ocrit4f6"
+interface RespawnNode {
+    node: TransformNode;
+    angle: number;
+}
+
+const MAP_URL = "https://dl.dropbox.com/scl/fi/74cb0ly7c1r9a369vrkg6/MapDefinitive.glb?rlkey=4jgwqrbunmv6v2k9asv23v3fe&st=hv3c36qp"
+
+import Cow from "./Cow";
 
 class World{
     private _scene: Scene;
@@ -37,11 +45,22 @@ class World{
 
     private _dispawnerTab: AbstractMesh[] = [];
     private _spawnerTab: TransformNode[] = [];
-    private _respawnTab: TransformNode[] = [];
+    private _podium: TransformNode[] = [];
+    private _respawnTab: RespawnNode[] = [];
+    private _cubeSpawn: TransformNode[] =[];
     private _groundTab: AbstractMesh[] = [];
     private _limitTab: AbstractMesh[] =[];
     private _deathTab: AbstractMesh[] =[];
     private _checkpointTab: AbstractMesh[] =[];
+    
+    private _fishCurve: Vector3[] = [];
+    private _fishTangents: Vector3[] = [];
+    private _fishBinormals: Vector3[] = [];
+    private _fishNormals: Vector3[] = [];
+
+    private _end: AbstractMesh;
+    private _arrival: number = 0;
+    private _start: AbstractMesh;
 
     public getWorldSpawn() : Vector3{
         return this._worldSpawn;
@@ -55,7 +74,7 @@ class World{
     public getSpawnerList() : TransformNode[]{
         return this._spawnerTab;
     }
-    public getRespawnList() : TransformNode[]{
+    public getRespawnList() : RespawnNode[]{
         return this._respawnTab;
     }
     public getGroundList() : AbstractMesh[]{
@@ -63,6 +82,24 @@ class World{
     }
     public getLimitList() : AbstractMesh[]{
         return this._limitTab;
+    }
+    public getStartWall() : AbstractMesh{
+        return this._start;
+    }
+    public getPlayers() : Player[]{
+        return this._players;
+    }
+    public getFishCurve(): Vector3[]{
+        return this._fishCurve;
+    }
+    public getFishTangents(): Vector3[]{
+        return this._fishTangents;
+    }
+    public getFishBinormals(): Vector3[]{
+        return this._fishBinormals;
+    }
+    public getFishNormals(): Vector3[]{
+        return this._fishNormals;
     }
 
     constructor(scene: Scene) {
@@ -100,22 +137,37 @@ class World{
         this._scene.enablePhysics(WORLD_GRAVITY, hk)
     }
 
+    
+
     async loadWorld(){
         const result = await SceneLoader.ImportMeshAsync("", "", MAP_URL, this._scene);
 
         this._worldMesh = result.meshes[0];
-        this._worldMesh.receiveShadows = true;
+        // this._worldMesh.receiveShadows = true;
+        //this._shadowGenerator.addShadowCaster(this._worldMesh);
         this._gameObject = this._worldMesh;
         this._gameObject.name = "world";
         this._gameObject.setParent(null);
         this._gameObject.scaling.scaleInPlace(WORLD_SCALE);
         this._gameObject.position.set(0,-3,0);
 
-        for(const transformNode of result.transformNodes){
-            //console.log(transformNode.id);
 
+        this.addFreeCamera("Camera", new Vector3(-13.5, 3, 11), new Vector3(-13.963, 2.849, -6.664), true)
+
+        for(const transformNode of result.transformNodes){
+
+            //console.log(transformNode.id);
+            if(transformNode.id.startsWith("Particles")){                
+                this.addShiningParticles(transformNode.absolutePosition.clone().scaleInPlace(WORLD_SCALE));
+            }           
             if(transformNode.id.startsWith("Spawn")){
                 this._spawnerTab.push(transformNode);
+            }
+            if(transformNode.id.startsWith("Bonus")){
+                this._cubeSpawn.push(transformNode);
+            }
+            if(transformNode.id.startsWith("Final")){
+                this._podium.push(transformNode);
             }
 
             if(transformNode.id.startsWith("Respawn")){
@@ -125,16 +177,19 @@ class World{
                     console.log("World spawn : ", this._worldSpawn);
                 }
                 else{
-                    this._respawnTab.push(transformNode);
+                    //this._respawnTab.push(transformNode);
+                    const angle = this.getAngleForNode(transformNode);
+                    this._respawnTab.push({ node: transformNode, angle: angle });
                 }
             }
             
-
             if(transformNode.id.startsWith("Smoke")) {
-                this.addSmoke(transformNode.absolutePosition);
+                this.addSmoke(transformNode.absolutePosition.clone().scaleInPlace(WORLD_SCALE));
             }
         }
 
+
+       
 
 
 
@@ -142,10 +197,14 @@ class World{
 
             childMesh.refreshBoundingInfo(true);
 
-            //console.log(childMesh.id)
             
             if (childMesh.getTotalVertices() > 0) {
 
+
+                if(childMesh.id == "End"){
+                    this._end = childMesh;
+                    childMesh.isVisible = false;
+                }
                 
                 if(childMesh.id.startsWith("Dispawn")){
                     childMesh.isVisible = false;
@@ -165,12 +224,23 @@ class World{
                     const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
                     meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
 
+                    if(childMesh.id === "SolideStart"){
+                        this._start = childMesh;
+                        childMesh.visibility = 0.4;                
+                    }
+
                     if(childMesh.id === "SolideSolMap"){
                         meshAggregate.shape.filterMembershipMask = FILTER_GROUP_GROUND;
+                        // childMesh.receiveShadows = true;
+                        
                     }
                     if(childMesh.id.includes("SolideForetNoire") || childMesh.id.includes("SolideBatiment")){
                         meshAggregate.shape.filterMembershipMask = FILTER_GROUP_LIMIT;
+                        // childMesh.receiveShadows = true;
                     }
+
+                    childMesh.receiveShadows = true;
+                   //this._setShadows(childMesh);
                 }       
                 else if(childMesh.id.startsWith("Limit")) {
                     this._limitTab.push(childMesh);
@@ -190,9 +260,11 @@ class World{
                     childMesh.isPickable = false; 
                     childMesh.doNotSyncBoundingInfo = true;
                     
+                    // childMesh.receiveShadows = true;
+                    // this._shadowGenerator.addShadowCaster(childMesh);
                 }
 
-                if(childMesh.id == "Lave"){
+                if(childMesh.id == "VolcanLave"){
                     
                     NodeMaterial.ParseFromSnippetAsync("#JN2BSF#29", this._scene).then((mat) => {
                         childMesh.material = mat;    
@@ -212,6 +284,10 @@ class World{
             this.addCubeModifier(new Vector3(0 + i * 3, 1, 10));
         }
 
+        this._cubeSpawn.forEach(cube =>{
+            this.addCubeModifier(cube.absolutePosition.clone())
+        })
+
         // Set up spawners
         this._spawnerTab.forEach((spawner) => {
             const parts = spawner.id.split('_');
@@ -219,7 +295,7 @@ class World{
             const type = parts[2];
             if (type.startsWith("Vehicle")) {
                 
-                const newSpawner = new Spawner(this._scene, spawner, direction, "Vehicle", this._dispawnerTab, this._players);
+                const newSpawner = new Spawner(this._scene, spawner, direction, "Vehicle", this._dispawnerTab, this._players, this);
                 this._scene.registerBeforeRender(() => {
                     newSpawner.updateVehicle();
                 })
@@ -227,7 +303,7 @@ class World{
             }
             if (type.startsWith("Bee")) {
                 
-                const newSpawner = new Spawner(this._scene, spawner, direction, "Bee", this._dispawnerTab, this._players);
+                const newSpawner = new Spawner(this._scene, spawner, direction, "Bee", this._dispawnerTab, this._players, this);
                 this._scene.registerBeforeRender(() => {
                     newSpawner.updateBee();
                 })
@@ -235,22 +311,31 @@ class World{
             }
             if (type.startsWith("Bat")) {
                 
-                const newSpawner = new Spawner(this._scene, spawner, direction, "Bat", this._dispawnerTab, this._players);
+                const newSpawner = new Spawner(this._scene, spawner, direction, "Bat", this._dispawnerTab, this._players, this);
                 this._scene.registerBeforeRender(() => {
                     newSpawner.updateBat();
                 })
         
             }
+            if (type.startsWith("Rock")) {
+                
+                const newSpawner = new Spawner(this._scene, spawner, direction, "Rock", this._dispawnerTab, this._players, this);
+                        
+            }
         });
 
-        const assets = await SceneLoader.ImportMeshAsync("", "", mesh8, this._scene);
 
-        const carBody = assets.meshes[0] as Mesh;
-        carBody.position = new Vector3(0, 18, 0)
-        carBody.scaling = new Vector3(5, 5, 5)
-        carBody.id = "Carpe"
+        
+        
 
-        // let carBody = assets.meshes[0] as Mesh;
+
+        
+        
+
+
+        // const assets = await SceneLoader.ImportMeshAsync("", "", mesh8, this._scene);
+
+        // const carBody = assets.meshes[0] as Mesh;
         // carBody.position = new Vector3(0, 18, 0)
         // carBody.scaling = new Vector3(5, 5, 5)
         // carBody.id = "Carpe"
@@ -269,8 +354,6 @@ class World{
             }
 
         }
-        
-
 
         // PATH DEFINITION
         // Here we define the path along where the camera will move. 
@@ -291,116 +374,102 @@ class World{
         // Transform the curves into a proper Path3D object and get its orientation information
         //var path3d = new Path3D(curve.getPoints());
         const path3d = new Path3D(points);
-        const tangents = path3d.getTangents();
+        this._fishTangents = path3d.getTangents();
         //var normals = path3d.getNormals();
-        const binormals = path3d.getBinormals();
-        const curvePath = path3d.getCurve();
+        this._fishBinormals = path3d.getBinormals();
+        this._fishCurve = path3d.getCurve();
 
         //var path3d = new Path3D(curve.getPoints());
-        const normals = path3d.getNormals();
+        this._fishNormals = path3d.getNormals();
         // var theta = Math.acos(Vector3.Dot(Axis.Z,normals[0]));
         // carBody.rotate(Axis.Y, theta); 
         //var startRotation = carBody.rotationQuaternion;
         
         // visualisation
-        for(let p = 0; p < curvePath.length; p++) {
-            const tg = MeshBuilder.CreateLines('tg', {points: [ curvePath[p], curvePath[p].add(tangents[p]) ]}, this._scene);
+        for(let p = 0; p < this._fishCurve.length; p++) {
+            const tg = MeshBuilder.CreateLines('tg', {points: [ this._fishCurve[p], this._fishCurve[p].add(this._fishTangents[p]) ]}, this._scene);
             //tg.color = ;
             tg.isVisible = false;
             tg.parent = pathGroup;
-            const no = MeshBuilder.CreateLines('no', {points: [ curvePath[p], curvePath[p].add(normals[p]) ]}, this._scene);
+            const no = MeshBuilder.CreateLines('no', {points: [ this._fishCurve[p], this._fishCurve[p].add(this._fishNormals[p]) ]}, this._scene);
             //no.color = null;
             no.isVisible = false;
             no.parent = pathGroup;
-            const bi = MeshBuilder.CreateLines('bi', {points: [ curvePath[p], curvePath[p].add(binormals[p]) ]}, this._scene);
+            const bi = MeshBuilder.CreateLines('bi', {points: [ this._fishCurve[p], this._fishCurve[p].add(this._fishBinormals[p]) ]}, this._scene);
             //bi.color = Color3.Green();
-            bi.parent = null;
+            bi.parent = pathGroup;
             bi.isVisible = false;
         }
 
+       
 
+
+        console.log("Il y a " + this._fishCurve.length + " points dans la courbe.");
+
+        const totalPoints = this._fishCurve.length;
+
+        // Assurez-vous que vous avez au moins nbLoops points
+        if (totalPoints < nbLoops) {
+            console.error("Pas assez de points pour créer autant de sections.");
+        } else {
+            // Nombre de points par section
+            const pointsPerSection = totalPoints / nbLoops;
+
+            for (let i = 0; i < nbLoops; i++) {
+
+
+
+                let indice = pointsPerSection * i
+                let valeur = this._fishCurve.at(indice)
+
+                const node = new TransformNode("spawnerNode", this._scene);
+
+                // Définissez la position du TransformNode
+                node.position = valeur;
+
+                // Utilisez le TransformNode dans le constructeur de Spawner
+                const newSpawner = new Spawner(this._scene, node, "Forth", "Fish", this._dispawnerTab, this._players, this);
+
+            }
+        }
 
 
         // Define the position and orientation animations that will be populated
         // according to the Path3D properties 
-        const frameRate = 60;
-        const posAnim = new Animation("cameraPos", "position", frameRate, Animation.ANIMATIONTYPE_VECTOR3);
-        const posKeys = [];
-        const rotAnim = new Animation("cameraRot", "rotationQuaternion", frameRate, Animation.ANIMATIONTYPE_QUATERNION);
-        const rotKeys = [];
+        // const frameRate = 60;
+        // const posAnim = new Animation("cameraPos", "position", frameRate, Animation.ANIMATIONTYPE_VECTOR3);
+        // const posKeys = [];
+        // const rotAnim = new Animation("cameraRot", "rotationQuaternion", frameRate, Animation.ANIMATIONTYPE_QUATERNION);
+        // const rotKeys = [];
 
-        for (let i = 0; i < curvePath.length; i++) {
-            const position = curvePath[i];
-            const tangent = tangents[i];
-            const binormal = binormals[i];
+        // for (let i = 0; i < this._fishCurve.length; i++) {
+        //     const position = this._fishCurve[i];
+        //     const tangent = this._fishTangents[i];
+        //     const binormal = this._fishBinormals[i];
 
-            const rotation = Quaternion.FromLookDirectionRH(tangent, binormal);
+        //     const rotation = Quaternion.FromLookDirectionRH(tangent, binormal);
 
-            posKeys.push({frame: i * frameRate, value: position});
-            rotKeys.push({frame: i * frameRate, value: rotation});
+        //     posKeys.push({frame: i * frameRate, value: position});
+        //     rotKeys.push({frame: i * frameRate, value: rotation});
             
-        }
+        // }
 
-        posAnim.setKeys(posKeys);
-        rotAnim.setKeys(rotKeys);
-
-
-        carBody.animations.push(posAnim);
-        carBody.animations.push(rotAnim);
-        this._scene.beginAnimation(carBody, 0, 15000, true, 8);
+        // posAnim.setKeys(posKeys);
+        // rotAnim.setKeys(rotKeys);
 
 
-            /*-----------------------Path------------------------------------------*/ 
+        // carBody.animations.push(posAnim);
+        // carBody.animations.push(rotAnim);
         
-        // // Create array of points to describe the curve
-        // var points = [];
-        // var n = 900; // number of points
-        // var r = 3; //radius
-        // for (var i = 0; i < n + 1; i++) {
-        //     points.push( new Vector3((r + (r/5)*Math.sin(8*i*Math.PI/n))* Math.sin(2*i*Math.PI/n)*0.5, 0, (r + (r/10)*Math.sin(6*i*Math.PI/n)) * Math.cos(2*i*Math.PI/n) * 6));
-        // }	
-        
-        // //Draw the curve
-        // var track = MeshBuilder.CreateLines('track', {points: points}, this._scene);
-        // track.color = new Color3(0, 0, 0);
-        // track.position = new Vector3(38, 0, -190)
-        // /*-----------------------End Path------------------------------------------*/ 
-        
-        // /*-----------------------Ground------------------------------------------*/ 	
-        // var ground = MeshBuilder.CreateGround("ground", {width: 3*r, height: 3*r}, this._scene);
-        // /*-----------------------End Ground------------------------------------------*/ 	
+        // this._scene.beginAnimation(carBody, 0, 15000, true, 8);
 
-        // /*----------------Position and Rotate Car at Start---------------------------*/
-        // // carBody.position.y = 4;
-        // // carBody.position.z = r;
-        // carBody.position = new Vector3(38, 0, -190)
+        //for(let i = -160; i >= -200; i-=10){
+            this.createCowPath(new Vector3(38, 0, -160))
+        //}
 
-        // var path3d = new Path3D(points);
-        // var normals = path3d.getNormals();
-        // var theta = Math.acos(Vector3.Dot(Axis.Z,normals[0]));
-        // carBody.rotate(Axis.Y, theta); 
-        // var startRotation = carBody.rotationQuaternion;
-        // /*----------------End Position and Rotate Car at Start---------------------*/
+        // let cow = new Cow(this._scene, this._dispawnerTab, new Vector3(0, 20, 0), this)
+        //     cow.createObstacle();
 
-        // /*----------------Animation Loop---------------------------*/
-        // var i=0;
-        // this._scene.registerAfterRender(function() {
-        //     carBody.position.x = curve.getPoints().at(i).x;
-        //     carBody.position.z = curve.getPoints().at(i).z;
-            
-        //     theta = Math.acos(Vector3.Dot(normals[i],normals[i+1]));
-        //     var dir = Vector3.Cross(normals[i],normals[i+1]).y;
-        //     var dir = dir/Math.abs(dir);
-        //     carBody.rotate(Axis.Y, dir * theta);
-            
-        //     i = (i + 1) % (curve.getPoints().length -1);	//continuous looping  
-            
-        //     if(i == 0) {
-        //         carBody.rotationQuaternion = startRotation;
-        //     }
-        // });
-
-        //this._setVehicleCollision();
     }
 
     async initGame(){
@@ -408,6 +477,173 @@ class World{
     }
 
 
+    // Fonction pour obtenir l'angle associé à un TransformNode (à adapter selon votre logique)
+    getAngleForNode(node: TransformNode): number {
+        // Par exemple, mappez les IDs de nodes à des angles spécifiques
+        const angleMap: { [id: string]: number } = {
+            "Respawn1": Math.PI/2,
+            "Respawn2": Math.PI,
+            "Respawn3": Math.PI/2,
+            "Respawn4": 0,
+            "Respawn5": -Math.PI/3,
+            // Ajoutez d'autres mappings ici
+        };
+        return angleMap[node.id] || 0; // Retourne l'angle associé ou 0 par défaut
+    }
+
+    
+
+    // createCowPath(vector: Vector3){
+    //     /*-----------------------Path------------------------------------------*/ 
+        
+    //     const pathGroup = new Mesh("cowPathGroup");
+    //     // // Create array of points to describe the curve
+    //     var points = [];
+    //     var n = 450; // number of points
+    //     var r = 3.5; //radius
+    //     for (var i = 0; i < n + 1; i++) {
+    //         points.push( new Vector3((r + (r/5)*Math.sin(8*i*Math.PI/n))* Math.sin(2*i*Math.PI/n) + 37, 0, (r + (r/10)*Math.sin(6*i*Math.PI/n)) * Math.cos(2*i*Math.PI/n) - 160));
+    //     }	
+        
+    //     //Draw the curve
+    //     var track = MeshBuilder.CreateLines('track', {points: points}, this._scene);
+    //     track.color = new Color3(0, 0, 0);
+    //     track.position = vector//new Vector3(38, 0, -190)//-160 à -200
+    //     track.parent = pathGroup;
+    //     /*-----------------------End Path------------------------------------------*/ 
+
+    //     var path3d = new Path3D(points);
+    //     var normals = path3d.getNormals();
+    //     var theta = Math.acos(Vector3.Dot(Axis.Z,normals[0]));
+
+
+    //     var tangents = path3d.getTangents();
+    //     //var normals = path3d.getNormals();
+    //     var binormals = path3d.getBinormals();
+    //     var curve = path3d.getCurve();
+
+    //     // visualisation
+    //     for(let p = 0; p < curve.length; p++) {
+    //         const tg = MeshBuilder.CreateLines('tg', {points: [ curve[p], curve[p].add(tangents[p]) ]}, this._scene);
+    //         tg.color = Color3.Red();
+    //         tg.isVisible = true;
+    //         tg.parent = pathGroup;
+    //         const no = MeshBuilder.CreateLines('no', {points: [ curve[p], curve[p].add(normals[p]) ]}, this._scene);
+    //         //no.color = null;
+    //         no.isVisible = true;
+    //         no.parent = pathGroup;
+    //         const bi = MeshBuilder.CreateLines('bi', {points: [ curve[p], curve[p].add(binormals[p]) ]}, this._scene);
+    //         bi.color = Color3.Green();
+    //         bi.parent = pathGroup;
+    //         bi.isVisible = true;
+    //     }
+
+
+    //     let valeur = curve.at(0)
+
+    //     console.log(valeur)
+                
+    //     const node = new TransformNode("spawnerNode", this._scene);
+
+    //     // Définissez la position du TransformNode
+    //     node.position = valeur;
+
+    //     var theta = Math.acos(Vector3.Dot(Axis.Z,normals[0]));
+        
+
+    //     for(let a = 0; a < 3; a++){
+            
+    //         let cow = new Cow(this._scene, this._dispawnerTab, new Vector3(valeur.x, valeur.y, valeur.z), this)
+    //         cow.createObstacle();
+    //         /*----------------Animation Loop---------------------------*/
+    //         var i=0;
+    //         this._scene.registerAfterRender(function() {
+    //             cow.getHitbox().position.x = points.at(i).x;
+    //             cow.getHitbox().position.z = points.at(i).z -10 * a;
+                
+    //             theta = Math.acos(Vector3.Dot(normals[i],normals[i+1]));
+    //             var dir = Vector3.Cross(normals[i],normals[i+1]).y;
+    //             var dir = dir/Math.abs(dir);
+    //             cow.getHitbox().rotate(binormals[i], dir * theta );
+                
+    //             i = (i + 1) % (points.length -1);	//continuous looping  
+    //         });
+    //     }
+    // }
+    
+    createCowPath(vector: Vector3) {
+        /*-----------------------Path------------------------------------------*/ 
+        
+        const pathGroup = new Mesh("cowPathGroup", this._scene);
+        // Create array of points to describe the curve
+        var points = [];
+        var n = 450; // number of points
+        var r = 3.5; //radius
+        for (var i = 0; i < n + 1; i++) {
+            points.push( new Vector3((r + (r/5)*Math.sin(8*i*Math.PI/n))* Math.sin(2*i*Math.PI/n) + 37, 0.5, (r + (r/10)*Math.sin(6*i*Math.PI/n)) * Math.cos(2*i*Math.PI/n) - 160));
+        }	
+        
+        // //Draw the curve
+        // var track = MeshBuilder.CreateLines('track', {points: points}, this._scene);
+        // track.color = new Color3(0, 0, 0);
+        // track.position = vector;
+        // track.parent = pathGroup;
+        /*-----------------------End Path------------------------------------------*/ 
+    
+        var path3d = new Path3D(points);
+        var tangents = path3d.getTangents();
+        var normals = path3d.getNormals();
+        var binormals = path3d.getBinormals();
+        var curve = path3d.getCurve();
+    
+        // Visualisation (optional, can be removed if not needed)
+        for(let p = 0; p < curve.length; p++) {
+            const tg = MeshBuilder.CreateLines('tg', {points: [ curve[p], curve[p].add(tangents[p]) ]}, this._scene);
+            tg.color = Color3.Red();
+            tg.isVisible = false;
+            tg.parent = pathGroup;
+            const no = MeshBuilder.CreateLines('no', {points: [ curve[p], curve[p].add(normals[p]) ]}, this._scene);
+            no.isVisible = false;
+            no.parent = pathGroup;
+            const bi = MeshBuilder.CreateLines('bi', {points: [ curve[p], curve[p].add(binormals[p]) ]}, this._scene);
+            bi.color = Color3.Green();
+            bi.parent = pathGroup;
+            bi.isVisible = false;
+        }
+    
+        const valeur = curve[0];
+    
+        console.log(valeur);
+        
+        for(let a = 0; a < 10; a++){
+            const cow = new Cow(this._scene, this._dispawnerTab, new Vector3(valeur.x, valeur.y, valeur.z), this);
+            cow.createObstacle();
+    
+            /*----------------Animation Loop---------------------------*/
+            let i = Math.floor(Math.random() * points.length);
+            this._scene.registerAfterRender(() => {
+                const point = points[i];
+                const nextPoint = points[(i + 1) % points.length];
+    
+                // Update position
+                cow.getHitbox().position.x = point.x;
+                cow.getHitbox().position.z = point.z - 5 * a;
+    
+                // Calculate rotation
+                const direction = nextPoint.subtract(point).normalize();
+                const reverseDirection = direction.negate(); // Inverse the direction
+                const up = new Vector3(0, 1, 0);
+                const right = Vector3.Cross(up, reverseDirection).normalize();
+                const forward = Vector3.Cross(right, up).normalize();
+    
+                const rotationMatrix = Matrix.Identity();
+                Matrix.FromXYZAxesToRef(right, up, forward, rotationMatrix);
+                cow.getHitbox().rotationQuaternion = Quaternion.FromRotationMatrix(rotationMatrix);
+    
+                i = (i + 1) % (points.length - 1); // continuous looping
+            });
+        }
+    }
     
     
     applySnippetTexture(mesh: AbstractMesh, snippetId: string) : void{
@@ -418,15 +654,15 @@ class World{
     }
   
 
-    addFreeCamera(name: string,  position: Vector3, zoom : boolean) : void {
+    addFreeCamera(name: string,  position: Vector3, target: Vector3, zoom : boolean) : void {
         const camera = new FreeCamera(name, position, this._scene);
         if(zoom){
             camera.inputs.addMouseWheel();
         }
-        camera.setTarget(Vector3.Zero());
+        camera.setTarget(target);
         camera.attachControl(this._scene.getEngine().getRenderingCanvas(), true);
 
-        // this._scene.activeCameras.push(camera);
+        //this._scene.activeCameras.push(camera);
         //camera.viewport = new Viewport(0, 0, 0.5, 1.0);
     }
 
@@ -489,7 +725,7 @@ class World{
         // emitter shape
         const sphereEmitter = particleSystem.createConeEmitter(0.01, 0.5);
         // Where the particles come from
-        particleSystem.emitter = vector.scaleInPlace(WORLD_SCALE); // the starting object, the emitter
+        particleSystem.emitter = new Vector3(vector.x, vector.y - 3, vector.z)//.scaleInPlace(WORLD_SCALE); // the starting object, the emitter
         // particleSystem.minEmitBox = new Vector3(-0.5, -0.5, -0.5); // Starting all from
         // particleSystem.maxEmitBox = new Vector3(0.5, 0, 0.5); // To...
 
@@ -512,6 +748,75 @@ class World{
                 }, geyserDuration*1000);
             }
         }, intervalTime*1000);
+    }
+
+    addShiningParticles(location: Vector3){
+        // Create a particle system
+        var particleSystem = new ParticleSystem("particles", 2000, this._scene);
+
+        //Texture of each particle
+        particleSystem.particleTexture = new Texture(flare, this._scene);
+
+        // Where the particles come from
+        particleSystem.emitter = new Vector3(location.x, location.y - 3, location.z); // the starting location
+
+        // Colors of all particles
+        particleSystem.color1 = new Color4(1, 0.82, 0.7);
+        particleSystem.color2 = new Color4(1, 0.95, 0.2);
+        particleSystem.colorDead = new Color4(0.2, 0, 0, 0);
+
+        // Size of each particle (random between...
+        particleSystem.minSize = 0.01;
+        particleSystem.maxSize = 0.05;
+
+        // Life time of each particle (random between...
+        particleSystem.minLifeTime = 0.3;
+        particleSystem.maxLifeTime = 1.5;
+
+        // Emission rate
+        particleSystem.emitRate = 1000;
+
+
+        /******* Emission Space ********/
+        particleSystem.createSphereEmitter(2);
+
+
+        // Speed
+        particleSystem.minEmitPower = 1;
+        particleSystem.maxEmitPower = 3;
+        particleSystem.updateSpeed = 0.005;
+
+        particleSystem.updateFunction = function(particles) {
+            for (var index = 0; index < particles.length; index++) {
+                var particle = particles[index];
+                particle.age += this._scaledUpdateSpeed;
+                
+                if (particle.age >= particle.lifeTime) { // Recycle
+                        particles.splice(index, 1);
+                        this._stockParticles.push(particle);
+                        index--;
+                        continue;
+                }
+                else {
+                        particle.colorStep.scaleToRef(this._scaledUpdateSpeed, this._scaledColorStep);
+                        particle.color.addInPlace(this._scaledColorStep);
+        
+                        if (particle.color.a < 0)
+                                    particle.color.a = 0;
+        
+                        particle.angle += particle.angularSpeed * this._scaledUpdateSpeed;
+        
+                        particle.direction.scaleToRef(this._scaledUpdateSpeed, this._scaledDirection);
+                        particle.position.addInPlace(this._scaledDirection);
+        
+                        this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
+                        particle.direction.addInPlace(this._scaledGravity);
+                }
+            } 
+        }
+
+        // Start the particle system
+        particleSystem.start();
     }
 
     addHemisphericLight(name: string, position: Vector3, intensity: number): void{
@@ -539,7 +844,7 @@ class World{
     }
 
     public addCubeModifier(position: Vector3) : void {
-        const cubeModifier = new CubeModifier(this._scene);
+        const cubeModifier = new CubeModifier(this._scene, this);
         cubeModifier.createObstacle();
         cubeModifier.setPosition(position);
         this._cubeModifiers.push(cubeModifier);
@@ -550,7 +855,7 @@ class World{
         this._scene.enablePhysics(gravity, this._physicsPlugin);
     }
 
-    private _setShadows(mesh: AbstractMesh){
+    public _setShadows(mesh: AbstractMesh){
         this._shadowGenerator.addShadowCaster(mesh);
     }
 
@@ -610,14 +915,33 @@ class World{
                 },
                 () => {
                     
-                    console.log("Changement de respawn : ", checkPoint.id)
+                    // console.log("Changement de respawn : ", checkPoint.id)
+                    // console.log("Index : ", index);
+                    // const respawn = this._respawnTab.at(index).absolutePosition;
+                    // if(player.getCharacter().getSpawnLocation() != respawn){
+                    //     player.getCharacter().setSpawnLocation(respawn);
+                    //     console.log("Respawn set at : ", respawn)
+                    // }
+                    // else{
+                    //     console.log("Pas de changement de respawn");
+                    // }
+
+
+                    console.log("Changement de respawn : ", checkPoint.id);
                     console.log("Index : ", index);
-                    const respawn = this._respawnTab.at(index).absolutePosition;
-                    if(player.getCharacter().getSpawnLocation() != respawn){
+
+                    // Récupérer le respawn et l'angle
+                    const respawnData = this._respawnTab[index];
+                    const respawn = respawnData.node.absolutePosition.clone();
+                    const angle = respawnData.angle;
+
+                    // Vérifier et mettre à jour la position de spawn du joueur
+                    if (!player.getCharacter().getSpawnLocation().equals(respawn)) {
                         player.getCharacter().setSpawnLocation(respawn);
-                        console.log("Respawn set at : ", respawn)
-                    }
-                    else{
+                        player.getCharacter().setSpawnRotation(angle);
+                        
+                        console.log("Respawn set at : ", respawn, "with angle:", angle);
+                    } else {
                         console.log("Pas de changement de respawn");
                     }
                     
@@ -654,6 +978,7 @@ class World{
                     console.log("Respawn position is: ", respawnPosition);
                     // player.getCharacter().getCapsuleAggregate().body.setMotionType(PhysicsMotionType.STATIC)
                     hitbox.position.copyFrom(respawnPosition);
+                    player.getCharacter().getMesh().rotation.y = player.getCharacter().getSpawnRotation(); // Supposons qu'il y ait une méthode pour définir l'angle de rotation
                     // hitbox.computeWorldMatrix(true);
                     // player.getCharacter().setLastPosition(respawnPosition);
                     // player.getCharacter().updatePosition(respawnPosition);
@@ -665,6 +990,85 @@ class World{
         });
     }
 
+    private manageScore(time) : boolean{
+        const parseTime = (time) => {
+            const [min, sec, msAndMicro] = time.split(/[:.]/).map(Number);
+            const ms = Math.floor(msAndMicro); // Prendre la partie entière des millisecondes
+            const micro = msAndMicro % 1; // Prendre la partie décimale des microsecondes
+            return (min * 60 * 1000) + (sec * 1000) + ms + micro;
+        };
+    
+        const formatTime = (time) => {
+            const minutes = Math.floor(time / 60000);
+            const seconds = Math.floor((time % 60000) / 1000);
+            const milliseconds = Math.floor(time % 1000);
+            const microseconds = Math.round((time % 1) * 1000000);
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}.${String(microseconds).padStart(6, '0')}`;
+        };
+    
+        const newTime = parseTime(time);
+        const bestScoreKey = "bestScore";
+    
+        const bestScore = localStorage.getItem(bestScoreKey);
+    
+        if (bestScore === null) {
+            localStorage.setItem(bestScoreKey, time);
+            console.log(`New best score set: ${time}`);
+            return true
+        } else {
+            const bestTime = parseTime(bestScore);
+            if (newTime < bestTime) {
+                localStorage.setItem(bestScoreKey, time);
+                console.log(`New best score updated: ${time}`);
+                return true;
+            } else {
+                console.log(`Current time (${time}) is not better than the best time (${bestScore}).`);
+                return false;
+            }
+        }
+    }
+    
+
+    private _endManager(player: Player){
+        
+        player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+            {
+                trigger : ActionManager.OnIntersectionEnterTrigger,
+                parameter : this._end
+            },
+            () => {
+                
+                if(this._arrival < this._podium.length){
+                    const podium = this._podium.at(this._arrival).absolutePosition.clone()   /*absolutePosition.clone().scaleInPlace(WORLD_SCALE);*/
+                
+                    player.getCharacter().setSpawnLocation(podium);
+                    player.getCharacter().getCapsuleAggregate().body.setMotionType(PhysicsMotionType.STATIC)
+                    player.getCharacter().getMesh().rotation.y = 0;
+                    player.getCharacter().getCamera().cameraAcceleration = 0.1; // how fast to move
+                    player.getCharacter().getCamera().maxCameraSpeed = 45; // speed limit
+                    player.getCharacter().getCamera().rotationOffset = 0;
+                    player.getCharacter().getCamera().radius = 8;
+                    player.getCharacter().getCamera().heightOffset = 0;
+                    player.getCharacter().getHitbox().position.copyFrom(podium);
+                    player.setArrived(true);
+                    console.log(player.getInterface().getPlayerTime());
+                    const isBestScore = this.manageScore(player.getInterface().getPlayerTime());
+                    this._arrival += 1;
+                    console.log("Joueur arrivé en position : " + this._arrival + " position.")
+                    if(this._arrival == 1){
+                        player.getInterface().showFinalScreen(true, isBestScore);
+                    }
+                    else{
+                        player.getInterface().showFinalScreen(false, isBestScore);
+                    }
+                }
+                else{
+                    console.log("Problème avec le nombre de joueur. Il n'y a pas assez de place sur le podium.");
+                }
+            }
+        ))
+    }
+
     // Set all the collisions with the players
     public setCollisionWithPlayers() {
         for (const player of this._players) {
@@ -672,6 +1076,7 @@ class World{
             this._setCubeModifierCollision(player);
             this._checkPointManager(player);
             this._deathManager(player);
+            this._endManager(player);
         }
     }
 }

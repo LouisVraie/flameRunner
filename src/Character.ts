@@ -28,6 +28,7 @@ class Character extends TransformNode{
   private _staminaRegen: number;
 
   private _spawnLocation : Vector3;
+  private _spawnRotation : number = 0;
 
   // camera variables
   private _cameraRoot: AbstractMesh;
@@ -73,10 +74,12 @@ class Character extends TransformNode{
   private static readonly STAMINA_REGEN: number = 8;
   private static readonly ROTATION_SPEED: number = 2;
   private static readonly JUMP_NUMBER: number = 1;
-  private static readonly JUMP_FORCE: number = 0.5;
+  private static readonly JUMP_FORCE: number = 5;
   private static readonly GROUND_THRESHOLD: number = 0.05;
   private static readonly SLIDE_FACTOR: number = 2.5;
   private static readonly SLIDE_TIME: number = 10; //how many frames the slide lasts
+
+  private _jumpKeyPressed: boolean = false;
 
   constructor(scene: Scene, name: string, spawnLocation : Vector3) {
     super("character", scene);
@@ -163,10 +166,17 @@ class Character extends TransformNode{
   public getSpawnLocation(): Vector3 {
     return this._spawnLocation;
   }
-
   public setSpawnLocation(spawnLocation: Vector3): void {
     this._spawnLocation = spawnLocation;
   }
+
+  // Spawn Rotation
+  public getSpawnRotation(): number {
+    return this._spawnRotation;
+  }
+  public setSpawnRotation(spawnRotation: number): void {
+    this._spawnRotation = spawnRotation;
+  } 
 
   // Hitbox
   public getHitbox(): Mesh {
@@ -181,6 +191,10 @@ class Character extends TransformNode{
     this._mesh = mesh;
   }
 
+
+  public getCamera(): FollowCamera{
+    return this._camera;
+  }
   public getLastPosition(){
     return this._lastPosition;
   }
@@ -350,72 +364,140 @@ class Character extends TransformNode{
   }
 
   // Move the character
+  // public moveCharacterMeshDirection(controller: Controller, modifier: Modifier): void {
+  //   // Get the input map from the controller
+  //   const inputMap = controller.getInputMap();
+    
+
+  //   // Determine movement direction based on input
+  //   // Forward
+  //   if (inputMap.get(controller.getForward())) {
+  //     this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scaleInPlace(Character.PLAYER_SPEED * modifier.getSpeedDelta());
+  //     // this._moveDirection.addInPlace(WORLD_GRAVITY);
+
+  //     // Set running animation playing forward
+  //     this._run.speedRatio = 1;
+      
+  //     // Sprint
+  //     if (inputMap.get(controller.getSprint()) && this._stamina > 0) {
+  //       this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
+  //       // Set running animation playing forward
+  //       this._run.speedRatio = 1.25;
+  //       this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
+
+  //       // Clamp stamina to 0
+  //       if (this._stamina < 0) {
+  //         this._stamina = 0;
+  //       }
+  //     }
+
+  //     // Set the character's velocity
+  //     this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
+  //   }
+  //   // Backward
+  //   if (inputMap.get(controller.getBackward())) {
+  //     this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED/2 * modifier.getSpeedDelta());
+  //     // this._moveDirection.addInPlace(WORLD_GRAVITY);
+
+  //     // Set running animation playing backwards
+  //     this._run.speedRatio = -0.85;
+
+  //     // Set the character's velocity
+  //     this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
+  //   }
+  //   // Left
+  //   if (inputMap.get(controller.getLeft())) {
+  //     // Backward
+  //     if (inputMap.get(controller.getBackward())) {
+  //       this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
+  //     } else {
+  //       this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
+  //     }
+  //   }
+  //   // Right
+  //   if (inputMap.get(controller.getRight())) {
+  //     // Backward
+  //     if (inputMap.get(controller.getBackward())) {
+  //       this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
+  //     } else {
+  //       this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
+  //     }
+  //   }
+
+  //   // jump
+  //   if (inputMap.get(controller.getJump()) && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
+  //     console.log("jump");
+  //     this._jumpCount++;
+  //     this._movingState = MovingState.JUMPING;
+  //     this._capsuleAggregate.body.applyImpulse(Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass), this._capsuleAggregate.transformNode.getAbsolutePosition());
+  //     this._isGrounded = false;
+  //   }
+
+  //   // Update the character's position
+  //   this.updatePosition(this._capsuleAggregate.transformNode.getAbsolutePosition());
+
+  //   // Regenerate stamina
+  //   if (!inputMap.get(controller.getSprint()) && this._stamina < Character.MAX_STAMINA) {
+  //     this._stamina += Character.STAMINA_REGEN * modifier.getStaminaRegenDelta() * this._deltaTime;
+
+  //     // Clamp stamina to Character.MAX_STAMINA
+  //     if (this._stamina > Character.MAX_STAMINA) {
+  //       this._stamina = Character.MAX_STAMINA;
+  //     }
+  //   }
+  // }
+
   public moveCharacterMeshDirection(controller: Controller, modifier: Modifier): void {
-    // Get the input map from the controller
     const inputMap = controller.getInputMap();
 
-    // Determine movement direction based on input
-    // Forward
-    if (inputMap.get(controller.getForward())) {
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scaleInPlace(Character.PLAYER_SPEED * modifier.getSpeedDelta());
-      // this._moveDirection.addInPlace(WORLD_GRAVITY);
-
-      // Set running animation playing forward
-      this._run.speedRatio = 1;
-      
-      // Sprint
-      if (inputMap.get(controller.getSprint()) && this._stamina > 0) {
-        this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
-        // Set running animation playing forward
-        this._run.speedRatio = 1.25;
-        this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
-
-        // Clamp stamina to 0
-        if (this._stamina < 0) {
-          this._stamina = 0;
+    // Gérer l'état de la touche de saut
+    if (controller.getJumpKeyPressed() && !this._jumpKeyPressed) {
+        this._jumpKeyPressed = true;
+        if (Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
+            console.log("jump");
+            this._jumpCount++;
+            this._movingState = MovingState.JUMPING;
+            const jumpImpulse = Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass);
+            this._capsuleAggregate.body.applyImpulse(jumpImpulse, this._capsuleAggregate.transformNode.getAbsolutePosition());
+            this._isGrounded = false;
         }
-      }
-
-      // Set the character's velocity
-      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
+    } else if (!controller.getJumpKeyPressed()) {
+        this._jumpKeyPressed = false;
     }
-    // Backward
+
+    if (inputMap.get(controller.getForward())) {
+        this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scale(Character.PLAYER_SPEED * modifier.getSpeedDelta());
+        if (inputMap.get(controller.getSprint()) && this._stamina > 0) {
+            this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
+            this._run.speedRatio = 1.25;
+            this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
+            if (this._stamina < 0) {
+                this._stamina = 0;
+            }
+        }
+        const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
+        this._capsuleAggregate.body.setLinearVelocity(new Vector3(this._moveDirection.x, currentVelocity.y, this._moveDirection.z));
+    }
+
     if (inputMap.get(controller.getBackward())) {
-      this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED/2 * modifier.getSpeedDelta());
-      // this._moveDirection.addInPlace(WORLD_GRAVITY);
-
-      // Set running animation playing backwards
-      this._run.speedRatio = -0.85;
-
-      // Set the character's velocity
-      this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
+        this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scale(Character.PLAYER_SPEED / 2 * modifier.getSpeedDelta());
+        const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
+        this._capsuleAggregate.body.setLinearVelocity(new Vector3(this._moveDirection.x, currentVelocity.y, this._moveDirection.z));
     }
-    // Left
+
     if (inputMap.get(controller.getLeft())) {
-      // Backward
-      if (inputMap.get(controller.getBackward())) {
-        this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
-      } else {
-        this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
-      }
+        if (inputMap.get(controller.getBackward())) {
+            this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
+        } else {
+            this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
+        }
     }
-    // Right
     if (inputMap.get(controller.getRight())) {
-      // Backward
-      if (inputMap.get(controller.getBackward())) {
-        this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
-      } else {
-        this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
-      }
-    }
-
-    // jump
-    if (inputMap.get(controller.getJump()) && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
-      console.log("jump");
-      this._jumpCount++;
-      this._movingState = MovingState.JUMPING;
-      this._capsuleAggregate.body.applyImpulse(Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass), this._capsuleAggregate.transformNode.getAbsolutePosition());
-      this._isGrounded = false;
+        if (inputMap.get(controller.getBackward())) {
+            this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
+        } else {
+            this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
+        }
     }
 
     // Update the character's position
@@ -423,14 +505,14 @@ class Character extends TransformNode{
 
     // Regenerate stamina
     if (!inputMap.get(controller.getSprint()) && this._stamina < Character.MAX_STAMINA) {
-      this._stamina += Character.STAMINA_REGEN * modifier.getStaminaRegenDelta() * this._deltaTime;
-
-      // Clamp stamina to Character.MAX_STAMINA
-      if (this._stamina > Character.MAX_STAMINA) {
-        this._stamina = Character.MAX_STAMINA;
-      }
+        this._stamina += Character.STAMINA_REGEN * modifier.getStaminaRegenDelta() * this._deltaTime;
+        if (this._stamina > Character.MAX_STAMINA) {
+            this._stamina = Character.MAX_STAMINA;
+        }
     }
-  }
+}
+
+
 
   // Animate the character
   public animateCharacter(): void {

@@ -1,7 +1,7 @@
 import { Scene, Vector3, AbstractMesh, Animation, TransformNode, SceneLoader, Mesh, PhysicsShapeType, PhysicsMotionType, MeshBuilder, ActionManager, ExecuteCodeAction , PhysicsAggregate } from "@babylonjs/core";
 import Obstacle from "./Obstacle";
 import Modifier from "./Modifier";
-import { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "./World";
+import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "./World";
 
 import mesh1 from '../assets/models/vehicles/voiture4.glb';
 import mesh2 from '../assets/models/vehicles/ambulance.glb';
@@ -30,6 +30,7 @@ class Vehicle extends Obstacle {
     private _direction: string
     private _dispawnerList: AbstractMesh[];
     private _lastPosition: Vector3;
+    private world: World;
 
     private _speed : number;
 
@@ -101,7 +102,7 @@ class Vehicle extends Obstacle {
 
     private static readonly VEHICLE_SCALING: number = 0.8;
 
-    constructor(scene: Scene, dispawnerList: AbstractMesh[], position: Vector3, direction: string) {
+    constructor(scene: Scene, dispawnerList: AbstractMesh[], position: Vector3, direction: string, world: World) {
         super(scene);
         
         this._location = position;
@@ -109,6 +110,7 @@ class Vehicle extends Obstacle {
         this._dispawnerList = dispawnerList;
         this._lastPosition = position;
         this._speed = Math.floor(Math.random() * (160 - 150) + 150);
+        this.world = world;
     }
 
     //////////////////////////////////////////////////////////
@@ -152,16 +154,16 @@ class Vehicle extends Obstacle {
         const assets = await SceneLoader.ImportMeshAsync("", "", vehicle.meshPath, this._scene);
     
         this._hitbox = MeshBuilder.CreateBox("vehiculeHitbox", { size: vehicle.size, width: vehicle.width, height: vehicle.height}, this._scene);
-        this._hitbox.visibility = 0.4/*.4*/;
+        // this._hitbox.visibility = 0.4;
+        this._hitbox.isVisible = false;
         this._hitbox.position = new Vector3(this._lastPosition.x, this._lastPosition.y, this._lastPosition.z);
 
         this._mesh = assets.meshes[0] as Mesh;
         
-        
         this._mesh.scaling = new Vector3(Vehicle.VEHICLE_SCALING, Vehicle.VEHICLE_SCALING, Vehicle.VEHICLE_SCALING);
         
         
-        
+        this.world._setShadows(this._mesh)
 
         this._mesh.parent = this._hitbox;
         this._mesh.position = new Vector3(0, -(vehicle.height)/2, 0);
@@ -240,6 +242,9 @@ class Vehicle extends Obstacle {
     
         this.setTangible(true);
         this.setParentNode(parent);
+
+
+        
     }
 
 

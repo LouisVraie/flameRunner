@@ -2,7 +2,7 @@ import { Scene, Vector3, AbstractMesh, TransformNode, SceneLoader, Mesh, MeshBui
 import Obstacle from "./Obstacle";
 import Modifier from "./Modifier";
 import { PhysicsAggregate } from "@babylonjs/core";
-import { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "./World";
+import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "./World";
 
 import batMesh from '../assets/models/animals/bat.glb';
 import beeMesh from '../assets/models/animals/bee.glb';
@@ -27,6 +27,7 @@ class FlyingAnimal extends Obstacle {
     private _direction: string
     private _dispawnerList: AbstractMesh[];
     private _lastPosition: Vector3;
+    private world: World;
 
     private _speed : number;
 
@@ -51,7 +52,7 @@ class FlyingAnimal extends Obstacle {
 
     private static readonly ANIMAL_SCALING: number = 0.4;
 
-    constructor(scene: Scene, dispawnerList: AbstractMesh[], model: number, position: Vector3, direction: string) {
+    constructor(scene: Scene, dispawnerList: AbstractMesh[], model: number, position: Vector3, direction: string, world: World) {
         super(scene);
         
         this._location = position;
@@ -60,6 +61,7 @@ class FlyingAnimal extends Obstacle {
         this._lastPosition = position;
         this._speed = Math.floor(Math.random() * (15 - 10) + 15);
         this.model = model;
+        this.world = world;
         // if(this.model < this.animals.length || this.model > this.animals.length){
         //     this.model = 0;
         // }
@@ -108,7 +110,7 @@ class FlyingAnimal extends Obstacle {
         
         this._mesh.scaling = new Vector3(FlyingAnimal.ANIMAL_SCALING, FlyingAnimal.ANIMAL_SCALING, FlyingAnimal.ANIMAL_SCALING);
         
-        
+        this.world._setShadows(this._mesh);
 
         this._mesh.parent = this._hitbox;
 
