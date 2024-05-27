@@ -341,7 +341,7 @@ class Character extends TransformNode{
   }
 
   // Move the character
-  public moveCharacterMeshDirection(controller: Controller, modifier: Modifier): void {
+  public moveCharacterMeshDirection(controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
     // Get the input map from the controller
     const inputMap = controller.getInputMap();
 
@@ -359,7 +359,8 @@ class Character extends TransformNode{
         this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
         // Set running animation playing forward
         this._run.speedRatio = 1.25;
-        this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
+
+        this._stamina -= Character.STAMINA_REGEN * this._deltaTime * (groupModifier != null ? groupModifier.getStaminaRegenDelta() : 1);
 
         // Clamp stamina to 0
         if (this._stamina < 0) {
@@ -471,38 +472,43 @@ class Character extends TransformNode{
     }
   }
 
-  // Update stamina
-  public updateStamina(controller: Controller, modifier: Modifier): Modifier {
-    const inputMap = controller.getInputMap();
-    // Apply stamina bonus or malus
-    if (modifier.getStaminaDelta() != 0 && inputMap.get(controller.getModifier())){
-      console.log("stamina delta : ", modifier.getName());
-      this._stamina += modifier.getStaminaDelta();
-      modifier.setStaminaDelta(0);
+  // Update stamina with modifier
+  private _updateStaminaWithModifier(modifier: Modifier): Modifier {
+    this._stamina += modifier.getStaminaDelta();
+    modifier.setStaminaDelta(0);
 
-      // Clamp stamina to 0
-      if (this._stamina < 0) {
-        this._stamina = 0;
-      }
-      // Clamp stamina to Character.MAX_STAMINA
-      if (this._stamina > Character.MAX_STAMINA) {
-        this._stamina = Character.MAX_STAMINA;
-      }
+    // Clamp stamina to 0
+    if (this._stamina < 0) {
+      this._stamina = 0;
+    }
+    // Clamp stamina to Character.MAX_STAMINA
+    if (this._stamina > Character.MAX_STAMINA) {
+      this._stamina = Character.MAX_STAMINA;
+    }
+
+    return modifier;
+  }
+
+  // Update stamina
+  public updateStamina(modifier: Modifier): Modifier {
+
+    // Apply stamina bonus or malus
+    if (modifier.getStaminaDelta() != 0){
+      modifier = this._updateStaminaWithModifier(modifier);
     }
 
     return modifier;
   }
 
   // Update the character
-  public updateCharacter(camRoot: TransformNode, controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
+  public updateCharacter(controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
-    console.log("Group Modifier: ", groupModifier?.getName() || null);
 
     // update stamina according to the modifier
-    modifier = this.updateStamina(controller, modifier);
+    modifier = this.updateStamina(modifier);
 
     // Move the character
-    this.moveCharacterMeshDirection(controller, modifier);
+    this.moveCharacterMeshDirection(controller, modifier, groupModifier);
     // Animate the character
     this.animateCharacter();
   }

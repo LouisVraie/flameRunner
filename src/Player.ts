@@ -250,16 +250,18 @@ class Player {
     }
 
     if(this._isModifierActive){
+      // set the current modifier
+      currentModifier = this._modifier;
+
       // update modifier timer removing the delta time
       if (this._modifierTimer > 0 && this._modifier.getDuration() > 0 && !this._modifier.isInstant()){
         this._modifierTimer -= this._scene.getEngine().getDeltaTime();
-        currentModifier = this._modifier;
       }
 
       // update the character
-      this._character.updateCharacter(this._camRoot, this._controller, currentModifier, currentGroupModifier);
+      this._character.updateCharacter(this._controller, currentModifier, currentGroupModifier);
     } else {
-      this._character.updateCharacter(this._camRoot, this._controller, currentModifier, currentGroupModifier);
+      this._character.updateCharacter(this._controller, currentModifier, currentGroupModifier);
     }
   }
 

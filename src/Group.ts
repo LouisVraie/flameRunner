@@ -174,7 +174,7 @@ class Group {
     capacity.setDescription(description);
     capacity.setIcon(icon);
     capacity.setDuration(capacityDuration);
-    capacity.setStaminaRegenDelta(2);
+    capacity.setStaminaRegenDelta(0.75);
 
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
   
