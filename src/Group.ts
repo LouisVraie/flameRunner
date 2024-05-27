@@ -17,18 +17,20 @@ class Group {
   private _capacityName: string;
   private _capacity: Modifier;
   private _capacityDuration: number;
-  private _capacityDelay: number;
+  private _capacityCooldown: number;
+  private _isPassive: boolean;
 
   private _subGroups: Group[];
 
-  constructor(name: string, description: string, icon: string, capacityName: string, capacity: Modifier, capacityDuration: number, capacityDelay: number) {
+  constructor(name: string, description: string, icon: string, capacityName: string, capacity: Modifier, capacityDuration: number, capacityCooldown: number) {
     this._name = name || "No name";
     this._description = description || "No description";
     this._icon = icon || null;
     this._capacityName = capacityName || "No capacity";
     this._capacity = capacity || null;
     this._capacityDuration = capacityDuration || null;
-    this._capacityDelay = capacityDelay || null;
+    this._capacityCooldown = capacityCooldown || null;
+    this._isPassive = false;
     this._subGroups = [];
   }
 
@@ -84,12 +86,20 @@ class Group {
     this._capacityDuration = capacityDuration;
   }
 
-  // CapacityDelay
-  public getCapacityDelay(): number {
-    return this._capacityDelay;
+  // CapacityCooldown
+  public getCapacityCooldown(): number {
+    return this._capacityCooldown;
   }
-  public setCapacityDelay(capacityDelay: number): void {
-    this._capacityDelay = capacityDelay;
+  public setCapacityCooldown(capacityCooldown: number): void {
+    this._capacityCooldown = capacityCooldown;
+  }
+
+  // IsPassive
+  public isPassive(): boolean {
+    return this._isPassive;
+  }
+  public setIsPassive(isPassive: boolean): void {
+    this._isPassive = isPassive;
   }
 
   // SubGroups
@@ -110,8 +120,8 @@ class Group {
     const description = "Run faster";
     const icon = sprinterIcon;
     const capacityName = "Fast runner";
-    const capacityDuration = 10;
-    const capacityDelay = 10;
+    const capacityDuration = 5;
+    const capacityCooldown = 30;
   
     // Create a new modifier
     const capacity = new Modifier();
@@ -121,7 +131,7 @@ class Group {
     capacity.setDuration(capacityDuration);
     capacity.setSpeedDelta(2);
 
-    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
+    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
   
     return group;
   }
@@ -133,8 +143,8 @@ class Group {
     const description = "Run through obstacles";
     const icon = ghostIcon;
     const capacityName = name;
-    const capacityDuration = 10;
-    const capacityDelay = 10;
+    const capacityDuration = null;
+    const capacityCooldown = 60;
 
     // Create a new modifier
     const capacity = new Modifier();
@@ -144,7 +154,7 @@ class Group {
     capacity.setDuration(capacityDuration);
     // TODO : Add the ghost capacity
 
-    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
+    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
 
     return group;
   }
@@ -155,8 +165,8 @@ class Group {
     const description = "Improved stamina";
     const icon = enduranceIcon;
     const capacityName = "Endurance boost";
-    const capacityDuration = 15;
-    const capacityDelay = 15;
+    const capacityDuration = null;
+    const capacityCooldown = null;
   
     // Create a new modifier
     const capacity = new Modifier();
@@ -166,11 +176,12 @@ class Group {
     capacity.setDuration(capacityDuration);
     capacity.setStaminaRegenDelta(2);
 
-    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
+    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
   
-    const hotEndurance = new Group("Hot Endurance", "Endurance in heat", enduranceHotIcon, "Heat endurance boost", capacity, capacityDuration, capacityDelay);
-    const coldEndurance = new Group("Cold Endurance", "Endurance in cold", enduranceColdIcon, "Cold endurance boost", capacity, capacityDuration, capacityDelay);
+    const hotEndurance = new Group("Hot Endurance", "Endurance in heat", enduranceHotIcon, "Heat endurance boost", capacity, capacityDuration, capacityCooldown);
+    const coldEndurance = new Group("Cold Endurance", "Endurance in cold", enduranceColdIcon, "Cold endurance boost", capacity, capacityDuration, capacityCooldown);
     
+    group.setIsPassive(true);
     group.setSubGroups([hotEndurance, coldEndurance]);
     
     return group;
@@ -182,8 +193,8 @@ class Group {
     const description = "Jump higher and longer";
     const icon = gymnastIcon;
     const capacityName = "Extension";
-    const capacityDuration = 12;
-    const capacityDelay = 12;
+    const capacityDuration = null;
+    const capacityCooldown = 30;
   
     // Create a new modifier
     const capacity = new Modifier();
@@ -193,7 +204,7 @@ class Group {
     capacity.setDuration(capacityDuration);
     capacity.setJumpDelta(2);
 
-    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityDelay);
+    const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
   
     return group;
   }

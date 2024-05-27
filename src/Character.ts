@@ -111,14 +111,6 @@ class Character extends TransformNode{
     this._name = name;
   }
 
-  // Group
-  public getGroup(): Group {
-    return this._group;
-  }
-  public setGroup(group: Group): void {
-    this._group = group;
-  }
-
   // Stamina
   public getStamina(): number {
     return this._stamina;
@@ -199,9 +191,8 @@ class Character extends TransformNode{
   // Methods
   //////////////////////////////////////////////////////////
 
-  public async createCharacterAsync(group: Group): Promise<Character> {
+  public async createCharacterAsync(): Promise<Character> {
 
-    this._group = group;
     this._stamina = Character.MAX_STAMINA;
     this._staminaRegen = Character.STAMINA_REGEN;
 
@@ -503,8 +494,9 @@ class Character extends TransformNode{
   }
 
   // Update the character
-  public updateCharacter(camRoot: TransformNode, controller: Controller, modifier: Modifier): void {
+  public updateCharacter(camRoot: TransformNode, controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
+    console.log("Group Modifier: ", groupModifier?.getName() || null);
 
     // update stamina according to the modifier
     modifier = this.updateStamina(controller, modifier);

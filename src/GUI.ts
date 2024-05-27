@@ -177,9 +177,9 @@ class GUI {
       const classDescription = document.getElementById(`${eventPlayerIdentifier}_class_description`) as HTMLDivElement;
       classDescription.innerHTML = `<b>Description :</b> ${group.getDescription()}`;
       
-      // Delay
-      const classDelay = document.getElementById(`${eventPlayerIdentifier}_class_Delay`) as HTMLDivElement;
-      classDelay.innerHTML = `<b>Delay :</b> ${group.getCapacityDelay()}`;
+      // Duration
+      const classDuration = document.getElementById(`${eventPlayerIdentifier}_class_duration`) as HTMLDivElement;
+      classDuration.innerHTML = `<b>Duration :</b> ${group.getCapacityDuration() || "Passive"}`;
 
       // Check if the player selection already exists
       const playerSelection = this._playersSelection.find(player => player.getIdentifier() === eventPlayerIdentifier);
@@ -477,15 +477,15 @@ class GUI {
         classDescription.className = "class_description";
         classDescription.innerHTML = "<b>Description</b>";
 
-        // Delay
-        const classDelay = document.createElement('div');
-        classDelay.id = `${playerIdentifier}_class_Delay`;
-        classDelay.className = "class_Delay";
-        classDelay.innerHTML = "<b>Delay</b>";
+        // Duration
+        const classDuration = document.createElement('div');
+        classDuration.id = `${playerIdentifier}_class_duration`;
+        classDuration.className = "class_duration";
+        classDuration.innerHTML = "<b>Duration</b>";
 
         classDescriptionContainer.appendChild(classTitle);
         classDescriptionContainer.appendChild(classDescription);
-        classDescriptionContainer.appendChild(classDelay);
+        classDescriptionContainer.appendChild(classDuration);
 
         buttonContainer.appendChild(classDescriptionContainer);
         menuContentContainer.appendChild(buttonContainer);

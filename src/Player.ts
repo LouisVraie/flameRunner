@@ -10,6 +10,8 @@ class Player {
   private _scene: Scene;
 
   private _identifier: string;
+  private _group: Group;
+
   private _score: number;
 
   private _health: number;
@@ -26,11 +28,13 @@ class Player {
 
   private _modifier: Modifier;
   private _isModifierActive: boolean;
+  private _isGroupModifierActive: boolean;
   private _deathCounter: number;
 
   // Timer
   private _timer: number;
   private _modifierTimer: number;
+  private _groupModifierTimer: number;
   private _startTime: number;
 
   //const values
@@ -57,11 +61,13 @@ class Player {
 
     this._modifier = new Modifier();
     this._isModifierActive = false;
+    this._isGroupModifierActive = false;
     this._deathCounter = 0;
 
     // Get the current time
     this._startTime = Date.now();
     this._modifierTimer = 0;
+    this._groupModifierTimer = 0;
     this._timer = 0;
   }
 
@@ -75,6 +81,14 @@ class Player {
   }
   public setIdentifier(identifier: string): void {
     this._identifier = identifier;
+  }
+
+  // Group
+  public getGroup(): Group {
+    return this._group;
+  }
+  public setGroup(group: Group): void {
+    this._group = group;
   }
 
   // Score
@@ -155,8 +169,13 @@ class Player {
 
   // Add character to the scene
   public async addCharacterAsync(name: string, spawnLocation : Vector3, group: Group): Promise<void> {
+    // Set the group to the player
+    this._group = group;
+
+    // Add the character to the scene
     const character = new Character(this._scene, name, spawnLocation);
-    this._character = await character.createCharacterAsync(group);
+    this._character = await character.createCharacterAsync();
+
     // Set the class ability to the interface
     this._interface.setClassAbility(group);
   }
@@ -196,31 +215,64 @@ class Player {
   //--GAME UPDATES--
   private _beforeRenderUpdate(): void {
 
+    // TIMER
     // update timer adding the delta time
     this._timer += this._scene.getEngine().getDeltaTime();
 
+    // GROUP MODIFIER
+    let currentGroupModifier = null;
+    // check if the capacity key is pressed and the group modifier is not active or the group modifier is passive
+    if ((this._controller.getInputMap().get(this._controller.getCapacity()) && !this._isGroupModifierActive && this._groupModifierTimer <= 0) || this._group.isPassive()) {
+      this._isGroupModifierActive = true;
+      // set the group modifier timer
+      if (this._group.getCapacity().isInstant()) {
+        this._groupModifierTimer = -1;
+      } else if (!this._group.isPassive()) {
+        this._groupModifierTimer = this._group.getCapacityDuration() * 1000;
+      }
+    }
+
+    if (this._isGroupModifierActive) {
+      // set the current group modifier
+      currentGroupModifier = this._group.getCapacity();
+
+      // update group modifier timer removing the delta time
+      if (this._groupModifierTimer > 0 && this._group.getCapacity().getDuration() > 0 && !this._group.getCapacity().isInstant()) {
+        this._groupModifierTimer -= this._scene.getEngine().getDeltaTime();
+      }
+    }
+
+    // MODIFIER
+    let currentModifier = new Modifier();
     // if the modifier is not active and the modifier key is pressed, set the modifier as active
     if (!this._isModifierActive && !this._modifier.isDefault() && this._controller.getInputMap().get(this._controller.getModifier())) {
       this._isModifierActive = true;
     }
 
     if(this._isModifierActive){
-      // update modifier timer adding the delta time
+      // update modifier timer removing the delta time
       if (this._modifierTimer > 0 && this._modifier.getDuration() > 0 && !this._modifier.isInstant()){
         this._modifierTimer -= this._scene.getEngine().getDeltaTime();
+        currentModifier = this._modifier;
       }
 
       // update the character
-      this._character.updateCharacter(this._camRoot, this._controller, this._modifier);
+      this._character.updateCharacter(this._camRoot, this._controller, currentModifier, currentGroupModifier);
     } else {
-      this._character.updateCharacter(this._camRoot, this._controller, new Modifier());
+      this._character.updateCharacter(this._camRoot, this._controller, currentModifier, currentGroupModifier);
     }
-
   }
 
-  // Update interface
-  public _updatePlayerInterface(): void {
+  // Update before render interface
+  private _updateBeforeRenderInterface(): void {
+    // GROUP MODIFIER
+    // Check if the group modifier is over
+    if (!this._group.isPassive() && ((this._groupModifierTimer <= 0 && this._groupModifierTimer != -1) || (this._group.getCapacity().isInstant() && this._isGroupModifierActive))){
+      this._isGroupModifierActive = false;
+      this._groupModifierTimer = 0;
+    }
 
+    // MODIFIER
     // If the modifier icon is different from the interface icon, update the interface icon
     if (this._modifier.getIcon() != this._interface.getModifierIcon()) {
       if (this._modifier.isInstant()) {
@@ -232,11 +284,15 @@ class Player {
     }
 
     // Check if the current modifier duration is over and it is not default
-    if (!this._modifier.isDefault() && this._modifierTimer <= 0 || this._modifier.isInstant() && this._isModifierActive) {
+    if ((!this._modifier.isDefault() && this._modifierTimer <= 0) || (this._modifier.isInstant() && this._isModifierActive)) {
       this._modifier = new Modifier();
       this._modifierTimer = 0;
       this._isModifierActive = false;
     }
+  }
+
+  // Update interface
+  public _updatePlayerInterface(): void {
 
     // Update modifier time
     this._interface.updateModifierTime(this._modifierTimer);
@@ -257,6 +313,7 @@ class Player {
       this._beforeRenderUpdate();
       this._updateCamera();
 
+      this._updateBeforeRenderInterface();
       this._updatePlayerInterface();
     })
   }
