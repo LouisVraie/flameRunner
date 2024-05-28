@@ -111,10 +111,6 @@ class Spawner {
 
     private clearObstacles(): void {
         switch (this._obstacleType) {
-            case "Vehicle":
-                this._vehiclesTab.forEach(vehicle => vehicle.disposeObstacle());
-                this._vehiclesTab = [];
-                break;
             case "Bee":
                 this._beesTab.forEach(bee => bee.disposeObstacle());
                 this._beesTab = [];
@@ -124,9 +120,9 @@ class Spawner {
                 this._batsTab = [];
                 break;
             case "Rock":
-            this._rocksTab.forEach(rock => rock.disposeObstacle());
-            this._rocksTab = [];
-            break;
+                this._rocksTab.forEach(rock => rock.disposeObstacle());
+                this._rocksTab = [];
+                break;
         }
     }
 

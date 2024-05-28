@@ -9,8 +9,7 @@ import CubeModifier from "./CubeModifier";
 import Vehicle from "./Vehicle";
 import Spawner from "./Spawner";
 
-import mesh8 from '../assets/models/animals/carp.glb';
-import mesh9 from '../assets/models/animals/thon.glb';
+
 import flare from '../assets/textures/Flare.png';
 
 
@@ -27,9 +26,12 @@ interface RespawnNode {
     angle: number;
 }
 
-const MAP_URL = "https://dl.dropbox.com/scl/fi/74cb0ly7c1r9a369vrkg6/MapDefinitive.glb?rlkey=4jgwqrbunmv6v2k9asv23v3fe&st=hv3c36qp"
+const MAP_URL = "https://dl.dropbox.com/scl/fi/9u81xqn3vqxwu0sryengo/Map.glb?rlkey=cronz4qn3ddbs2eb3b8q03d3g&st=o2am6a2e"
+
 
 import Cow from "./Cow";
+import Biome from "./Biome";
+import { Climate } from "./enum/Climate";
 
 class World{
     private _scene: Scene;
@@ -52,7 +54,20 @@ class World{
     private _limitTab: AbstractMesh[] =[];
     private _deathTab: AbstractMesh[] =[];
     private _checkpointTab: AbstractMesh[] =[];
-    
+
+    private _biomeDoors: AbstractMesh[] = [];
+    private _biomes: Biome[] = [];
+    private _cityDoors: AbstractMesh[] = [];
+    private _countrysideDoors: AbstractMesh[] = [];
+    private _desertDoors: AbstractMesh[] = [];
+    private _riverDoors: AbstractMesh[] = [];
+    private _forestDoors: AbstractMesh[] = [];
+    private _vulcanDoors: AbstractMesh[] = [];
+    private _mountainDoors: AbstractMesh[] = [];
+    private _snowDoors: AbstractMesh[] = [];
+
+
+
     private _fishCurve: Vector3[] = [];
     private _fishTangents: Vector3[] = [];
     private _fishBinormals: Vector3[] = [];
@@ -101,6 +116,9 @@ class World{
     public getFishNormals(): Vector3[]{
         return this._fishNormals;
     }
+    public getBiomes(): Biome[]{
+        return this._biomes;
+    }
 
     constructor(scene: Scene) {
         this._scene = scene;
@@ -137,6 +155,34 @@ class World{
         this._scene.enablePhysics(WORLD_GRAVITY, hk)
     }
 
+
+    sortBiomeDoors(name: string, childmesh: AbstractMesh){
+        
+        if(name.includes("Ville")){
+            this._cityDoors.push(childmesh);
+        }                
+        else if(name.includes("Campagne")){
+            this._countrysideDoors.push(childmesh)
+        }                
+        else if(name.includes("Desert")){
+            this._desertDoors.push(childmesh);
+        }
+        else if(name.includes("Riviere")){
+            this._riverDoors.push(childmesh);
+        }
+        else if(name.includes("Foret")){
+            this._forestDoors.push(childmesh);
+        }
+        else if(name.includes("Volcan")){
+            this._vulcanDoors.push(childmesh);
+        }
+        else if(name.includes("Montagne")){
+            this._mountainDoors.push(childmesh);
+        }
+        else if(name.includes("Neige")){
+            this._snowDoors.push(childmesh);
+        }
+    }
     
 
     async loadWorld(){
@@ -206,6 +252,13 @@ class World{
                     childMesh.isVisible = false;
                 }
                 
+
+                if(childMesh.id.startsWith("Biome")){
+                    childMesh.isVisible = false;
+                    this.sortBiomeDoors(childMesh.id, childMesh)         
+                }
+
+
                 if(childMesh.id.startsWith("Dispawn")){
                     childMesh.isVisible = false;
                     this._dispawnerTab.push(childMesh);
@@ -276,6 +329,17 @@ class World{
             }
         }
 
+        this._biomes.push(
+            new Biome("Ville", this._cityDoors, true, Climate.MILD_CLIMATE, this),
+            new Biome("Campagne", this._countrysideDoors, false, Climate.MILD_CLIMATE, this),
+            new Biome("Desert", this._desertDoors, false, Climate.HOT_CLIMATE, this),
+            new Biome("Riviere", this._riverDoors, false, Climate.COLD_CLIMATE, this),
+            new Biome("Foret", this._forestDoors, false, Climate.MILD_CLIMATE, this),
+            new Biome("Volcan", this._vulcanDoors, false, Climate.HOT_CLIMATE, this),
+            new Biome("Montagne", this._mountainDoors, false, Climate.MILD_CLIMATE,this),
+            new Biome("Neige", this._snowDoors, false, Climate.COLD_CLIMATE, this),
+        )
+
         this._scene.freeActiveMeshes();
         this._scene.blockMaterialDirtyMechanism = true;
 
@@ -296,7 +360,7 @@ class World{
             if (type.startsWith("Vehicle")) {
                 
                 const newSpawner = new Spawner(this._scene, spawner, direction, "Vehicle", this._dispawnerTab, this._players, this);
-                this._scene.registerBeforeRender(() => {
+                this._scene.registerAfterRender(() => {
                     newSpawner.updateVehicle();
                 })
         
@@ -1069,6 +1133,52 @@ class World{
         ))
     }
 
+
+    private _biomeManager(player: Player, biome: Biome){
+        
+        if(biome.getEntryDoor() != null){
+            player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : biome.getEntryDoor()
+                },
+                () => {
+                    console.log("Vous entrez dans un biome");
+                    player.setClimate(biome.getClimate());
+                    biome.increasePlayerCount();
+                    if(!biome.getIsBiomeActive()){
+                        biome.setIsBiomeActive(true);
+                    }      
+                    if(biome.getPlayerCount() <= 1){
+                        biome.manageActiveBiome(biome.getIsBiomeActive());
+                    } 
+                        
+                }
+            ))
+        }
+        
+
+        if(biome.getExitDoor() != null){
+            player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : biome.getExitDoor()
+                },
+                () => {
+                    
+                    console.log("Vous sortez d'un biome");
+                    biome.decreasePlayerCount();
+                    if(biome.getPlayerCount() <= 0){
+                        biome.setIsBiomeActive(false);
+                        biome.setPlayerCount(0);
+                        biome.manageActiveBiome(biome.getIsBiomeActive());
+                    }
+                }
+            ))
+        }
+        
+    }
+
     // Set all the collisions with the players
     public setCollisionWithPlayers() {
         for (const player of this._players) {
@@ -1077,6 +1187,9 @@ class World{
             this._checkPointManager(player);
             this._deathManager(player);
             this._endManager(player);
+            this._biomes.forEach(biome =>{
+                this._biomeManager(player, biome);
+            })
         }
     }
 }

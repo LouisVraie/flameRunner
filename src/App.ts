@@ -152,7 +152,7 @@ class App {
             countdownContainers.push(container);
             countdownDivs.push(countDownContainer)
         })
-             
+                     
             
         // Lancer le décompte de 3 à 0
         for (let i = 3; i >= 0; i--) {
