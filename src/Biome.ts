@@ -18,10 +18,12 @@ class Biome {
   private _landscapeMeshes: AbstractMesh[] = [];
   private _solidMeshes: AbstractMesh[] = [];
   private _biomeDoors: AbstractMesh[] = [];
+
   private _physicBodies: PhysicsAggregate[] = [];
   private _isBiomeActive: boolean = false;
   private _currentPlayerCount: number = 0;
   private _world: World;
+
   private _entryDoor: AbstractMesh = null;
   private _exitDoor: AbstractMesh = null;
 
@@ -34,11 +36,13 @@ class Biome {
     biomeDoors: AbstractMesh[],
     activeBiome: boolean,
     climate: Climate,
+    solidMeshes,
+    meshes,
     world: World
   ) {
     this._name = name;
-    // this._landscapeMeshes = landscapeMeshes;
-    // this._solidMeshes = solidMeshes;
+    this._landscapeMeshes = meshes;
+    this._solidMeshes = solidMeshes;
     this._isBiomeActive = activeBiome;
     this._world = world;
     this._climate = climate;
@@ -62,12 +66,12 @@ class Biome {
 
     if(this._isBiomeActive){
       this._currentPlayerCount = this._world.getPlayers().length;
-      // this._solidMeshes.forEach(mesh =>{
-      //   //mesh.freezeWorldMatrix();
-      //   const meshAggregate = new PhysicsAggregate(mesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
-      //   meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
-      //   this._physicBodies.push(meshAggregate);
-      // })
+      this._solidMeshes.forEach(mesh =>{
+        //mesh.freezeWorldMatrix();
+        const meshAggregate = new PhysicsAggregate(mesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
+        meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+        this._physicBodies.push(meshAggregate);
+      })
 
     }
 
@@ -159,65 +163,73 @@ class Biome {
     public manageActiveBiome(value: boolean){
       if(value){
         console.log("Biome "+this._name+" activé !")
-        // this._solidMeshes.forEach(mesh =>{
-        //   //mesh.freezeWorldMatrix();
-        //   const meshAggregate = new PhysicsAggregate(mesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
-        //   meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
-        //   this._physicBodies.push(meshAggregate);
-        // })
+        this._solidMeshes.forEach(mesh =>{
+          //mesh.freezeWorldMatrix();
+          const meshAggregate = new PhysicsAggregate(mesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
+          meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+          this._physicBodies.push(meshAggregate);
+        })
       }
       else{
         console.log("Biome "+this._name+" désactivé !")
-        // this._physicBodies.forEach(physicBody =>{
-        //   physicBody.body.dispose();
-        //   physicBody.dispose();
-        // })
-        // this._physicBodies = [];
+        this._physicBodies.forEach(physicBody =>{
+          physicBody.body.dispose();
+          physicBody.dispose();
+        })
+        this._physicBodies = [];
       }
     }
 
-    // public setEntryDoorManager(player: Player){
+    public setEntryDoorManager(player: Player){
     
-         
-    //   // Create a trigger for the cube modifier
-    //   player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
-    //       {
-    //           trigger : ActionManager.OnIntersectionEnterTrigger,
-    //           parameter : this._entryDoor
-    //       },
-    //       () => {
-    //         console.log("Vous entrez dans un biome");
-    //         this._currentPlayerCount++;
-    //         if(!this._isBiomeActive){
-    //           this._isBiomeActive = true;
-    //         }      
-    //         if(this._currentPlayerCount <= 1){
-    //           this.manageActiveBiome(this._isBiomeActive);
-    //         }        
-    //       }
-    //   ));
-    //  }
+      if(this._entryDoor != null){
 
-    // public setExitDoorManager(player: Player){
-         
-    //   // Create a trigger for the cube modifier
-    //   player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
-    //       {
-    //         trigger : ActionManager.OnIntersectionEnterTrigger,
-    //         parameter : this._exitDoor
-    //       },
-    //       () => {
-    //         console.log("Vous sortez d'un biome");
-    //         this._currentPlayerCount--;
-    //         if(this._currentPlayerCount <= 0){
-    //           this._isBiomeActive = false;
-    //           this._currentPlayerCount = 0;
-    //           this.manageActiveBiome(this._isBiomeActive);
-    //         }
-    //       }
-    //   ));
+        // Create a trigger for the cube modifier
+        player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+          {
+              trigger : ActionManager.OnIntersectionEnterTrigger,
+              parameter : this._entryDoor
+          },
+          () => {
+            console.log("Vous entrez dans un biome");
+            player.setClimate(this._climate);
+            this._currentPlayerCount++;
+            if(!this._isBiomeActive){
+              this._isBiomeActive = true;
+            }      
+            if(this._currentPlayerCount <= 1){
+              this.manageActiveBiome(this._isBiomeActive);
+            }        
+          }
+        ));
+      }
+        
+     }
 
-    // }
+    public setExitDoorManager(player: Player){
+         
+      if(this._exitDoor != null){
+
+        // Create a trigger for the cube modifier
+        player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+          {
+            trigger : ActionManager.OnIntersectionEnterTrigger,
+            parameter : this._exitDoor
+          },
+          () => {
+            console.log("Vous sortez d'un biome");
+            this._currentPlayerCount--;
+            if(this._currentPlayerCount <= 0){
+              this._isBiomeActive = false;
+              this._currentPlayerCount = 0;
+              this.manageActiveBiome(this._isBiomeActive);
+            }
+          }
+        ));
+      }
+      
+
+    }
 }
 
 export default Biome;
