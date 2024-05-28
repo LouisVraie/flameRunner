@@ -125,6 +125,7 @@ class Group {
   
     // Create a new modifier
     const capacity = new Modifier();
+    capacity.setDefault(false);
     capacity.setName(name);
     capacity.setDescription(description);
     capacity.setIcon(icon);
@@ -148,6 +149,7 @@ class Group {
 
     // Create a new modifier
     const capacity = new Modifier();
+    capacity.setDefault(false);
     capacity.setName(name);
     capacity.setDescription(description);
     capacity.setIcon(icon);
@@ -170,11 +172,12 @@ class Group {
   
     // Create a new modifier
     const capacity = new Modifier();
+    capacity.setDefault(false);
     capacity.setName(name);
     capacity.setDescription(description);
     capacity.setIcon(icon);
     capacity.setDuration(capacityDuration);
-    capacity.setStaminaRegenDelta(0.75);
+    capacity.setStaminaConsumDelta(0.75);
 
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
   
@@ -198,6 +201,7 @@ class Group {
   
     // Create a new modifier
     const capacity = new Modifier();
+    capacity.setDefault(false);
     capacity.setName(name);
     capacity.setDescription(description);
     capacity.setIcon(icon);

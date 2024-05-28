@@ -344,7 +344,7 @@ class Character extends TransformNode{
   }
 
   // Move the character
-  public moveCharacterMeshDirection(controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
+  public moveCharacterMeshDirection(controller: Controller, modifier: Modifier): void {
     // Get the input map from the controller
     const inputMap = controller.getInputMap();
 
@@ -373,8 +373,7 @@ class Character extends TransformNode{
 
             // Set running animation playing sprint forward
             this._run.speedRatio = 1.25;
-            
-            this._stamina -= Character.STAMINA_REGEN * this._deltaTime * (groupModifier != null ? groupModifier.getStaminaRegenDelta() : 1);
+            this._stamina -= Character.STAMINA_REGEN * this._deltaTime * modifier.getStaminaConsumDelta();
             if (this._stamina < 0) {
                 this._stamina = 0;
             }
@@ -499,14 +498,14 @@ class Character extends TransformNode{
   }
 
   // Update the character
-  public updateCharacter(controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
+  public updateCharacter(controller: Controller, modifier: Modifier): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
 
     // update stamina according to the modifier
     modifier = this.updateStamina(modifier);
 
     // Move the character
-    this.moveCharacterMeshDirection(controller, modifier, groupModifier);
+    this.moveCharacterMeshDirection(controller, modifier);
     // Animate the character
     this.animateCharacter();
   }

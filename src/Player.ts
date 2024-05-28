@@ -282,9 +282,9 @@ class Player {
       }
 
       // update the character
-      this._character.updateCharacter(this._controller, currentModifier, currentGroupModifier);
+      this._character.updateCharacter(this._controller, Modifier.combineModifiers(currentModifier, currentGroupModifier));
     } else {
-      this._character.updateCharacter(this._controller, currentModifier, currentGroupModifier);
+      this._character.updateCharacter(this._controller, Modifier.combineModifiers(currentModifier, currentGroupModifier));
     }
   }
 

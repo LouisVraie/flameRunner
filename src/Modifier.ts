@@ -23,6 +23,7 @@ class Modifier {
 
   private _speedDelta: number;
   private _staminaDelta: number;
+  private _staminaConsumDelta: number;
   private _staminaRegenDelta: number;
   private _vision: boolean;
   private _timeDelta: number;
@@ -37,6 +38,7 @@ class Modifier {
     this._isInstant = false;
     this._speedDelta = 1;
     this._staminaDelta = 0;
+    this._staminaConsumDelta = 1;
     this._staminaRegenDelta = 1;
     this._vision = true;
     this._timeDelta = 0;
@@ -109,6 +111,14 @@ class Modifier {
   }
   public setStaminaDelta(staminaDelta: number): void {
     this._staminaDelta = staminaDelta;
+  }
+
+  // StaminaConsumDelta
+  public getStaminaConsumDelta(): number {
+    return this._staminaConsumDelta;
+  }
+  public setStaminaConsumDelta(staminaConsumDelta: number): void {
+    this._staminaConsumDelta = staminaConsumDelta;
   }
 
   // StaminaRegenDelta
@@ -306,6 +316,35 @@ class Modifier {
     }
     // Else we return a bonus modifier
     return modifier.getRandomBonusModifier();
+  }
+
+  // Combine two modifiers
+  public static combineModifiers(modifier1: Modifier, modifier2: Modifier): Modifier {
+    const combinedModifier = new Modifier();
+    
+    // If one of the modifier is null, we return the other one
+    if (modifier1 === null) {
+      return modifier2;
+    }
+
+    if (modifier2 === null) {
+      return modifier1;
+    }
+
+    // If both modifiers are default, we return a default modifier
+    if (modifier1.isDefault() && modifier2.isDefault()) {
+      return combinedModifier;
+    }
+
+    // Combine the two modifiers
+    combinedModifier.setSpeedDelta(modifier1.getSpeedDelta() * modifier2.getSpeedDelta());
+    combinedModifier.setStaminaDelta(modifier1.getStaminaDelta() + modifier2.getStaminaDelta());
+    combinedModifier.setStaminaConsumDelta(modifier1.getStaminaConsumDelta() * modifier2.getStaminaConsumDelta());
+    combinedModifier.setStaminaRegenDelta(modifier1.getStaminaRegenDelta() * modifier2.getStaminaRegenDelta());
+    combinedModifier.setVision(modifier1.getVision() && modifier2.getVision());
+    combinedModifier.setTimeDelta(modifier1.getTimeDelta() + modifier2.getTimeDelta());
+
+    return combinedModifier;
   }
 }
 
