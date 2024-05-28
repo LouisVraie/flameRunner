@@ -34,7 +34,8 @@ class Player {
   // Timer
   private _timer: number;
   private _modifierTimer: number;
-  private _groupModifierTimer: number;
+  private _groupModifierDurationTimer: number;
+  private _groupModifierCooldownTimer: number;
   private _startTime: number;
 
   private _isArrived: boolean = true;
@@ -69,7 +70,8 @@ class Player {
     // Get the current time
     this._startTime = Date.now();
     this._modifierTimer = 0;
-    this._groupModifierTimer = 0;
+    this._groupModifierDurationTimer = 0;
+    this._groupModifierCooldownTimer = 0;
     this._timer = 0;
   }
 
@@ -245,13 +247,18 @@ class Player {
     // GROUP MODIFIER
     let currentGroupModifier = null;
     // check if the capacity key is pressed and the group modifier is not active or the group modifier is passive
-    if ((this._controller.getInputMap().get(this._controller.getCapacity()) && !this._isGroupModifierActive && this._groupModifierTimer <= 0) || this._group.isPassive()) {
+    if ((this._controller.getInputMap().get(this._controller.getCapacity()) && !this._isGroupModifierActive && this._groupModifierDurationTimer <= 0 && this._groupModifierCooldownTimer <= 0) || this._group.isPassive()) {
       this._isGroupModifierActive = true;
+
+      if (this._group.getCapacityCooldown() != null) {
+        this._groupModifierCooldownTimer = this._group.getCapacityCooldown() * 1000;
+      }
+    
       // set the group modifier timer
       if (this._group.getCapacity().isInstant()) {
-        this._groupModifierTimer = -1;
+        this._groupModifierDurationTimer = -1;
       } else if (!this._group.isPassive()) {
-        this._groupModifierTimer = this._group.getCapacityDuration() * 1000;
+        this._groupModifierDurationTimer = this._group.getCapacityDuration() * 1000;
       }
     }
 
@@ -260,8 +267,13 @@ class Player {
       currentGroupModifier = this._group.getCapacity();
 
       // update group modifier timer removing the delta time
-      if (this._groupModifierTimer > 0 && this._group.getCapacity().getDuration() > 0 && !this._group.getCapacity().isInstant()) {
-        this._groupModifierTimer -= this._scene.getEngine().getDeltaTime();
+      if (this._groupModifierDurationTimer > 0 && this._group.getCapacity().getDuration() > 0 && !this._group.getCapacity().isInstant()) {
+        this._groupModifierDurationTimer -= this._scene.getEngine().getDeltaTime();
+      }
+    } else {
+      // update group modifier cooldown timer removing the delta time
+      if (this._groupModifierCooldownTimer > 0 && !this._group.isPassive()) {
+        this._groupModifierCooldownTimer -= this._scene.getEngine().getDeltaTime();
       }
     }
 
@@ -292,9 +304,9 @@ class Player {
   private _updateBeforeRenderInterface(): void {
     // GROUP MODIFIER
     // Check if the group modifier is over
-    if (!this._group.isPassive() && ((this._groupModifierTimer <= 0 && this._groupModifierTimer != -1) || (this._group.getCapacity().isInstant() && this._isGroupModifierActive))){
+    if (!this._group.isPassive() && ((this._groupModifierDurationTimer <= 0 && this._groupModifierDurationTimer != -1) || (this._group.getCapacity().isInstant() && this._isGroupModifierActive))){
       this._isGroupModifierActive = false;
-      this._groupModifierTimer = 0;
+      this._groupModifierDurationTimer = 0;
     }
 
     // MODIFIER

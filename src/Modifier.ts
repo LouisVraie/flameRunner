@@ -321,19 +321,18 @@ class Modifier {
   // Combine two modifiers
   public static combineModifiers(modifier1: Modifier, modifier2: Modifier): Modifier {
     const combinedModifier = new Modifier();
+
+    // If both modifiers are null or default, we return a default modifier
+    if (modifier1 === null && modifier2 === null || modifier1?.isDefault() && modifier2?.isDefault()){
+      return combinedModifier;
+    }
     
     // If one of the modifier is null, we return the other one
     if (modifier1 === null) {
       return modifier2;
     }
-
     if (modifier2 === null) {
       return modifier1;
-    }
-
-    // If both modifiers are default, we return a default modifier
-    if (modifier1.isDefault() && modifier2.isDefault()) {
-      return combinedModifier;
     }
 
     // Combine the two modifiers
