@@ -7,6 +7,7 @@ import "@babylonjs/loaders/";
 
 import GUI from "./GUI";
 import World, { WORLD_SCALE } from "./World";
+import { Menu } from "./enum/Menu";
 class App {
 
     private _canvas: HTMLCanvasElement;
@@ -78,11 +79,6 @@ class App {
 
         this._world = new World(this._scene);
     }
-
-    showMenu(){        
-        this._gui.getGlobalGUI().style.display = "flex";
-    }
-
 
     async addViewports(){
         if(this._scene.activeCameras.length <= this._viewportsData.length){
@@ -206,7 +202,13 @@ class App {
         // Load the world
         await this._world.loadWorld();
 
+        // Display the main menu
+        this._gui.setActiveMenu(Menu.MAIN_MENU);
+
         document.addEventListener("playerselected", async (event) => {
+            // Display the main menu
+            this._gui.setActiveMenu(Menu.LOADING_MENU);
+
             const playerList = this._gui.getPlayersSelection();
 
             const promiseList = [];
@@ -227,15 +229,13 @@ class App {
             // Set the collision between players
             this._world.setCollisionWithPlayers();
 
+            // Hide the loading menu
+            this._gui.setActiveMenu(Menu.NONE_MENU);
+
             // Dispatch the event to notify that the players are loaded
             App.distpatchPlayersLoadedEvent();
         });
     
-        //const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);
-        
-        //this.start();
-        this.showMenu();
-        
         return this._scene;
     }
 

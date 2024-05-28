@@ -193,7 +193,7 @@ class Group {
     const description = "Jump higher and longer";
     const icon = gymnastIcon;
     const capacityName = "Extension";
-    const capacityDuration = null;
+    const capacityDuration = 5;
     const capacityCooldown = 30;
   
     // Create a new modifier

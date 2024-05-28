@@ -7,6 +7,7 @@ import { Menu } from "./enum/Menu";
 
 class GUI {
   private _globalGUI: HTMLDivElement;
+  private _loadingMenuContainer: HTMLDivElement;
   private _mainMenuContainer: HTMLDivElement;
   private _classMenuContainer: HTMLDivElement;
   private _pauseMenuContainer: HTMLDivElement;
@@ -75,12 +76,16 @@ class GUI {
   constructor() {
     this._globalGUI = document.createElement("div");
     this._globalGUI.id = "gui";
-    this._globalGUI.style.display="none";
     document.body.appendChild(this._globalGUI);
+
+    // Create the loading menu container
+    this._loadingMenuContainer = this._buildBaseMenuElement("loading_menu_container", "menu_container");
+    this._loadingMenuContainer.style.display = 'flex';
+    this._globalGUI.appendChild(this._loadingMenuContainer);
 
     // Create the main menu container
     this._mainMenuContainer = this._buildBaseMenuElement("main_menu_container", "menu_container");
-    this._mainMenuContainer.style.display = 'flex';
+    this._mainMenuContainer.style.display = 'none';
     this._globalGUI.appendChild(this._mainMenuContainer);
 
     // Create the class menu container
@@ -103,6 +108,9 @@ class GUI {
     this._settingsMenuContainer.style.display = 'none';
     this._globalGUI.appendChild(this._settingsMenuContainer);
 
+    // Create the loading menu
+    this._createLoadingMenu();
+
     // Create the main menu
     this._createMainMenu();
 
@@ -123,7 +131,7 @@ class GUI {
 
     this._isPaused = true;
     this._isInGame = false;
-    this._activeMenu = Menu.MAIN_MENU;
+    this._activeMenu = Menu.LOADING_MENU;
 
     // Default players
     this._numberOfPlayers = 0;
@@ -180,7 +188,11 @@ class GUI {
       
       // Duration
       const classDuration = document.getElementById(`${eventPlayerIdentifier}_class_duration`) as HTMLDivElement;
-      classDuration.innerHTML = `<b>Duration :</b> ${group.getCapacityDuration() || "Passive"}`;
+      classDuration.innerHTML = `<b>Duration :</b> ${group.getCapacityDuration() ? group.getCapacityDuration() + "s" : "Passive"}`;
+
+      // Cooldown
+      const classCooldown = document.getElementById(`${eventPlayerIdentifier}_class_cooldown`) as HTMLDivElement;
+      classCooldown.innerHTML = `<b>Cooldown :</b> ${group.getCapacityCooldown() ? group.getCapacityCooldown() + "s" : "Passive"}`;
 
       // Check if the player selection already exists
       const playerSelection = this._playersSelection.find(player => player.getIdentifier() === eventPlayerIdentifier);
@@ -231,6 +243,9 @@ class GUI {
   // ActiveMenu
   public setActiveMenu(newMenu: Menu): void {
     switch (this._activeMenu) {
+      case Menu.LOADING_MENU:
+        this._loadingMenuContainer.style.display = 'none';
+        break;
       case Menu.MAIN_MENU:
         this._mainMenuContainer.style.display = 'none';
         break;
@@ -254,6 +269,9 @@ class GUI {
     const gameCanvas = document.getElementById("gameCanvas");
 
     switch (newMenu) {
+      case Menu.LOADING_MENU:
+        this._loadingMenuContainer.style.display = 'flex';
+        break;
       case Menu.MAIN_MENU:
         this._mainMenuContainer.style.display = 'flex';
         this._isPaused = true;
@@ -394,6 +412,35 @@ class GUI {
     parent.appendChild(button);
   }
 
+  private _createLoadingMenu(): void {
+    this._addTitle(this._loadingMenuContainer);
+    this._addSubtitle(this._loadingMenuContainer, "Loading...");
+
+    const loadingContainer = document.createElement('div');
+    loadingContainer.className = "loading_container";
+
+    const loadingSpinnerContainer = document.createElement('div');
+    loadingSpinnerContainer.className = "loading_spinner_container";
+
+    // Generate loading spinners
+    for (let i = 0; i < 5; i++) {
+      const loadingSpinner = document.createElement('div');
+      loadingSpinner.className = "loading_spinner";
+      loadingSpinnerContainer.appendChild(loadingSpinner);
+    }
+
+    const loadingBar = document.createElement('div');
+    loadingBar.className = "loading_bar";
+
+    const loadingProgress = document.createElement('div');
+    loadingProgress.className = "loading_progress";
+
+    loadingBar.appendChild(loadingProgress);
+    loadingContainer.appendChild(loadingSpinnerContainer);
+    loadingContainer.appendChild(loadingBar);
+    this._loadingMenuContainer.appendChild(loadingContainer);
+  }
+
   private _createMainMenu(): void {
     this._addTitle(this._mainMenuContainer);
     const buttonContainer = document.createElement('div');
@@ -489,9 +536,16 @@ class GUI {
         classDuration.className = "class_duration";
         classDuration.innerHTML = "<b>Duration</b>";
 
+        // Cooldown
+        const classCooldown = document.createElement('div');
+        classCooldown.id = `${playerIdentifier}_class_cooldown`;
+        classCooldown.className = "class_cooldown";
+        classCooldown.innerHTML = "<b>Cooldown</b>";
+
         classDescriptionContainer.appendChild(classTitle);
         classDescriptionContainer.appendChild(classDescription);
         classDescriptionContainer.appendChild(classDuration);
+        classDescriptionContainer.appendChild(classCooldown);
 
         buttonContainer.appendChild(classDescriptionContainer);
         menuContentContainer.appendChild(buttonContainer);

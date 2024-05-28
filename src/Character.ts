@@ -1,19 +1,9 @@
 import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport, Ray, RayHelper, Color3, Skeleton, Nullable, ActionManager } from "@babylonjs/core";
-import Group from "./Group";
 
 import player1 from "../assets/models/player1.glb";
 import Controller from "./Controller";
 import Modifier from "./Modifier";
-
-enum MovingState {
-  DEFAULT = 0,
-  JUMPING = 1,
-  FALLING = 2,
-  SLIDING = 3,
-  CLIMBING = 4,
-  STUNNED = 5,
-  DEAD = 6
-}
+import { MovingState } from "./enum/MovingState";
 
 class Character extends TransformNode{
 

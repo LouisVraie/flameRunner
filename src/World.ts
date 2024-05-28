@@ -278,10 +278,6 @@ class World{
         this._scene.blockMaterialDirtyMechanism = true;
 
         // Add Cube Modifiers
-        for (let i = 0; i < 5; i++) {
-            this.addCubeModifier(new Vector3(0 + i * 3, 1, 10));
-        }
-
         this._cubeSpawn.forEach(cube =>{
             this.addCubeModifier(cube.absolutePosition.clone())
         })
