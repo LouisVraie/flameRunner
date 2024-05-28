@@ -22,6 +22,19 @@ class App {
         new Viewport(0.5, 0, 0.5, 1.0)
     ];
 
+    private static distpatchPlayersLoadedEvent() {
+        // Create a new CustomEvent with the specific parameter included in the detail
+        const event = new CustomEvent('playersloaded', {
+          detail: {
+            message: 'playersloaded custom event!'
+          },
+          bubbles: true,
+          cancelable: true
+        });
+        // Dispatch the event on a target element, e.g., document or a specific element
+        document.dispatchEvent(event);
+    }
+
     constructor() {
 
         // create the canvas html element and attach it to the webpage
@@ -130,61 +143,48 @@ class App {
         return this._gui.isPaused();
     }
 
-    // Fonction de lancement du jeu
+    // Start the game 
     public async start(){
 
-        await this.waitGameLoaded();
+        document.addEventListener("playersloaded", async (event) => {
+            console.log("Le jeu peut commencer")
 
-        // Attendre 10 secondes le temps d'afficher les modèles
-        await new Promise(resolve => setTimeout(resolve, 10000));
-        
-        console.log("Le jeu peut commencer")
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
-        const countdownContainers = [];
-        const countdownDivs = [];
+            const countdownContainers = [];
+            const countdownDivs = [];
 
-        // Création des éléments html pour le compte à rebours
-        this._world.getPlayers().forEach(player =>{
-            const container = document.querySelector('#middle_container_'+player.getIdentifier()) as HTMLElement;
-            const countDownContainer = document.createElement('div')
-            countDownContainer.setAttribute('class', 'countdown');
-            container.appendChild(countDownContainer);
-            countdownContainers.push(container);
-            countdownDivs.push(countDownContainer)
-        })
-             
+            // Création des éléments html pour le compte à rebours
+            this._world.getPlayers().forEach(player =>{
+                const container = document.querySelector('#middle_container_'+player.getIdentifier()) as HTMLElement;
+                const countDownContainer = document.createElement('div')
+                countDownContainer.setAttribute('class', 'countdown');
+                container.appendChild(countDownContainer);
+                countdownContainers.push(container);
+                countdownDivs.push(countDownContainer)
+            })
+                
+                
+            // Lancer le décompte de 3 à 0
+            for (let i = 3; i >= 0; i--) {
+                countdownDivs.forEach(div => div.innerHTML = i.toString())
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
             
-        // Lancer le décompte de 3 à 0
-        for (let i = 3; i >= 0; i--) {
-            countdownDivs.forEach(div => div.innerHTML = i.toString())
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-           
-        countdownDivs.forEach(div => div.innerHTML = "GO")
-            
-        // Supprimer la barrière du spawn
-        this._world.getStartWall().dispose();
+            countdownDivs.forEach(div => div.innerHTML = "GO")
+                
+            // Supprimer la barrière du spawn
+            this._world.getStartWall().dispose();
 
-        // Déclencher les timers des joueurs
-        this._world.getPlayers().forEach(player =>{
-            player.setTimer(0);
-            player.setArrived(false);
-        })
+            // Déclencher les timers des joueurs
+            this._world.getPlayers().forEach(player =>{
+                player.setTimer(0);
+                player.setArrived(false);
+            })
 
-        // Attendre 2 secondes puis supprimer les éléments html du compte à rebours
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        countdownContainers.forEach(container => container.innerHTML = "")
-    }
-
-    // Fonction pour attendre que la variable soit true pour lancer le jeu
-    public async waitGameLoaded(): Promise<void> {
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (this._gui.isInGame()) {
-                    clearInterval(interval);
-                    resolve();
-                }
-            }, 100); // Vérifie toutes les 100 ms
+            // Attendre 2 secondes puis supprimer les éléments html du compte à rebours
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            countdownContainers.forEach(container => container.innerHTML = "")
         });
     }
 
@@ -227,6 +227,8 @@ class App {
             // Set the collision between players
             this._world.setCollisionWithPlayers();
 
+            // Dispatch the event to notify that the players are loaded
+            App.distpatchPlayersLoadedEvent();
         });
     
         //const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);
