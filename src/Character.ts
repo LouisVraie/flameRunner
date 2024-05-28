@@ -21,7 +21,6 @@ class Character extends TransformNode{
   private _deltaTime: number;
 
   private _name: string;
-  private _group: Group;
 
   // Character stats
   private _stamina: number;
@@ -112,14 +111,6 @@ class Character extends TransformNode{
   }
   public setName(name: string): void {
     this._name = name;
-  }
-
-  // Group
-  public getGroup(): Group {
-    return this._group;
-  }
-  public setGroup(group: Group): void {
-    this._group = group;
   }
 
   // Stamina
@@ -213,9 +204,8 @@ class Character extends TransformNode{
   // Methods
   //////////////////////////////////////////////////////////
 
-  public async createCharacterAsync(group: Group): Promise<Character> {
+  public async createCharacterAsync(): Promise<Character> {
 
-    this._group = group;
     this._stamina = Character.MAX_STAMINA;
     this._staminaRegen = Character.STAMINA_REGEN;
 
@@ -364,90 +354,8 @@ class Character extends TransformNode{
   }
 
   // Move the character
-  // public moveCharacterMeshDirection(controller: Controller, modifier: Modifier): void {
-  //   // Get the input map from the controller
-  //   const inputMap = controller.getInputMap();
-    
-
-  //   // Determine movement direction based on input
-  //   // Forward
-  //   if (inputMap.get(controller.getForward())) {
-  //     this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scaleInPlace(Character.PLAYER_SPEED * modifier.getSpeedDelta());
-  //     // this._moveDirection.addInPlace(WORLD_GRAVITY);
-
-  //     // Set running animation playing forward
-  //     this._run.speedRatio = 1;
-      
-  //     // Sprint
-  //     if (inputMap.get(controller.getSprint()) && this._stamina > 0) {
-  //       this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
-  //       // Set running animation playing forward
-  //       this._run.speedRatio = 1.25;
-  //       this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
-
-  //       // Clamp stamina to 0
-  //       if (this._stamina < 0) {
-  //         this._stamina = 0;
-  //       }
-  //     }
-
-  //     // Set the character's velocity
-  //     this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
-  //   }
-  //   // Backward
-  //   if (inputMap.get(controller.getBackward())) {
-  //     this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scaleInPlace(Character.PLAYER_SPEED/2 * modifier.getSpeedDelta());
-  //     // this._moveDirection.addInPlace(WORLD_GRAVITY);
-
-  //     // Set running animation playing backwards
-  //     this._run.speedRatio = -0.85;
-
-  //     // Set the character's velocity
-  //     this._capsuleAggregate.body.setLinearVelocity(this._moveDirection);
-  //   }
-  //   // Left
-  //   if (inputMap.get(controller.getLeft())) {
-  //     // Backward
-  //     if (inputMap.get(controller.getBackward())) {
-  //       this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
-  //     } else {
-  //       this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
-  //     }
-  //   }
-  //   // Right
-  //   if (inputMap.get(controller.getRight())) {
-  //     // Backward
-  //     if (inputMap.get(controller.getBackward())) {
-  //       this._mesh.rotation.y -= Character.ROTATION_SPEED * this._deltaTime;
-  //     } else {
-  //       this._mesh.rotation.y += Character.ROTATION_SPEED * this._deltaTime;
-  //     }
-  //   }
-
-  //   // jump
-  //   if (inputMap.get(controller.getJump()) && Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
-  //     console.log("jump");
-  //     this._jumpCount++;
-  //     this._movingState = MovingState.JUMPING;
-  //     this._capsuleAggregate.body.applyImpulse(Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass), this._capsuleAggregate.transformNode.getAbsolutePosition());
-  //     this._isGrounded = false;
-  //   }
-
-  //   // Update the character's position
-  //   this.updatePosition(this._capsuleAggregate.transformNode.getAbsolutePosition());
-
-  //   // Regenerate stamina
-  //   if (!inputMap.get(controller.getSprint()) && this._stamina < Character.MAX_STAMINA) {
-  //     this._stamina += Character.STAMINA_REGEN * modifier.getStaminaRegenDelta() * this._deltaTime;
-
-  //     // Clamp stamina to Character.MAX_STAMINA
-  //     if (this._stamina > Character.MAX_STAMINA) {
-  //       this._stamina = Character.MAX_STAMINA;
-  //     }
-  //   }
-  // }
-
-  public moveCharacterMeshDirection(controller: Controller, modifier: Modifier): void {
+  public moveCharacterMeshDirection(controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
+    // Get the input map from the controller
     const inputMap = controller.getInputMap();
 
     // Gérer l'état de la touche de saut
@@ -476,7 +384,7 @@ class Character extends TransformNode{
             // Set running animation playing sprint forward
             this._run.speedRatio = 1.25;
             
-            this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
+            this._stamina -= Character.STAMINA_REGEN * this._deltaTime * (groupModifier != null ? groupModifier.getStaminaRegenDelta() : 1);
             if (this._stamina < 0) {
                 this._stamina = 0;
             }
@@ -572,37 +480,43 @@ class Character extends TransformNode{
     }
   }
 
-  // Update stamina
-  public updateStamina(controller: Controller, modifier: Modifier): Modifier {
-    const inputMap = controller.getInputMap();
-    // Apply stamina bonus or malus
-    if (modifier.getStaminaDelta() != 0 && inputMap.get(controller.getModifier())){
-      console.log("stamina delta : ", modifier.getName());
-      this._stamina += modifier.getStaminaDelta();
-      modifier.setStaminaDelta(0);
+  // Update stamina with modifier
+  private _updateStaminaWithModifier(modifier: Modifier): Modifier {
+    this._stamina += modifier.getStaminaDelta();
+    modifier.setStaminaDelta(0);
 
-      // Clamp stamina to 0
-      if (this._stamina < 0) {
-        this._stamina = 0;
-      }
-      // Clamp stamina to Character.MAX_STAMINA
-      if (this._stamina > Character.MAX_STAMINA) {
-        this._stamina = Character.MAX_STAMINA;
-      }
+    // Clamp stamina to 0
+    if (this._stamina < 0) {
+      this._stamina = 0;
+    }
+    // Clamp stamina to Character.MAX_STAMINA
+    if (this._stamina > Character.MAX_STAMINA) {
+      this._stamina = Character.MAX_STAMINA;
+    }
+
+    return modifier;
+  }
+
+  // Update stamina
+  public updateStamina(modifier: Modifier): Modifier {
+
+    // Apply stamina bonus or malus
+    if (modifier.getStaminaDelta() != 0){
+      modifier = this._updateStaminaWithModifier(modifier);
     }
 
     return modifier;
   }
 
   // Update the character
-  public updateCharacter(camRoot: TransformNode, controller: Controller, modifier: Modifier): void {
+  public updateCharacter(controller: Controller, modifier: Modifier, groupModifier: Modifier): void {
     this._deltaTime = this._scene.getEngine().getDeltaTime() / 1000.0;
 
     // update stamina according to the modifier
-    modifier = this.updateStamina(controller, modifier);
+    modifier = this.updateStamina(modifier);
 
     // Move the character
-    this.moveCharacterMeshDirection(controller, modifier);
+    this.moveCharacterMeshDirection(controller, modifier, groupModifier);
     // Animate the character
     this.animateCharacter();
   }
