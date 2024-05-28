@@ -6,7 +6,7 @@ import "@babylonjs/loaders/glTF";
 import "@babylonjs/loaders/";
 
 import GUI from "./GUI";
-import World from "./World";
+import World, { WORLD_SCALE } from "./World";
 class App {
 
     private _canvas: HTMLCanvasElement;
@@ -140,8 +140,8 @@ class App {
         
         console.log("Le jeu peut commencer")
 
-        let countdownContainers = [];
-        let countdownDivs = [];
+        const countdownContainers = [];
+        const countdownDivs = [];
 
         // Création des éléments html pour le compte à rebours
         this._world.getPlayers().forEach(player =>{

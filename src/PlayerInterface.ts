@@ -41,6 +41,7 @@ class PlayerInterface {
 
         const topContainer = document.createElement('div')
         topContainer.className = 'top_container';
+        topContainer.id = 'top_container_'+this._playerName;
         this._gui.appendChild(topContainer)
 
         const middleContainer = document.createElement('div')
@@ -51,6 +52,7 @@ class PlayerInterface {
 
         const bottomContainer = document.createElement('div');
         bottomContainer.className = "bottom_container";
+        bottomContainer.id = 'bottom_container_'+this._playerName;
         this._gui.appendChild(bottomContainer);
 
         const topLeftContainer = document.createElement('div');
@@ -286,14 +288,38 @@ class PlayerInterface {
         timeContainer.innerHTML = "Time : "+ this._playerTime;
     }
 
-    public showFinalScreen(isWinner : boolean, isBestScore : boolean){
-        const container = document.querySelector('#middle_container_'+this._playerName) as HTMLElement;
+    public showFinalScreen(isWinner : boolean, isBestTime : boolean){
+        const container = document.querySelector('#middle_container_'+this._playerName) as HTMLDivElement;
+
+        const topContainer = document.querySelector('#top_container_'+this._playerName) as HTMLDivElement;
+        topContainer.classList.add('display_none');
+
+        const bottomContainer = document.querySelector('#bottom_container_'+this._playerName) as HTMLDivElement;
+        bottomContainer.classList.add('display_none');
+
+        const endInfoContainer = document.createElement('div');
+        endInfoContainer.className = "end_info_container";
+        endInfoContainer.id = "end_info_container_"+this._playerName;
+        container.appendChild(endInfoContainer);
+
+        const endInfoContent = document.createElement('div');
+        endInfoContent.className = "end_info_content";
+        endInfoContent.id = "end_info_content_"+this._playerName;
+        endInfoContainer.appendChild(endInfoContent);
 
         if(isWinner){
-            container.innerHTML = `<div class="winner">You won!</div>`;
+            endInfoContent.innerHTML = `<div class="winner">1st place !</div>`;
         }
         else{
-            container.innerHTML = `<div class="loser">You lost!</div>`;           
+            endInfoContent.innerHTML = `<div class="loser">2nd place !</div>`;           
+        }
+
+        // Diplay the time
+        endInfoContent.innerHTML += `<div class="time">Time : ${this._playerTime}</div>`;
+
+        // Display the best time message
+        if(isBestTime){
+            endInfoContent.innerHTML += `<div class="best_time">New best time !</div>`;
         }
     }
 

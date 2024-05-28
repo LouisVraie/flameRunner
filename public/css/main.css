@@ -10,6 +10,8 @@
 
   --confirm-color: #38761d;
   --confirm-background-color: #93c47d;
+  --error-color: #990000;
+  --error-background-color: #e06666;
 
   --default-text-color: whitesmoke;
   --default-background-color: rgba(0, 0, 0, 0.5);
@@ -62,4 +64,8 @@ body {
   right: 10px;
   width: 60px;
   height: 20px;
+}
+
+.display_none{
+  display: none !important;
 }

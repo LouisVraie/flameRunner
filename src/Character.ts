@@ -466,10 +466,16 @@ class Character extends TransformNode{
     }
 
     if (inputMap.get(controller.getForward())) {
+        // Set running animation playing forward
+        this._run.speedRatio = 1;
+
         this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).scale(Character.PLAYER_SPEED * modifier.getSpeedDelta());
         if (inputMap.get(controller.getSprint()) && this._stamina > 0) {
             this._moveDirection.scaleInPlace(Character.PLAYER_SPRINT_MULTIPLIER);
+
+            // Set running animation playing sprint forward
             this._run.speedRatio = 1.25;
+            
             this._stamina -= Character.STAMINA_REGEN * this._deltaTime;
             if (this._stamina < 0) {
                 this._stamina = 0;
@@ -481,6 +487,10 @@ class Character extends TransformNode{
 
     if (inputMap.get(controller.getBackward())) {
         this._moveDirection = new Vector3(Math.sin(this._mesh.rotation.y), 0, Math.cos(this._mesh.rotation.y)).negate().scale(Character.PLAYER_SPEED / 2 * modifier.getSpeedDelta());
+        
+        // Set running animation playing backwards
+        this._run.speedRatio = -0.85;
+
         const currentVelocity = this._capsuleAggregate.body.getLinearVelocity();
         this._capsuleAggregate.body.setLinearVelocity(new Vector3(this._moveDirection.x, currentVelocity.y, this._moveDirection.z));
     }

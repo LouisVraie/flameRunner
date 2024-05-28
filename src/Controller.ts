@@ -48,9 +48,12 @@ class Controller {
             this._inputMap.set(kbInfo.event.code, true);
             // if key i is pressed, toggle the inspector
             if (kbInfo.event.code == "KeyI") {
+              const gui = document.getElementById("gui") as HTMLDivElement;
               if (this._scene.debugLayer.isVisible()) {
+                gui.classList.remove("display_none");
                 this._scene.debugLayer.hide();
               } else {
+                gui.classList.add("display_none");
                 this._scene.debugLayer.show();
               }
             }

@@ -419,8 +419,8 @@ class World{
 
 
 
-                let indice = pointsPerSection * i
-                let valeur = this._fishCurve.at(indice)
+                const indice = pointsPerSection * i
+                const valeur = this._fishCurve.at(indice)
 
                 const node = new TransformNode("spawnerNode", this._scene);
 
@@ -576,10 +576,10 @@ class World{
         
         const pathGroup = new Mesh("cowPathGroup", this._scene);
         // Create array of points to describe the curve
-        var points = [];
-        var n = 450; // number of points
-        var r = 3.5; //radius
-        for (var i = 0; i < n + 1; i++) {
+        const points = [];
+        const n = 450; // number of points
+        const r = 3.5; //radius
+        for (let i = 0; i < n + 1; i++) {
             points.push( new Vector3((r + (r/5)*Math.sin(8*i*Math.PI/n))* Math.sin(2*i*Math.PI/n) + 37, 0.5, (r + (r/10)*Math.sin(6*i*Math.PI/n)) * Math.cos(2*i*Math.PI/n) - 160));
         }	
         
@@ -590,11 +590,11 @@ class World{
         // track.parent = pathGroup;
         /*-----------------------End Path------------------------------------------*/ 
     
-        var path3d = new Path3D(points);
-        var tangents = path3d.getTangents();
-        var normals = path3d.getNormals();
-        var binormals = path3d.getBinormals();
-        var curve = path3d.getCurve();
+        const path3d = new Path3D(points);
+        const tangents = path3d.getTangents();
+        const normals = path3d.getNormals();
+        const binormals = path3d.getBinormals();
+        const curve = path3d.getCurve();
     
         // Visualisation (optional, can be removed if not needed)
         for(let p = 0; p < curve.length; p++) {
@@ -752,7 +752,7 @@ class World{
 
     addShiningParticles(location: Vector3){
         // Create a particle system
-        var particleSystem = new ParticleSystem("particles", 2000, this._scene);
+        const particleSystem = new ParticleSystem("particles", 2000, this._scene);
 
         //Texture of each particle
         particleSystem.particleTexture = new Texture(flare, this._scene);
@@ -787,8 +787,8 @@ class World{
         particleSystem.updateSpeed = 0.005;
 
         particleSystem.updateFunction = function(particles) {
-            for (var index = 0; index < particles.length; index++) {
-                var particle = particles[index];
+            for (let index = 0; index < particles.length; index++) {
+                const particle = particles[index];
                 particle.age += this._scaledUpdateSpeed;
                 
                 if (particle.age >= particle.lifeTime) { // Recycle
@@ -998,31 +998,23 @@ class World{
             return (min * 60 * 1000) + (sec * 1000) + ms + micro;
         };
     
-        const formatTime = (time) => {
-            const minutes = Math.floor(time / 60000);
-            const seconds = Math.floor((time % 60000) / 1000);
-            const milliseconds = Math.floor(time % 1000);
-            const microseconds = Math.round((time % 1) * 1000000);
-            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}.${String(microseconds).padStart(6, '0')}`;
-        };
-    
         const newTime = parseTime(time);
-        const bestScoreKey = "bestScore";
+        const bestTimeKey = "bestTime";
     
-        const bestScore = localStorage.getItem(bestScoreKey);
+        const bestTime = localStorage.getItem(bestTimeKey);
     
-        if (bestScore === null) {
-            localStorage.setItem(bestScoreKey, time);
+        if (bestTime === null) {
+            localStorage.setItem(bestTimeKey, time);
             console.log(`New best score set: ${time}`);
             return true
         } else {
-            const bestTime = parseTime(bestScore);
-            if (newTime < bestTime) {
-                localStorage.setItem(bestScoreKey, time);
+            const previousBestTime = parseTime(bestTime);
+            if (newTime < previousBestTime) {
+                localStorage.setItem(bestTimeKey, time);
                 console.log(`New best score updated: ${time}`);
                 return true;
             } else {
-                console.log(`Current time (${time}) is not better than the best time (${bestScore}).`);
+                console.log(`Current time (${time}) is not better than the best time (${bestTime}).`);
                 return false;
             }
         }
@@ -1052,14 +1044,14 @@ class World{
                     player.getCharacter().getHitbox().position.copyFrom(podium);
                     player.setArrived(true);
                     console.log(player.getInterface().getPlayerTime());
-                    const isBestScore = this.manageScore(player.getInterface().getPlayerTime());
+                    const isBestTime = this.manageScore(player.getInterface().getPlayerTime());
                     this._arrival += 1;
                     console.log("Joueur arrivé en position : " + this._arrival + " position.")
                     if(this._arrival == 1){
-                        player.getInterface().showFinalScreen(true, isBestScore);
+                        player.getInterface().showFinalScreen(true, isBestTime);
                     }
                     else{
-                        player.getInterface().showFinalScreen(false, isBestScore);
+                        player.getInterface().showFinalScreen(false, isBestTime);
                     }
                 }
                 else{
