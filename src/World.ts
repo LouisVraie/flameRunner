@@ -1,4 +1,4 @@
-import { AbstractMesh, ActionManager, Animation, Axis, Color3, Color4, CubeTexture, Curve3, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, Layer, Matrix, Mesh, MeshBuilder, NodeMaterial,  ParticleHelper,  ParticleSystem,  Path3D,  PhysicsAggregate,  PhysicsMotionType,  PhysicsShapeType,  Quaternion,  Scene,  SceneLoader,  SceneOptimizer,  SceneOptimizerOptions,  ScenePerformancePriority,  ShadowGenerator,  Space,  StandardMaterial,  Texture,  TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, ActionManager, Color3, Color4, CubeTexture, Curve3, DirectionalLight, ExecuteCodeAction, FreeCamera, HavokPlugin, HemisphericLight, Matrix, Mesh, MeshBuilder, NodeMaterial, ParticleSystem,  Path3D,  PhysicsAggregate,  PhysicsMotionType,  PhysicsShapeType,  Quaternion,  Scene,  SceneLoader,  ShadowGenerator,  Texture,  TransformNode, Vector3 } from "@babylonjs/core";
 import Player from "./Player";
 import Group from "./Group";
 
@@ -9,8 +9,6 @@ import CubeModifier from "./CubeModifier";
 import Vehicle from "./Vehicle";
 import Spawner from "./Spawner";
 
-import mesh8 from '../assets/models/animals/carp.glb';
-import mesh9 from '../assets/models/animals/thon.glb';
 import flare from '../assets/textures/Flare.png';
 
 
@@ -318,28 +316,9 @@ class World{
         
             }
             if (type.startsWith("Rock")) {
-                
-                const newSpawner = new Spawner(this._scene, spawner, direction, "Rock", this._dispawnerTab, this._players, this);
-                        
+                new Spawner(this._scene, spawner, direction, "Rock", this._dispawnerTab, this._players, this);
             }
         });
-
-
-        
-        
-
-
-        
-        
-
-
-        // const assets = await SceneLoader.ImportMeshAsync("", "", mesh8, this._scene);
-
-        // const carBody = assets.meshes[0] as Mesh;
-        // carBody.position = new Vector3(0, 18, 0)
-        // carBody.scaling = new Vector3(5, 5, 5)
-        // carBody.id = "Carpe"
-
 
         const nbPoints = 25;
         const nbLoops = 4
@@ -401,11 +380,6 @@ class World{
             bi.isVisible = false;
         }
 
-       
-
-
-        console.log("Il y a " + this._fishCurve.length + " points dans la courbe.");
-
         const totalPoints = this._fishCurve.length;
 
         // Assurez-vous que vous avez au moins nbLoops points
@@ -428,48 +402,13 @@ class World{
                 node.position = valeur;
 
                 // Utilisez le TransformNode dans le constructeur de Spawner
-                const newSpawner = new Spawner(this._scene, node, "Forth", "Fish", this._dispawnerTab, this._players, this);
+                new Spawner(this._scene, node, "Forth", "Fish", this._dispawnerTab, this._players, this);
 
             }
         }
 
-
-        // Define the position and orientation animations that will be populated
-        // according to the Path3D properties 
-        // const frameRate = 60;
-        // const posAnim = new Animation("cameraPos", "position", frameRate, Animation.ANIMATIONTYPE_VECTOR3);
-        // const posKeys = [];
-        // const rotAnim = new Animation("cameraRot", "rotationQuaternion", frameRate, Animation.ANIMATIONTYPE_QUATERNION);
-        // const rotKeys = [];
-
-        // for (let i = 0; i < this._fishCurve.length; i++) {
-        //     const position = this._fishCurve[i];
-        //     const tangent = this._fishTangents[i];
-        //     const binormal = this._fishBinormals[i];
-
-        //     const rotation = Quaternion.FromLookDirectionRH(tangent, binormal);
-
-        //     posKeys.push({frame: i * frameRate, value: position});
-        //     rotKeys.push({frame: i * frameRate, value: rotation});
-            
-        // }
-
-        // posAnim.setKeys(posKeys);
-        // rotAnim.setKeys(rotKeys);
-
-
-        // carBody.animations.push(posAnim);
-        // carBody.animations.push(rotAnim);
-        
-        // this._scene.beginAnimation(carBody, 0, 15000, true, 8);
-
-        //for(let i = -160; i >= -200; i-=10){
-            this.createCowPath(new Vector3(38, 0, -160))
-        //}
-
-        // let cow = new Cow(this._scene, this._dispawnerTab, new Vector3(0, 20, 0), this)
-        //     cow.createObstacle();
-
+        // Create a cow path
+        this.createCowPath();
     }
 
     async initGame(){
@@ -491,87 +430,7 @@ class World{
         return angleMap[node.id] || 0; // Retourne l'angle associé ou 0 par défaut
     }
 
-    
-
-    // createCowPath(vector: Vector3){
-    //     /*-----------------------Path------------------------------------------*/ 
-        
-    //     const pathGroup = new Mesh("cowPathGroup");
-    //     // // Create array of points to describe the curve
-    //     var points = [];
-    //     var n = 450; // number of points
-    //     var r = 3.5; //radius
-    //     for (var i = 0; i < n + 1; i++) {
-    //         points.push( new Vector3((r + (r/5)*Math.sin(8*i*Math.PI/n))* Math.sin(2*i*Math.PI/n) + 37, 0, (r + (r/10)*Math.sin(6*i*Math.PI/n)) * Math.cos(2*i*Math.PI/n) - 160));
-    //     }	
-        
-    //     //Draw the curve
-    //     var track = MeshBuilder.CreateLines('track', {points: points}, this._scene);
-    //     track.color = new Color3(0, 0, 0);
-    //     track.position = vector//new Vector3(38, 0, -190)//-160 à -200
-    //     track.parent = pathGroup;
-    //     /*-----------------------End Path------------------------------------------*/ 
-
-    //     var path3d = new Path3D(points);
-    //     var normals = path3d.getNormals();
-    //     var theta = Math.acos(Vector3.Dot(Axis.Z,normals[0]));
-
-
-    //     var tangents = path3d.getTangents();
-    //     //var normals = path3d.getNormals();
-    //     var binormals = path3d.getBinormals();
-    //     var curve = path3d.getCurve();
-
-    //     // visualisation
-    //     for(let p = 0; p < curve.length; p++) {
-    //         const tg = MeshBuilder.CreateLines('tg', {points: [ curve[p], curve[p].add(tangents[p]) ]}, this._scene);
-    //         tg.color = Color3.Red();
-    //         tg.isVisible = true;
-    //         tg.parent = pathGroup;
-    //         const no = MeshBuilder.CreateLines('no', {points: [ curve[p], curve[p].add(normals[p]) ]}, this._scene);
-    //         //no.color = null;
-    //         no.isVisible = true;
-    //         no.parent = pathGroup;
-    //         const bi = MeshBuilder.CreateLines('bi', {points: [ curve[p], curve[p].add(binormals[p]) ]}, this._scene);
-    //         bi.color = Color3.Green();
-    //         bi.parent = pathGroup;
-    //         bi.isVisible = true;
-    //     }
-
-
-    //     let valeur = curve.at(0)
-
-    //     console.log(valeur)
-                
-    //     const node = new TransformNode("spawnerNode", this._scene);
-
-    //     // Définissez la position du TransformNode
-    //     node.position = valeur;
-
-    //     var theta = Math.acos(Vector3.Dot(Axis.Z,normals[0]));
-        
-
-    //     for(let a = 0; a < 3; a++){
-            
-    //         let cow = new Cow(this._scene, this._dispawnerTab, new Vector3(valeur.x, valeur.y, valeur.z), this)
-    //         cow.createObstacle();
-    //         /*----------------Animation Loop---------------------------*/
-    //         var i=0;
-    //         this._scene.registerAfterRender(function() {
-    //             cow.getHitbox().position.x = points.at(i).x;
-    //             cow.getHitbox().position.z = points.at(i).z -10 * a;
-                
-    //             theta = Math.acos(Vector3.Dot(normals[i],normals[i+1]));
-    //             var dir = Vector3.Cross(normals[i],normals[i+1]).y;
-    //             var dir = dir/Math.abs(dir);
-    //             cow.getHitbox().rotate(binormals[i], dir * theta );
-                
-    //             i = (i + 1) % (points.length -1);	//continuous looping  
-    //         });
-    //     }
-    // }
-    
-    createCowPath(vector: Vector3) {
+    createCowPath() {
         /*-----------------------Path------------------------------------------*/ 
         
         const pathGroup = new Mesh("cowPathGroup", this._scene);
@@ -583,11 +442,6 @@ class World{
             points.push( new Vector3((r + (r/5)*Math.sin(8*i*Math.PI/n))* Math.sin(2*i*Math.PI/n) + 37, 0.5, (r + (r/10)*Math.sin(6*i*Math.PI/n)) * Math.cos(2*i*Math.PI/n) - 160));
         }	
         
-        // //Draw the curve
-        // var track = MeshBuilder.CreateLines('track', {points: points}, this._scene);
-        // track.color = new Color3(0, 0, 0);
-        // track.position = vector;
-        // track.parent = pathGroup;
         /*-----------------------End Path------------------------------------------*/ 
     
         const path3d = new Path3D(points);
@@ -612,8 +466,6 @@ class World{
         }
     
         const valeur = curve[0];
-    
-        console.log(valeur);
         
         for(let a = 0; a < 10; a++){
             const cow = new Cow(this._scene, this._dispawnerTab, new Vector3(valeur.x, valeur.y, valeur.z), this);
@@ -666,18 +518,6 @@ class World{
         //camera.viewport = new Viewport(0, 0, 0.5, 1.0);
     }
 
-    addSphere(name: string, segment: number, diameter: number, posX : number, posY : number, posZ : number, physics : boolean): void{
-        const  sphere = MeshBuilder.CreateSphere(name, {segments: segment, diameter: diameter}, this._scene);
-        sphere.name = name;
-        sphere.position.x = posX;
-        sphere.position.y = posY;
-        sphere.position.z = posZ;
-
-        if(physics){
-            const sphereAggregate = new PhysicsAggregate(sphere, PhysicsShapeType.SPHERE, { mass: 1, restitution: 0.1 }, this._scene);
-        }
-    }
-
     addSmoke(vector : Vector3){
         // Create a particle system
         const particleSystem = new ParticleSystem("particles", 8000, this._scene);
@@ -723,14 +563,10 @@ class World{
         particleSystem.blendMode = ParticleSystem.BLENDMODE_STANDARD;
         
         // emitter shape
-        const sphereEmitter = particleSystem.createConeEmitter(0.01, 0.5);
+        particleSystem.createConeEmitter(0.01, 0.5);
         // Where the particles come from
         particleSystem.emitter = new Vector3(vector.x, vector.y - 3, vector.z)//.scaleInPlace(WORLD_SCALE); // the starting object, the emitter
-        // particleSystem.minEmitBox = new Vector3(-0.5, -0.5, -0.5); // Starting all from
-        // particleSystem.maxEmitBox = new Vector3(0.5, 0, 0.5); // To...
 
-        // Start the particle system
-        // particleSystem.start();
         // Variables to control the intervals
         let isRunning = false;
         const intervalTime = Math.floor(Math.random() * 10) + 1; // Interval time in milliseconds
@@ -874,35 +710,31 @@ class World{
 
     // Set the character's collision on the cube modifier
     private _setCubeModifierCollision(player: Player): void {
+        // for each cube modifier
+        for (const cube of this._cubeModifiers) {
+            // Create a trigger for the cube modifier
+            const action = new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : cube.getMesh()
+                },
+                () => {
+                    // Check if the player has a modifier
+                    if (player.getModifier().isDefault()) {
+                        // Apply the modifier to the player
+                        player.setModifierFromRandomValue(cube.getRandomValue());
+                        
+                        // Dispose the action manager related to this cube modifier for this player
+                        player.getCharacter().getHitbox().actionManager.unregisterAction(action);
 
-        // for each player
-        for (const player of this._players) {
-            // for each cube modifier
-            for (const cube of this._cubeModifiers) {
-                // Create a trigger for the cube modifier
-                const action = new ExecuteCodeAction(
-                    {
-                        trigger : ActionManager.OnIntersectionEnterTrigger,
-                        parameter : cube.getMesh()
-                    },
-                    () => {
-                        // Check if the player has a modifier
-                        if (player.getModifier().isDefault()) {
-                            // Apply the modifier to the player
-                            player.setModifierFromRandomValue(cube.getRandomValue());
-                            
-                            // Dispose the action manager related to this cube modifier for this player
-                            player.getCharacter().getHitbox().actionManager.unregisterAction(action);
-
-                            // Remove the cube modifier
-                            cube.disposeObstacle();
-                        }
+                        // Remove the cube modifier
+                        cube.disposeObstacle();
                     }
-                );
+                }
+            );
 
-                // Add the action manager to the player's hitbox
-                player.getCharacter().getHitbox().actionManager.registerAction(action);
-            }
+            // Add the action manager to the player's hitbox
+            player.getCharacter().getHitbox().actionManager.registerAction(action);
         }
     }
 
@@ -914,21 +746,6 @@ class World{
                     parameter : checkPoint
                 },
                 () => {
-                    
-                    // console.log("Changement de respawn : ", checkPoint.id)
-                    // console.log("Index : ", index);
-                    // const respawn = this._respawnTab.at(index).absolutePosition;
-                    // if(player.getCharacter().getSpawnLocation() != respawn){
-                    //     player.getCharacter().setSpawnLocation(respawn);
-                    //     console.log("Respawn set at : ", respawn)
-                    // }
-                    // else{
-                    //     console.log("Pas de changement de respawn");
-                    // }
-
-
-                    console.log("Changement de respawn : ", checkPoint.id);
-                    console.log("Index : ", index);
 
                     // Récupérer le respawn et l'angle
                     const respawnData = this._respawnTab[index];
@@ -939,13 +756,7 @@ class World{
                     if (!player.getCharacter().getSpawnLocation().equals(respawn)) {
                         player.getCharacter().setSpawnLocation(respawn);
                         player.getCharacter().setSpawnRotation(angle);
-                        
-                        console.log("Respawn set at : ", respawn, "with angle:", angle);
-                    } else {
-                        console.log("Pas de changement de respawn");
                     }
-                    
-                    
                 }
             ))
 
@@ -960,7 +771,7 @@ class World{
 
         
 
-        this._deathTab.forEach((death, index) => {
+        this._deathTab.forEach((death) => {
 
             death.refreshBoundingInfo(true);
 
@@ -970,21 +781,11 @@ class World{
                     parameter: death
                 },
                 () => {
-                    console.log("Intersection detected with death surface: ", death.id);
-                    console.log("Index: ", index);
-                    
                     // Check if the position is set correctly
                     const respawnPosition = player.getCharacter().getSpawnLocation().clone();
-                    console.log("Respawn position is: ", respawnPosition);
-                    // player.getCharacter().getCapsuleAggregate().body.setMotionType(PhysicsMotionType.STATIC)
+
                     hitbox.position.copyFrom(respawnPosition);
                     player.getCharacter().getMesh().rotation.y = player.getCharacter().getSpawnRotation(); // Supposons qu'il y ait une méthode pour définir l'angle de rotation
-                    // hitbox.computeWorldMatrix(true);
-                    // player.getCharacter().setLastPosition(respawnPosition);
-                    // player.getCharacter().updatePosition(respawnPosition);
-
-                    console.log("Respawn set at: ", respawnPosition);
-                    // player.getCharacter().getCapsuleAggregate().body.setMotionType(PhysicsMotionType.DYNAMIC)
                 }
             ));
         });

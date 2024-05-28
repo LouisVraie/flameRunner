@@ -463,7 +463,7 @@ class GUI {
         buttonContainer.appendChild(playerTitle);
 
         this._addClassButton(buttonContainer, Group.getSprinter(), playerIdentifier, () => {}, "class_btn");
-        this._addClassButton(buttonContainer, Group.getGhost(), playerIdentifier, () => {}, "class_btn");
+        // this._addClassButton(buttonContainer, Group.getGhost(), playerIdentifier, () => {}, "class_btn");
         this._addClassButton(buttonContainer, Group.getEndurance(), playerIdentifier, () => {}, "class_btn");
         this._addClassButton(buttonContainer, Group.getGymnast(), playerIdentifier, () => {}, "class_btn");
 
