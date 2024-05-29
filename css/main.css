@@ -10,6 +10,8 @@
 
   --confirm-color: #38761d;
   --confirm-background-color: #93c47d;
+  --error-color: #990000;
+  --error-background-color: #e06666;
 
   --default-text-color: whitesmoke;
   --default-background-color: rgba(0, 0, 0, 0.5);
@@ -63,6 +65,10 @@ body {
   width: 60px;
   height: 20px;
 }
+
+.display_none{
+  display: none !important;
+}
 .menu_container {
   position: absolute;
   width: 100%;
@@ -72,7 +78,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: var(--gap);
-  background-color: var(--default-background-color) ;
+  background-color: var(--default-background-color);
   z-index: 9999;
 }
 
@@ -134,7 +140,7 @@ body {
   pointer-events: all;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 5px 0 var(--default-background-color);
 }
 
 .menu_btn_content {
@@ -178,6 +184,77 @@ body {
   border-color: var(--confirm-color);
   color: var(--confirm-color);
   pointer-events: none;
+}
+
+/* Loading menu */
+.loading_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+}
+
+.loading_spinner_container {
+  display: flex;
+  flex-direction: row;
+}
+
+.loading_spinner {
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  margin-left: -36px;
+  background: none;
+  border-radius: 50%;
+  border: 6px solid currentColor;
+  box-sizing: border-box;
+  animation-name: spin;
+  animation-duration: 1.2s;
+  animation-fill-mode: backwards;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+.loading_spinner:first-child {
+  margin-left: 0;
+  color: rgba(0, 41, 140, 0.5);
+  border-top-color: #00298C;
+}
+
+.loading_spinner:nth-child(2) {
+  color: rgba(255, 239, 8, 0.5);
+  border-top-color: #FFEF08;
+}
+
+.loading_spinner:nth-child(3) {
+  color: rgba(0, 0, 0, 0.5);
+  border-top-color: #000000;
+}
+
+.loading_spinner:nth-child(4) {
+  color: rgba(8, 123, 57, 0.5);
+  border-top-color: #087B39;
+}
+
+.loading_spinner:nth-child(5) {
+  color: rgba(222, 24, 24, 0.5);
+  border-top-color: #DE1818;
+}
+
+.loading_spinner:nth-child(2n) {
+  margin-top: 40px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Class selection menu */
@@ -224,7 +301,7 @@ body {
   width: 100%;
 }
 
-.class_btn_text_container{
+.class_btn_text_container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -249,7 +326,7 @@ body {
   background-color: var(--default-background-color);
 }
 
-.class_img_secondary_container{
+.class_img_secondary_container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -271,8 +348,10 @@ body {
 .class_img {
   object-fit: cover;
   font-size: 10px;
-  white-space: nowrap; /* Prevent the text from wrapping to the next line */
-  overflow: hidden; /* Hide the overflow text */
+  white-space: nowrap;
+  /* Prevent the text from wrapping to the next line */
+  overflow: hidden;
+  /* Hide the overflow text */
 }
 
 .class_description_container {
@@ -288,15 +367,13 @@ body {
   font-weight: bold;
 }
 
-.class_description {
+.class_description {}
 
-}
+.class_duration {}
 
-.class_duration {
+.class_cooldown {}
 
-}
-
-.change_key_container{
+.change_key_container {
   display: none;
   align-items: center;
   justify-content: center;
@@ -364,7 +441,7 @@ body {
   /* background-color: green; */
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
 }
 
@@ -485,6 +562,58 @@ body {
 
 .class_ability_name {
   font-size: 15px;
+}
+
+.end_info_container {
+  width: 100%;
+  height: 175px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 1px 1px 2px var(--shadow-color);
+  color: var(--default-text-color);
+  background-color: var(--default-background-color);
+  box-shadow: 0 0 5px 0 var(--default-background-color);
+}
+
+.end_info_content {
+  font-size: 4rem;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.countdown{
+  background-color: var(--default-background-color);
+  font-size: 3rem;
+  font-weight: bolder;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.winner{
+  color: var(--confirm-color);
+}
+
+.loser{
+  color: var(--error-color);
+}
+
+.time {
+  font-size: 2rem;
+}
+
+.best_time {
+  font-size: 2.5rem;
+  color: var(--confirm-color);
 }
 
 /*# sourceMappingURL=main.css.map*/
