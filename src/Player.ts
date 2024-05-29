@@ -12,6 +12,7 @@ class Player {
 
   private _identifier: string;
   private _group: Group;
+  private _isEnduranceGroup: boolean;
 
   private _score: number;
 
@@ -207,6 +208,8 @@ class Player {
   public async addCharacterAsync(name: string, spawnLocation : Vector3, group: Group): Promise<void> {
     // Set the group to the player
     this._group = group;
+    // regex to check if the group name contains "Endurance" 
+    this._isEnduranceGroup = /Endurance/.test(this._group.getName());
 
     // Add the character to the scene
     const character = new Character(this._scene, name, spawnLocation);
@@ -248,6 +251,19 @@ class Player {
     this._camRoot.position = Vector3.Lerp(this._camRoot.position, new Vector3(this._character.getMesh().position.x, centerPlayer, this._character.getMesh().position.z), 0.4);
   }
 
+  private _setGroupInfo(): void {
+    if (this._group.getCapacityCooldown() != null) {
+      this._groupModifierCooldownTimer = this._group.getCapacityCooldown() * 1000;
+    }
+  
+    // set the group modifier timer
+    if (this._group.getCapacity().isInstant()) {
+      this._groupModifierDurationTimer = -1;
+    } else if (!this._group.isPassive()) {
+      this._groupModifierDurationTimer = this._group.getCapacityDuration() * 1000;
+    }
+  }
+
   //--GAME UPDATES--
   private _beforeRenderUpdate(): void {
 
@@ -257,20 +273,17 @@ class Player {
 
     // GROUP MODIFIER
     let currentGroupModifier = null;
-    // check if the capacity key is pressed and the group modifier is not active or the group modifier is passive
-    if ((this._controller.getInputMap().get(this._controller.getCapacity()) && !this._isGroupModifierActive && this._groupModifierDurationTimer <= 0 && this._groupModifierCooldownTimer <= 0) || this._group.isPassive()) {
-      this._isGroupModifierActive = true;
-
-      if (this._group.getCapacityCooldown() != null) {
-        this._groupModifierCooldownTimer = this._group.getCapacityCooldown() * 1000;
-      }
     
-      // set the group modifier timer
-      if (this._group.getCapacity().isInstant()) {
-        this._groupModifierDurationTimer = -1;
-      } else if (!this._group.isPassive()) {
-        this._groupModifierDurationTimer = this._group.getCapacityDuration() * 1000;
-      }
+    // In case the group modifier is passive, check if the group is Endurance and the player his in a corresponding climate
+    if (this._group.isPassive() && this._isEnduranceGroup && this._climate == this._group.getClimate()) {
+      this._isGroupModifierActive = true;
+      this._setGroupInfo();
+    }
+
+    // check if the capacity key is pressed and the group modifier is not active or the group modifier is passive
+    if ((this._controller.getInputMap().get(this._controller.getCapacity()) && !this._isGroupModifierActive && this._groupModifierDurationTimer <= 0 && this._groupModifierCooldownTimer <= 0) || this._group.isPassive() && !this._isEnduranceGroup) {
+      this._isGroupModifierActive = true;
+      this._setGroupInfo();
     }
 
     if (this._isGroupModifierActive) {
@@ -315,7 +328,9 @@ class Player {
   private _updateBeforeRenderInterface(): void {
     // GROUP MODIFIER
     // Check if the group modifier is over
-    if (!this._group.isPassive() && ((this._groupModifierDurationTimer <= 0 && this._groupModifierDurationTimer != -1) || (this._group.getCapacity().isInstant() && this._isGroupModifierActive))){
+    if (!this._group.isPassive() && ((this._groupModifierDurationTimer <= 0 && this._groupModifierDurationTimer != -1) 
+      || (this._group.getCapacity().isInstant() && this._isGroupModifierActive))
+      || this._group.isPassive() && this._climate != this._group.getClimate() && this._isEnduranceGroup) {
       this._isGroupModifierActive = false;
       this._groupModifierDurationTimer = 0;
     }

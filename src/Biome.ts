@@ -193,6 +193,7 @@ class Biome {
           () => {
             console.log("Vous entrez dans un biome");
             player.setClimate(this._climate);
+            console.log("Le joueur "+player.getIdentifier()+" a maintenant le climat "+player.getClimate());
             this._currentPlayerCount++;
             if(!this._isBiomeActive){
               this._isBiomeActive = true;

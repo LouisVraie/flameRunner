@@ -48,7 +48,7 @@ class GUI {
     document.dispatchEvent(event);
   }
 
-  private static dispatchClassSelectedEvent(playerIdentifier: string, group: Group, parent: HTMLDivElement, button: HTMLDivElement) {
+  private static dispatchClassSelectedEvent(playerIdentifier: string, group: Group, parent: HTMLDivElement, button: HTMLDivElement, activeSubGroup?: Group) {
     // Create a new CustomEvent with the specific parameter included in the detail
     const event = new CustomEvent('classselected', {
       detail: {
@@ -56,7 +56,8 @@ class GUI {
         playerIdentifier: playerIdentifier,
         group: group,
         parent: parent,
-        button: button
+        button: button,
+        activeSubGroup: activeSubGroup || null
       },
       bubbles: true,
       cancelable: true
@@ -164,9 +165,17 @@ class GUI {
 
     document.addEventListener("classselected", (event: CustomEvent) => {
       const eventPlayerIdentifier = event.detail.playerIdentifier as string;
-      const group = event.detail.group as Group;
+      let group = event.detail.group as Group;
       const parent = event.detail.parent as HTMLDivElement;
-      const button = event.detail.button as HTMLDivElement;      
+      const button = event.detail.button as HTMLDivElement;
+      const activeSubGroup = event.detail.activeSubGroup as Group;
+      
+      // If activeSubGroup is defined, update the group
+      if (activeSubGroup) {
+        const icon = group.getIcon();
+        group = activeSubGroup;
+        group.setIcon(icon);
+      }
 
       // Reset the class button style
       for (let i = 0; i < parent.children.length; i++) {
@@ -380,9 +389,12 @@ class GUI {
       const imageSecondaryContainer = document.createElement('div');
       imageSecondaryContainer.className = "class_img_secondary_container";
 
+      const secondaryContainers = [];
       for (const subGroup of group.getSubGroups()) {
         const imageSecondaryContent = document.createElement('div');
+        imageSecondaryContent.id = `${playerIdentifier}_${subGroup.getName().toLowerCase()}_img_btn`;
         imageSecondaryContent.className = "class_img_secondary";
+        secondaryContainers.push(imageSecondaryContent);
 
         const imageContent = document.createElement('img');
         imageContent.className = "class_img";
@@ -391,6 +403,23 @@ class GUI {
         imageSecondaryContent.appendChild(imageContent);
         imageSecondaryContainer.appendChild(imageSecondaryContent);
       }
+      // Toggle on click the active sub group
+      button.onclick = () => {
+        let toggle = false;
+        // Toggle the active class
+        for (let j = 0; j < secondaryContainers.length; j++) {
+          const secondaryContainer = secondaryContainers[j];
+          if (!toggle && !secondaryContainer.classList.contains("class_img_secondary_selected")) {
+            secondaryContainer.classList.add("class_img_secondary_selected");
+            toggle = true;
+            onClickAction();
+            GUI.dispatchClassSelectedEvent(playerIdentifier, group, parent, button, group.getSubGroups()[j]);
+          } else {
+            secondaryContainer.classList.remove("class_img_secondary_selected");
+          }
+        }
+      };
+
       imageContainers.appendChild(imageSecondaryContainer);
     } else {
       imageContainers.style.paddingRight = "50px";

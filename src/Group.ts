@@ -7,6 +7,7 @@ import enduranceIcon from '../assets/icons/groups/endurance.png';
 import enduranceHotIcon from '../assets/icons/groups/enduranceHot.png';
 import enduranceColdIcon from '../assets/icons/groups/enduranceCold.png';
 import gymnastIcon from '../assets/icons/groups/gymnast.png';
+import { Climate } from "./enum/Climate";
 
 class Group {
 
@@ -19,6 +20,7 @@ class Group {
   private _capacityDuration: number;
   private _capacityCooldown: number;
   private _isPassive: boolean;
+  private _climate: Climate;
 
   private _subGroups: Group[];
 
@@ -31,6 +33,7 @@ class Group {
     this._capacityDuration = capacityDuration || null;
     this._capacityCooldown = capacityCooldown || null;
     this._isPassive = false;
+    this._climate = null;
     this._subGroups = [];
   }
 
@@ -100,6 +103,14 @@ class Group {
   }
   public setIsPassive(isPassive: boolean): void {
     this._isPassive = isPassive;
+  }
+
+  // Climate
+  public getClimate(): Climate {
+    return this._climate;
+  }
+  public setClimate(climate: Climate): void {
+    this._climate = climate;
   }
 
   // SubGroups
@@ -181,8 +192,12 @@ class Group {
 
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
   
-    const hotEndurance = new Group("Hot Endurance", "Endurance in heat", enduranceHotIcon, "Heat endurance boost", capacity, capacityDuration, capacityCooldown);
-    const coldEndurance = new Group("Cold Endurance", "Endurance in cold", enduranceColdIcon, "Cold endurance boost", capacity, capacityDuration, capacityCooldown);
+    const hotEndurance = new Group("Hot Endurance", `${description} in hot biomes`, enduranceHotIcon, "Hot endurance boost", capacity, capacityDuration, capacityCooldown);
+    const coldEndurance = new Group("Cold Endurance", `${description} in cold biomes`, enduranceColdIcon, "Cold endurance boost", capacity, capacityDuration, capacityCooldown);
+    hotEndurance.setClimate(Climate.HOT_CLIMATE);
+    hotEndurance.setIsPassive(true);
+    coldEndurance.setClimate(Climate.COLD_CLIMATE);
+    coldEndurance.setIsPassive(true);
     
     group.setIsPassive(true);
     group.setSubGroups([hotEndurance, coldEndurance]);
