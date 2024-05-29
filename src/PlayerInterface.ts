@@ -14,7 +14,7 @@ class PlayerInterface {
     private _currentModifier: Modifier;
     private _currentIcon: string;
 
-    constructor(playerName){
+    constructor(playerName: string){
         this._gui = document.createElement("div");
         this._gui.style.width = "100%";
         this._gui.style.height = "100%";    
