@@ -10,7 +10,7 @@ import Vehicle from "./Vehicle";
 import Spawner from "./Spawner";
 
 import flare from '../assets/textures/Flare.png';
-
+// import map from '../assets/models/Map.glb';
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
 export const WORLD_SCALE: number = 0.3;
@@ -25,9 +25,12 @@ interface RespawnNode {
     angle: number;
 }
 
-const MAP_URL = "https://dl.dropbox.com/scl/fi/74cb0ly7c1r9a369vrkg6/MapDefinitive.glb?rlkey=4jgwqrbunmv6v2k9asv23v3fe&st=hv3c36qp"
+const MAP_URL = "https://dl.dropbox.com/scl/fi/c8pfuz8eh0iqienmql3mo/Map.glb?rlkey=dfu0jcrel81cr7g9ekle8xlrh&st=4mfx1522"
+
 
 import Cow from "./Cow";
+import Biome from "./Biome";
+import { Climate } from "./enum/Climate";
 
 class World{
     private _scene: Scene;
@@ -50,7 +53,42 @@ class World{
     private _limitTab: AbstractMesh[] =[];
     private _deathTab: AbstractMesh[] =[];
     private _checkpointTab: AbstractMesh[] =[];
-    
+
+    private _biomes: Biome[] = [];
+    private _cityDoors: AbstractMesh[] = [];
+    private _citySolidMeshes: AbstractMesh[] = [];
+    private _cityMeshes: AbstractMesh[] = [];
+
+    private _countrysideDoors: AbstractMesh[] = [];
+    private _countrysideSolidMeshes: AbstractMesh[] = [];
+    private _countrysideMeshes: AbstractMesh[] = [];
+
+    private _desertDoors: AbstractMesh[] = [];
+    private _desertSolidMeshes: AbstractMesh[] = [];
+    private _desertMeshes: AbstractMesh[] = [];
+
+    private _riverDoors: AbstractMesh[] = [];
+    private _riverSolidMeshes: AbstractMesh[] = [];
+    private _riverMeshes: AbstractMesh[] = [];
+
+    private _forestDoors: AbstractMesh[] = [];
+    private _forestSolidMeshes: AbstractMesh[] = [];
+    private _forestMeshes: AbstractMesh[] = [];
+
+    private _vulcanDoors: AbstractMesh[] = [];
+    private _vulcanSolidMeshes: AbstractMesh[] = [];
+    private _vulcanMeshes: AbstractMesh[] = [];
+
+    private _mountainDoors: AbstractMesh[] = [];
+    private _mountainSolidMeshes: AbstractMesh[] = [];
+    private _mountainMeshes: AbstractMesh[] = [];
+
+    private _snowDoors: AbstractMesh[] = [];
+    private _snowSolidMeshes: AbstractMesh[] = [];
+    private _snowMeshes: AbstractMesh[] = [];
+
+
+
     private _fishCurve: Vector3[] = [];
     private _fishTangents: Vector3[] = [];
     private _fishBinormals: Vector3[] = [];
@@ -99,6 +137,9 @@ class World{
     public getFishNormals(): Vector3[]{
         return this._fishNormals;
     }
+    public getBiomes(): Biome[]{
+        return this._biomes;
+    }
 
     constructor(scene: Scene) {
         this._scene = scene;
@@ -134,6 +175,99 @@ class World{
         const hk = new HavokPlugin(true, havokInstance);
         this._scene.enablePhysics(WORLD_GRAVITY, hk)
     }
+
+
+    sortBiomeDoors(name: string, childmesh: AbstractMesh){
+        
+        if(name.includes("Ville")){
+            this._cityDoors.push(childmesh);
+        }                
+        else if(name.includes("Campagne")){
+            this._countrysideDoors.push(childmesh)
+        }                
+        else if(name.includes("Desert")){
+            this._desertDoors.push(childmesh);
+        }
+        else if(name.includes("Riviere")){
+            this._riverDoors.push(childmesh);
+        }
+        else if(name.includes("Foret")){
+            this._forestDoors.push(childmesh);
+        }
+        else if(name.includes("Volcan")){
+            this._vulcanDoors.push(childmesh);
+        }
+        else if(name.includes("Montagne")){
+            this._mountainDoors.push(childmesh);
+        }
+        else if(name.includes("Neige")){
+            this._snowDoors.push(childmesh);
+        }
+    }
+
+    sortBiomeSolidMeshes(childmesh: AbstractMesh){
+        
+        if(childmesh.id.includes("Ville")){
+            this._citySolidMeshes.push(childmesh);
+        }                
+        else if(childmesh.id.includes("Campagne")){
+            this._countrysideSolidMeshes.push(childmesh)
+        }                
+        else if(childmesh.id.includes("Desert")){
+            this._desertSolidMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Riviere")){
+            this._riverSolidMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Foret")){
+            this._forestSolidMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Volcan")){
+            this._vulcanSolidMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Montagne")){
+            this._mountainSolidMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Neige")){
+            this._snowSolidMeshes.push(childmesh);
+        }
+        else{
+            console.log("Exception : " + childmesh.id )
+        }
+    }
+
+    sortBiomeMeshes(childmesh: AbstractMesh){
+        
+        if(childmesh.id.includes("Ville")){
+            this._cityMeshes.push(childmesh);
+        }                
+        else if(childmesh.id.includes("Campagne")){
+            this._countrysideMeshes.push(childmesh)
+        }                
+        else if(childmesh.id.includes("Desert")){
+            this._desertMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Riviere")){
+            this._riverMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Foret")){
+            this._forestMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Volcan")){
+            this._vulcanMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Montagne")){
+            this._mountainMeshes.push(childmesh);
+        }
+        else if(childmesh.id.includes("Neige")){
+            this._snowMeshes.push(childmesh);
+        }
+        else{
+            console.log("Exception : " + childmesh.id )
+        }
+    }
+
+
 
     
 
@@ -204,7 +338,14 @@ class World{
                     childMesh.isVisible = false;
                 }
                 
-                if(childMesh.id.startsWith("Dispawn")){
+
+                else if(childMesh.id.startsWith("Biome")){
+                    childMesh.isVisible = false;
+                    this.sortBiomeDoors(childMesh.id, childMesh)         
+                }
+
+
+                else if(childMesh.id.startsWith("Dispawn")){
                     childMesh.isVisible = false;
                     this._dispawnerTab.push(childMesh);
                     
@@ -218,26 +359,44 @@ class World{
                 else if(childMesh.id.startsWith("Solide")){
 
                     //childMesh.alwaysSelectAsActiveMesh = true;
-                    childMesh.freezeWorldMatrix();
-                    const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
-                    meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+                    
 
                     if(childMesh.id === "SolideStart"){
                         this._start = childMesh;
-                        childMesh.visibility = 0.4;                
+                        childMesh.visibility = 0.4;  
+                        
+                        childMesh.freezeWorldMatrix();
+                        const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
+                        meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
                     }
 
-                    if(childMesh.id === "SolideSolMap"){
+                    else if(childMesh.id.includes("SolideSolMap")){
+                        childMesh.freezeWorldMatrix();
+                        const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
+                        meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+
                         meshAggregate.shape.filterMembershipMask = FILTER_GROUP_GROUND;
                         // childMesh.receiveShadows = true;
                         
                     }
-                    if(childMesh.id.includes("SolideForetNoire") || childMesh.id.includes("SolideBatiment")){
-                        meshAggregate.shape.filterMembershipMask = FILTER_GROUP_LIMIT;
-                        // childMesh.receiveShadows = true;
-                    }
+                    else if(childMesh.id.includes("SolideDepart")){
+                        childMesh.freezeWorldMatrix();
+                        const meshAggregate = new PhysicsAggregate(childMesh, PhysicsShapeType.MESH, {mass:0, friction: 0.5, restitution: 0});
+                        meshAggregate.body.setMotionType(PhysicsMotionType.STATIC);
 
-                    childMesh.receiveShadows = true;
+                        meshAggregate.shape.filterMembershipMask = FILTER_GROUP_GROUND;
+                        // childMesh.receiveShadows = true;
+                        
+                    }
+                    else{
+                        this.sortBiomeSolidMeshes(childMesh);
+                    }
+                    // if(childMesh.id.includes("SolideForetNoire") || childMesh.id.includes("SolideBatiment")){
+                    //     meshAggregate.shape.filterMembershipMask = FILTER_GROUP_LIMIT;
+                    //     // childMesh.receiveShadows = true;
+                    // }
+
+                    //childMesh.receiveShadows = true;
                    //this._setShadows(childMesh);
                 }       
                 else if(childMesh.id.startsWith("Limit")) {
@@ -257,6 +416,8 @@ class World{
                     childMesh.freezeWorldMatrix();
                     childMesh.isPickable = false; 
                     childMesh.doNotSyncBoundingInfo = true;
+
+                    this.sortBiomeMeshes(childMesh);
                     
                     // childMesh.receiveShadows = true;
                     // this._shadowGenerator.addShadowCaster(childMesh);
@@ -274,6 +435,17 @@ class World{
             }
         }
 
+        this._biomes.push(
+            new Biome("Ville", this._cityDoors, true, Climate.MILD_CLIMATE, this._citySolidMeshes, this._cityMeshes, this),
+            new Biome("Campagne", this._countrysideDoors, false, Climate.MILD_CLIMATE, this._countrysideSolidMeshes, this._countrysideMeshes, this),
+            new Biome("Desert", this._desertDoors, false, Climate.HOT_CLIMATE, this._desertSolidMeshes, this._desertMeshes, this),
+            new Biome("Riviere", this._riverDoors, false, Climate.COLD_CLIMATE, this._riverSolidMeshes, this._riverMeshes, this),
+            new Biome("Foret", this._forestDoors, false, Climate.MILD_CLIMATE, this._forestSolidMeshes, this._forestMeshes, this),
+            new Biome("Volcan", this._vulcanDoors, false, Climate.HOT_CLIMATE, this._vulcanSolidMeshes, this._vulcanMeshes, this),
+            new Biome("Montagne", this._mountainDoors, false, Climate.MILD_CLIMATE, this._vulcanSolidMeshes, this._vulcanMeshes, this),
+            new Biome("Neige", this._snowDoors, false, Climate.COLD_CLIMATE, this._snowSolidMeshes, this._snowMeshes, this),
+        )
+
         this._scene.freeActiveMeshes();
         this._scene.blockMaterialDirtyMechanism = true;
 
@@ -290,7 +462,7 @@ class World{
             if (type.startsWith("Vehicle")) {
                 
                 const newSpawner = new Spawner(this._scene, spawner, direction, "Vehicle", this._dispawnerTab, this._players, this);
-                this._scene.registerBeforeRender(() => {
+                this._scene.registerAfterRender(() => {
                     newSpawner.updateVehicle();
                 })
         
@@ -500,7 +672,6 @@ class World{
             mesh.material = nodeMaterial;
         });
     }
-  
 
     addFreeCamera(name: string,  position: Vector3, target: Vector3, zoom : boolean) : void {
         const camera = new FreeCamera(name, position, this._scene);
@@ -858,6 +1029,52 @@ class World{
         ))
     }
 
+
+    // private _biomeManager(player: Player, biome: Biome){
+        
+    //     if(biome.getEntryDoor() != null){
+    //         player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+    //             {
+    //                 trigger : ActionManager.OnIntersectionEnterTrigger,
+    //                 parameter : biome.getEntryDoor()
+    //             },
+    //             () => {
+    //                 console.log("Vous entrez dans un biome");
+    //                 player.setClimate(biome.getClimate());
+    //                 biome.increasePlayerCount();
+    //                 if(!biome.getIsBiomeActive()){
+    //                     biome.setIsBiomeActive(true);
+    //                 }      
+    //                 if(biome.getPlayerCount() <= 1){
+    //                     biome.manageActiveBiome(biome.getIsBiomeActive());
+    //                 } 
+                        
+    //             }
+    //         ))
+    //     }
+        
+
+    //     if(biome.getExitDoor() != null){
+    //         player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+    //             {
+    //                 trigger : ActionManager.OnIntersectionEnterTrigger,
+    //                 parameter : biome.getExitDoor()
+    //             },
+    //             () => {
+                    
+    //                 console.log("Vous sortez d'un biome");
+    //                 biome.decreasePlayerCount();
+    //                 if(biome.getPlayerCount() <= 0){
+    //                     biome.setIsBiomeActive(false);
+    //                     biome.setPlayerCount(0);
+    //                     biome.manageActiveBiome(biome.getIsBiomeActive());
+    //                 }
+    //             }
+    //         ))
+    //     }
+        
+    // }
+
     // Set all the collisions with the players
     public setCollisionWithPlayers() {
         for (const player of this._players) {
@@ -866,6 +1083,10 @@ class World{
             this._checkPointManager(player);
             this._deathManager(player);
             this._endManager(player);
+            this._biomes.forEach(biome =>{
+                biome.setEntryDoorManager(player);
+                biome.setExitDoorManager(player);
+            })
         }
     }
 }

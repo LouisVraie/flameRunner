@@ -5,6 +5,7 @@ import Modifier from "./Modifier";
 import PlayerInterface from "./PlayerInterface";
 
 import Group from "./Group";
+import { Climate } from "./enum/Climate";
 
 class Player {
   private _scene: Scene;
@@ -30,6 +31,8 @@ class Player {
   private _isModifierActive: boolean;
   private _isGroupModifierActive: boolean;
   private _deathCounter: number;
+
+  private _climate: Climate = Climate.MILD_CLIMATE;
 
   // Timer
   private _timer: number;
@@ -173,6 +176,14 @@ class Player {
   }
   public setDeathCounter(deathCounter: number): void {
     this._deathCounter = deathCounter;
+  }
+
+  // Climate
+  public getClimate(): Climate{
+    return this._climate;
+  }
+  public setClimate(climate: Climate): void{
+    this._climate = climate;
   }
 
   // Set Modifier from random value
