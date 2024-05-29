@@ -175,7 +175,7 @@ class Group {
   // getEndurance
   public static getEndurance(): Group {
     const name = "Endurance";
-    const description = "Improved stamina";
+    const description = "Reduce stamina consumption";
     const icon = enduranceIcon;
     const capacityName = "Endurance boost";
     const capacityDuration = null;
@@ -198,7 +198,7 @@ class Group {
     hotEndurance.setIsPassive(true);
     coldEndurance.setClimate(Climate.COLD_CLIMATE);
     coldEndurance.setIsPassive(true);
-    
+
     group.setIsPassive(true);
     group.setSubGroups([hotEndurance, coldEndurance]);
     
