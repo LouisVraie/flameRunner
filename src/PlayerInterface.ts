@@ -1,7 +1,6 @@
 import Modifier from "./Modifier";
 import "../public/css/playerInterface.css";
 import Group from "./Group";
-import { AbstractMesh } from "babylonjs";
 
 class PlayerInterface {
     
