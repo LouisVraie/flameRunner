@@ -132,7 +132,7 @@ class GUI {
 
     this._isPaused = true;
     this._isInGame = false;
-    this._activeMenu = Menu.LOADING_MENU;
+    this.setActiveMenu(Menu.LOADING_MENU);
 
     // Default players
     this._numberOfPlayers = 0;
@@ -280,29 +280,36 @@ class GUI {
     switch (newMenu) {
       case Menu.LOADING_MENU:
         this._loadingMenuContainer.style.display = 'flex';
+        gameCanvas.classList.add("remove_cursor");
         break;
       case Menu.MAIN_MENU:
         this._mainMenuContainer.style.display = 'flex';
         this._isPaused = true;
         this._numberOfPlayers = 0;
         this._playersSelection = [];
+        gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.CLASS_MENU:
         this._classMenuContainer.style.display = 'flex';
+        gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.PAUSE_MENU:
         this._pauseMenuContainer.style.display = 'flex';
+        gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.HELP_MENU:
         this._helpMenuContainer.style.display = 'flex';
+        gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.SETTINGS_MENU:
         this._settingsMenuContainer.style.display = 'flex';
+        gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.NONE_MENU:
       default:
         if (gameCanvas) {
           gameCanvas.focus();
+          gameCanvas.classList.add("remove_cursor");
         }
         break;
     }

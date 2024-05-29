@@ -295,14 +295,14 @@ class Character extends TransformNode{
   public updateGrounded(): void {
 
     const radius = Character.PLAYER_RADIUS / 2;
-    const height = Character.PLAYER_HEIGHT / 2;
+    const originY = -Character.PLAYER_HEIGHT / 2;
 
     // Define a ray from the character's position downward to check for ground collision
     // create 4 rays at bottom of capsule place in a square
-    const ray1 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, -height, radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
-    const ray2 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, -height, radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
-    const ray3 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, -height, -radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
-    const ray4 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, -height, -radius)), new Vector3(0, -1, 0), height + Character.GROUND_THRESHOLD);
+    const ray1 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, originY, radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
+    const ray2 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, originY, radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
+    const ray3 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, originY, -radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
+    const ray4 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, originY, -radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
 
     // list of rays
     const rays = [ray1, ray2, ray3, ray4];
@@ -310,7 +310,7 @@ class Character extends TransformNode{
     // create ray helpers with a foreach loop
     // rays.forEach((ray) => {
     //   const rayHelper = new RayHelper(ray);
-    //   rayHelper.show(this._scene, Color3.Green());
+    //   rayHelper.show(this._scene, Color3.Red());
     // });
 
     // Perform a raycast to check for collisions with the ground with ray list
@@ -319,6 +319,7 @@ class Character extends TransformNode{
       const hit = this._scene.pickWithRay(ray);
       // Check if the ray hit an object and if the distance to the object is less than a threshold (considered as touching ground)
       if (!this._isGrounded && hit.hit) {
+        console.log("grounded");
         this._jumpCount = 0;
         this._movingState = MovingState.DEFAULT;
         this._isGrounded = true; // Character is grounded
@@ -351,11 +352,11 @@ class Character extends TransformNode{
     // Gérer l'état de la touche de saut
     if (controller.getJumpKeyPressed() && !this._jumpKeyPressed) {
         this._jumpKeyPressed = true;
-        if (Character.JUMP_NUMBER > this._jumpCount && this._isGrounded) {
+        if (this._jumpCount < Character.JUMP_NUMBER && this._isGrounded) {
             console.log("jump");
             this._jumpCount++;
             this._movingState = MovingState.JUMPING;
-            const jumpImpulse = Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass);
+            const jumpImpulse = Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass * modifier.getJumpForceDelta());
             this._capsuleAggregate.body.applyImpulse(jumpImpulse, this._capsuleAggregate.transformNode.getAbsolutePosition());
             this._isGrounded = false;
         }

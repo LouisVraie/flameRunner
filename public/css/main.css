@@ -46,6 +46,7 @@ body {
   position: absolute;
   display: flex;
   pointer-events: none;
+  cursor: initial;
 
   top: 0;
   left: 0;
@@ -68,4 +69,8 @@ body {
 
 .display_none{
   display: none !important;
+}
+
+.remove_cursor{
+  cursor: none !important;
 }

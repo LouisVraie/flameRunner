@@ -27,7 +27,7 @@ class Modifier {
   private _staminaRegenDelta: number;
   private _vision: boolean;
   private _timeDelta: number;
-  private _jumpDelta: number;
+  private _jumpForceDelta: number;
 
   constructor() {
     this._default = true;
@@ -42,7 +42,7 @@ class Modifier {
     this._staminaRegenDelta = 1;
     this._vision = true;
     this._timeDelta = 0;
-    this._jumpDelta = 1;
+    this._jumpForceDelta = 1;
   }
 
   //////////////////////////////////////////////////////////
@@ -146,11 +146,11 @@ class Modifier {
   }
 
   // JumpDelta
-  public getJumpDelta(): number {
-    return this._jumpDelta;
+  public getJumpForceDelta(): number {
+    return this._jumpForceDelta;
   }
-  public setJumpDelta(jumpDelta: number): void {
-    this._jumpDelta = jumpDelta;
+  public setJumpForceDelta(jumpDelta: number): void {
+    this._jumpForceDelta = jumpDelta;
   }
 
   //////////////////////////////////////////////////////////
@@ -342,6 +342,7 @@ class Modifier {
     combinedModifier.setStaminaRegenDelta(modifier1.getStaminaRegenDelta() * modifier2.getStaminaRegenDelta());
     combinedModifier.setVision(modifier1.getVision() && modifier2.getVision());
     combinedModifier.setTimeDelta(modifier1.getTimeDelta() + modifier2.getTimeDelta());
+    combinedModifier.setJumpForceDelta(modifier1.getJumpForceDelta() * modifier2.getJumpForceDelta());
 
     return combinedModifier;
   }
