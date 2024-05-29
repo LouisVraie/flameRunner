@@ -344,7 +344,9 @@ class Player {
     if(!this._isArrived){
       this._interface.updateTimer(this._timer);
     }
-    
+
+    // Update class ability cooldown
+    this._interface.updateClassAbilityCooldown(this._groupModifierCooldownTimer, this._group.getCapacityCooldown() * 1000);
   }
 
   // Update player

@@ -166,6 +166,17 @@ class PlayerInterface {
         classAbilityIcon.alt = "Class ability icon";
         classAbilityIconContainer.appendChild(classAbilityIcon);
 
+        // Cooldown
+        const classAbilityCooldownContainer = document.createElement('div');
+        classAbilityCooldownContainer.id = "class_ability_cooldown_container_"+this._playerName;
+        classAbilityCooldownContainer.className = "class_ability_cooldown_container";
+        classAbilityIconContainer.appendChild(classAbilityCooldownContainer);
+
+        const classAbilityCooldown = document.createElement('div');
+        classAbilityCooldown.id = "class_ability_cooldown_"+this._playerName;
+        classAbilityCooldown.className = "class_ability_cooldown";
+        classAbilityCooldownContainer.appendChild(classAbilityCooldown);
+
         // Name
         const classAbilityName = document.createElement('div');
         classAbilityName.id = "class_ability_name_"+this._playerName;
@@ -252,6 +263,21 @@ class PlayerInterface {
         const classAbilityName = document.querySelector('#class_ability_name_'+this._playerName) as HTMLDivElement;
         classAbilityName.innerHTML = group.getName();
     }
+
+        // Update the player class ability cooldown
+        public updateClassAbilityCooldown(currentCooldown: number, baseCooldown: number) : void {
+            if (baseCooldown != null) {
+                const classAbilityCooldown = document.querySelector('#class_ability_cooldown_'+this._playerName) as HTMLDivElement;
+                
+                if (currentCooldown < 0) {
+                    currentCooldown = 0;
+                }
+                // Set the cooldown time in secondes in percentage
+                const cooldownPercentage = (currentCooldown / baseCooldown) * 100;
+                
+                classAbilityCooldown.style.height = cooldownPercentage + "%";
+            }
+        }
 
     public updateModifierTime(timer: number) : void {
         this._playerTimeEffect = timer;

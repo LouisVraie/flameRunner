@@ -227,7 +227,7 @@ class Character extends TransformNode{
 
     // Create capsule
     this._hitbox = MeshBuilder.CreateCapsule("capsule", { height: Character.PLAYER_HEIGHT, radius: Character.PLAYER_RADIUS }, this._scene);
-    this._hitbox.visibility = 0.4;
+    this._hitbox.visibility = 0;
     this._hitbox.position = this._spawnLocation;
     this._hitbox.isPickable = false;
     this._hitbox.actionManager = new ActionManager(this._scene);
