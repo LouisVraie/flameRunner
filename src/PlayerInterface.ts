@@ -275,29 +275,41 @@ class PlayerInterface {
         classAbilityName.innerHTML = group.getName();
     }
 
-        // Update the player class ability cooldown
-        public updateClassAbilityCooldown(currentCooldown: number, baseCooldown: number) : void {
-            if (baseCooldown != null) {
-                const classAbilityCooldownProgressBar = document.querySelector('#class_ability_cooldown_progress_bar_'+this._playerName) as HTMLDivElement;
-                const classAbilityCooldownTimer = document.querySelector('#class_ability_cooldown_timer_'+this._playerName) as HTMLDivElement;
-                // Set the cooldown timer
-                if (currentCooldown < 0) {
-                    currentCooldown = 0;
-                }
-
-                if (currentCooldown != 0) {
-                    const seconds = Math.floor((currentCooldown % 60000) / 1000);
-                    classAbilityCooldownTimer.innerHTML = this.padLeft(seconds, 1);
-                } else {
-                    classAbilityCooldownTimer.innerHTML = "";
-                }
-
-                // Set the cooldown time in secondes in percentage
-                const cooldownPercentage = (currentCooldown / baseCooldown) * 100;
-                
-                classAbilityCooldownProgressBar.style.height = cooldownPercentage + "%";
+    // Update the player class ability cooldown
+    public updateClassAbilityCooldown(isAbilityActive: boolean, currentCooldown: number, baseCooldown: number) : void {
+        if (baseCooldown != null) {
+            const classAbilityIconContainer = document.querySelector('#class_ability_icon_container_'+this._playerName) as HTMLDivElement;
+            const classAbilityCooldownProgressBar = document.querySelector('#class_ability_cooldown_progress_bar_'+this._playerName) as HTMLDivElement;
+            const classAbilityCooldownTimer = document.querySelector('#class_ability_cooldown_timer_'+this._playerName) as HTMLDivElement;
+            
+            // If the ability is active, the cooldown is not displayed
+            if(isAbilityActive && currentCooldown > 0){
+                classAbilityIconContainer.style.borderColor = "green";
+                return;
+            } else if (!isAbilityActive && currentCooldown > 0) {
+                classAbilityIconContainer.style.borderColor = "red";
+            } else {
+                classAbilityIconContainer.style.borderColor = "white";
             }
+
+            // Set the cooldown timer
+            if (currentCooldown < 0) {
+                currentCooldown = 0;
+            }
+
+            if (currentCooldown != 0) {
+                const seconds = Math.floor((currentCooldown % 60000) / 1000);
+                classAbilityCooldownTimer.innerHTML = this.padLeft(seconds, 1);
+            } else {
+                classAbilityCooldownTimer.innerHTML = "";
+            }
+
+            // Set the cooldown time in secondes in percentage
+            const cooldownPercentage = (currentCooldown / baseCooldown) * 100;
+            
+            classAbilityCooldownProgressBar.style.height = cooldownPercentage + "%";
         }
+    }
 
     public updateModifierTime(timer: number) : void {
         this._playerTimeEffect = timer;
