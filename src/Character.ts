@@ -304,6 +304,7 @@ class Character extends TransformNode{
 
     // Set up animations speed
     this._idleJump.speedRatio = 2;
+    this._stunBack.speedRatio = 2;
 
     //initialize current and previous
     this._currentAnim = this._idle;
