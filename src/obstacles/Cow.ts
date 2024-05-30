@@ -1,10 +1,10 @@
-import { Scene, Vector3, AbstractMesh, Animation, TransformNode, SceneLoader, Mesh, PhysicsShapeType, PhysicsMotionType, MeshBuilder, ActionManager, ExecuteCodeAction , PhysicsAggregate, Quaternion } from "@babylonjs/core";
-import Obstacle from "./Obstacle";
-import Modifier from "./Modifier";
+import { Scene, Vector3, AbstractMesh, Animation, TransformNode, SceneLoader, Mesh, PhysicsShapeType, PhysicsMotionType, MeshBuilder, ActionManager, ExecuteCodeAction , PhysicsAggregate, Quaternion, Matrix } from "@babylonjs/core";
+import Obstacle from "../Obstacle";
+import Modifier from "../Modifier";
 
-import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE, FILTER_GROUP_LIMIT } from "./World";
+import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE, FILTER_GROUP_LIMIT } from "../World";
 
-import mesh1 from '../assets/models/animals/bison.glb';
+import mesh1 from '../../assets/models/animals/bison.glb';
 
 
 interface CowParameters {
@@ -26,6 +26,8 @@ class Cow extends Obstacle {
     private _dispawnerList: AbstractMesh[];
     private _lastPosition: Vector3;
     private world: World;
+    
+    static counter: number = 0;
 
     private _speed : number;
 
@@ -52,6 +54,8 @@ class Cow extends Obstacle {
         this._dispawnerList = dispawnerList;
         this._lastPosition = position;
         this.world = world;
+
+        Cow.counter++;
     }
 
     //////////////////////////////////////////////////////////
@@ -122,9 +126,63 @@ class Cow extends Obstacle {
         this._hitboxAggregate.body.setMotionType(PhysicsMotionType.STATIC)
         this._hitboxAggregate.body.disablePreStep = false;
 
+
+        const points = this.world.getCowPathPoints();
+
+        let i = Math.floor(Math.random() * points.length);
+        this._scene.registerAfterRender(() => {
+            const point = points[i];
+            const nextPoint = points[(i + 1) % points.length];
+
+            // Update position
+            this._hitbox.position.x = point.x;
+            this._hitbox.position.z = this._lastPosition.z /*- 5 * Cow.counter*/;
+
+            // Calculate rotation
+            const direction = nextPoint.subtract(point).normalize();
+            const reverseDirection = direction.negate(); // Inverse the direction
+            const up = new Vector3(0, 1, 0);
+            const right = Vector3.Cross(up, reverseDirection).normalize();
+            const forward = Vector3.Cross(right, up).normalize();
+
+            const rotationMatrix = Matrix.Identity();
+            Matrix.FromXYZAxesToRef(right, up, forward, rotationMatrix);
+            this._hitbox.rotationQuaternion = Quaternion.FromRotationMatrix(rotationMatrix);
+
+            i = (i + 1) % (points.length - 1); // continuous looping
+        });
+
+
+
+
+
+
+
+
+        this.setCowActionManager();
+
         this.setTangible(true);
         this.setParentNode(parent);
 
+    }
+
+    setCowActionManager(){
+        this.world.getPlayers().forEach(player =>{
+            this._hitbox.actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : player.getCharacter().getHitbox()
+                },
+                () => {
+                    player.getCharacter().setHitObstacle(true);
+                    console.log("Hit by cow");
+                    setTimeout(function(){
+                        player.getCharacter().setHitObstacle(false);
+                    }, 2000)
+                }
+            ))
+        })
+        
     }
 
 

@@ -1,20 +1,21 @@
 import { Scene, Vector3, AbstractMesh, Animation, TransformNode, SceneLoader, Mesh, PhysicsShapeType, PhysicsMotionType, MeshBuilder, ActionManager, ExecuteCodeAction , PhysicsAggregate, Quaternion } from "@babylonjs/core";
-import Obstacle from "./Obstacle";
-import Modifier from "./Modifier";
+import Obstacle from "../Obstacle";
+import Modifier from "../Modifier";
 
-import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE, FILTER_GROUP_LIMIT } from "./World";
+import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE, FILTER_GROUP_LIMIT } from "../World";
 
-import mesh1 from '../assets/models/animals/carp.glb';
-import mesh2 from '../assets/models/animals/tuna.glb';
+import mesh1 from '../../assets/models/animals/carp.glb';
+import mesh2 from '../../assets/models/animals/tuna.glb';
 
 
 interface FishParameters {
     id: string;
     meshPath: string;
-    diameterX: number;
-    diameterY: number;
-    diameterZ: number;
+    size: number;
+    width: number;
+    height: number;
 }
+
 
 class Fish extends Obstacle {
     private _modifier: Modifier;
@@ -34,22 +35,24 @@ class Fish extends Obstacle {
     private fish1: FishParameters = {
         id: "fish1",
         meshPath: mesh1,
-        diameterX: 0.5,
-        diameterY: 0.4,
-        diameterZ: 1.5
+        size: 1.5,
+        width: 0.2,
+        height: 0.5
     }
 
     private fish2: FishParameters = {
         id: "fish2",
         meshPath: mesh2,
-        diameterX: 0.5,
-        diameterY: 0.8,
-        diameterZ: 2.5
+        size: 2.2,
+        width: 0.4,
+        height: 0.8 
     }
 
+    
 
 
-    private rocks: FishParameters[] = [this.fish1, this.fish2]
+
+    private fishs: FishParameters[] = [this.fish1, this.fish2]
 
     private static readonly FISH_SCALING: number = 1.5;
 
@@ -97,14 +100,13 @@ class Fish extends Obstacle {
     public async createObstacle(): Promise<void> {
         const parent = new TransformNode("fish", this._scene);
 
-        const random = Math.floor(Math.random() * this.rocks.length);
-        const rock = this.rocks.at(random);
+        const random = Math.floor(Math.random() * this.fishs.length);
+        const fish = this.fishs.at(random);
     
-        const assets = await SceneLoader.ImportMeshAsync("", "", rock.meshPath, this._scene);
+        const assets = await SceneLoader.ImportMeshAsync("", "", fish.meshPath, this._scene);
     
-        this._hitbox = MeshBuilder.CreateSphere("fishHitbox", { diameterX: rock.diameterX, diameterY: rock.diameterY, diameterZ: rock.diameterZ}, this._scene);
+        this._hitbox = MeshBuilder.CreateBox("fishHitbox", { size: fish.size, width: fish.width, height: fish.height}, this._scene);
        
-        //this._hitbox.visibility = 0.4
         this._hitbox.isVisible = false;
         this._hitbox.position = new Vector3(this._lastPosition.x, this._lastPosition.y, this._lastPosition.z);
 
@@ -114,25 +116,20 @@ class Fish extends Obstacle {
         this._mesh.scaling = new Vector3(Fish.FISH_SCALING, Fish.FISH_SCALING, Fish.FISH_SCALING);
         
         this._mesh.parent = this._hitbox;
-        this._mesh.position = new Vector3(0, 0, 0);
+        this._mesh.position = new Vector3(0, fish.width/3, 0);
 
         this._mesh.isPickable = false; 
         this._mesh.doNotSyncBoundingInfo = true;
 
-        this._mesh.rotate(new Vector3(1, 1, 0), Math.PI)
+        this._mesh.rotate(new Vector3(0, 1, 0), Math.PI)
 
         this._hitbox.isPickable = false;
         this._hitbox.scaling = new Vector3(Fish.FISH_SCALING, Fish.FISH_SCALING, Fish.FISH_SCALING);
         this._hitbox.actionManager = new ActionManager(this._scene);
         
-        
-        
-        // this._hitboxAggregate.body.setMassProperties({
-        //     inertia: new Vector3(0, 1, 0)
-        // });
-        //this._lastPosition = this._hitbox.absolutePosition.clone();
-
-    
+        this._hitboxAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.BOX, { mass: 1000, friction:0, restitution: 2 }, this._scene);
+        this._hitboxAggregate.body.setMotionType(PhysicsMotionType.STATIC);
+        this._hitboxAggregate.body.disablePreStep = false;
 
         // Define the position and orientation animations that will be populated
         // according to the Path3D properties 
@@ -165,21 +162,28 @@ class Fish extends Obstacle {
         
         this._scene.beginAnimation(this._hitbox, 0, 15000, true, Math.round(randomValue * 10) / 10);
         
-
-        // switch(this._direction){
-        //     case "Left": this._hitbox.rotate(new Vector3(0, 1, 0), Math.PI);
-        //     break;
-        //     case "Right": this._hitbox.rotate(new Vector3(0, 1, 0), 0);
-        //     break;
-        //     case "Forth": this._hitbox.rotate(new Vector3(0, 1, 0), -Math.PI/2);
-        //     break;
-        //     case "Back": 
-        //     break;
-        // }
-
+        this.setFishActionManager();
     
         this.setTangible(true);
         this.setParentNode(parent);
+    }
+
+    setFishActionManager(){
+        this.world.getPlayers().forEach(player =>{
+            this._hitbox.actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : player.getCharacter().getHitbox()
+                },
+                () => {
+                    player.getCharacter().setHitObstacle(true);
+                    setTimeout(function(){
+                        player.getCharacter().setHitObstacle(false);
+                    }, 2000)
+                }
+            ))
+        })
+        
     }
 
 

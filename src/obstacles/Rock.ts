@@ -1,11 +1,11 @@
 import { Scene, Vector3, AbstractMesh, Animation, TransformNode, SceneLoader, Mesh, PhysicsShapeType, PhysicsMotionType, MeshBuilder, ActionManager, ExecuteCodeAction , PhysicsAggregate } from "@babylonjs/core";
-import Obstacle from "./Obstacle";
-import Modifier from "./Modifier";
-import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "./World";
+import Obstacle from "../Obstacle";
+import Modifier from "../Modifier";
+import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "../World";
 
-import mesh2 from '../assets/models/rocks/Pierre3.glb';
-import mesh3 from '../assets/models/rocks/Pierre4.glb';
-import mesh4 from '../assets/models/rocks/Pierre5.glb';
+import mesh2 from '../../assets/models/rocks/Pierre3.glb';
+import mesh3 from '../../assets/models/rocks/Pierre4.glb';
+import mesh4 from '../../assets/models/rocks/Pierre5.glb';
 
 
 interface RocksParameters {
@@ -134,30 +134,31 @@ class Rock extends Obstacle {
         this._hitbox.actionManager = new ActionManager(this._scene);
         this._hitboxAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.SPHERE, { mass: 1000, friction:0.1, restitution: 0.4 }, this._scene);
         this._hitboxAggregate.body.disablePreStep = false;
-        // this._hitboxAggregate.body.setMassProperties({
-        //     inertia: new Vector3(0, 1, 0)
-        // });
         this._lastPosition = this._hitbox.absolutePosition.clone();
 
-    
-        
-
-        // switch(this._direction){
-        //     case "Left": this._hitbox.rotate(new Vector3(0, 1, 0), Math.PI);
-        //     break;
-        //     case "Right": this._hitbox.rotate(new Vector3(0, 1, 0), 0);
-        //     break;
-        //     case "Forth": this._hitbox.rotate(new Vector3(0, 1, 0), -Math.PI/2);
-        //     break;
-        //     case "Back": 
-        //     break;
-        // }
-
+        this.setRockActionManager();
     
         this.setTangible(true);
         this.setParentNode(parent);
     }
 
+    setRockActionManager(){
+        this.world.getPlayers().forEach(player =>{
+            this._hitbox.actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : player.getCharacter().getHitbox()
+                },
+                () => {
+                    player.getCharacter().setHitObstacle(true);
+                    setTimeout(function(){
+                        player.getCharacter().setHitObstacle(false);
+                    }, 2000)
+                }
+            ))
+        })
+        
+    }
 
     // Create a text of the cube
     public disposeObstacle(): void {

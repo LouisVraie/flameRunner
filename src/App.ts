@@ -153,6 +153,7 @@ class App {
             countdownDivs.push(countDownContainer)
         })
                      
+        this._world.getBiomes().at(0).setPlayerCount(this._world.getPlayers().length);
             
         // Lancer le décompte de 3 à 0
         for (let i = 3; i >= 0; i--) {
@@ -195,6 +196,7 @@ class App {
         const ground = MeshBuilder.CreateGround("ground", {width: 300, height: 500}, this._scene);
         ground.position = new Vector3(85, -30, -180);
         ground.receiveShadows = true;
+        this._world.addDeathSurface(ground);
     
         //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
         // world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
@@ -225,10 +227,9 @@ class App {
             await Promise.all(promiseList);
 
             // Set the collision between players
-            this._world.setCollisionWithPlayers();
+            this._world.setCollisionWithPlayers(); 
 
         });
-    
         //const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, this._scene);
         
         //this.start();

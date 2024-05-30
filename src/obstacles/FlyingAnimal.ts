@@ -1,11 +1,11 @@
-import { Scene, Vector3, AbstractMesh, TransformNode, SceneLoader, Mesh, MeshBuilder, ActionManager } from "@babylonjs/core";
-import Obstacle from "./Obstacle";
-import Modifier from "./Modifier";
+import { Scene, Vector3, AbstractMesh, TransformNode, SceneLoader, Mesh, MeshBuilder, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import Obstacle from "../Obstacle";
+import Modifier from "../Modifier";
 import { PhysicsAggregate } from "@babylonjs/core";
-import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "./World";
+import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "../World";
 
-import batMesh from '../assets/models/animals/bat.glb';
-import beeMesh from '../assets/models/animals/bee.glb';
+import batMesh from '../../assets/models/animals/bat.glb';
+import beeMesh from '../../assets/models/animals/bee.glb';
 
 
 interface FlyingAnimalParameters {
@@ -140,6 +140,8 @@ class FlyingAnimal extends Obstacle {
             break;
         }
 
+        this.setFlyingAnimalActionManager();
+
         this.setTangible(true);
         this.setParentNode(parent);
     }
@@ -150,22 +152,29 @@ class FlyingAnimal extends Obstacle {
         const deltaDistance = this._speed * this._scene.getEngine().getDeltaTime() / 1000;
 
         let moveDirection = new Vector3(0, 0, -deltaDistance);
-        
-        // switch(this._direction){
-        //     case "Left": moveDirection = new Vector3(0, 0, deltaDistance);
-        //     break;
-        //     case "Right": moveDirection = new Vector3(0, 0, -deltaDistance);
-        //     break;
-        //     case "Forth": moveDirection = new Vector3(deltaDistance, 0, 0);
-        //     break;
-        //     case "Back": moveDirection = new Vector3(-deltaDistance, 0, 0);
-        //     break;
-        // }
-        
+                
         this._hitbox.translate(moveDirection, deltaDistance);
        
         // Mettre à jour la position du véhicule
         this.updatePosition(this._hitbox.getAbsolutePosition());            
+    }
+
+    setFlyingAnimalActionManager(){
+        this.world.getPlayers().forEach(player =>{
+            this._hitbox.actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : player.getCharacter().getHitbox()
+                },
+                () => {
+                    player.getCharacter().setHitObstacle(true);
+                    setTimeout(function(){
+                        player.getCharacter().setHitObstacle(false);
+                    }, 2000)
+                }
+            ))
+        })
+        
     }
     
 
