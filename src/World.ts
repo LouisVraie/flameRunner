@@ -1064,6 +1064,7 @@ class World{
                     const isBestTime = this.manageScore(player.getInterface().getPlayerTime());
                     this._arrival += 1;
                     console.log("Joueur arrivé en position : " + this._arrival + " position.")
+                    player.getCharacter().setFinalPosition(this._arrival);
                     if(this._arrival == 1){
                         player.getInterface().showFinalScreen(true, isBestTime);
                     }

@@ -53,6 +53,8 @@ class Character extends TransformNode{
   private _hitObstacle: boolean = false;
   private _isSlowed: boolean = false;
 
+  private _finalPosition: number = 0;
+
   // Constants
   private static readonly PLAYER_HEIGHT: number = 1.5;
   private static readonly PLAYER_RADIUS: number = 0.25;
@@ -205,6 +207,23 @@ class Character extends TransformNode{
     this._capsuleAggregate = capsuleAggregate;
   }
 
+  // Moving State
+  public getMovingState(): MovingState{
+    return this._movingState;
+  }
+  public setMovingState(movingState: MovingState): void{
+    this._movingState = movingState;
+  }
+
+  // Final Position
+  public getFinalPosition(): number{
+    return this._finalPosition;
+  }
+  public setFinalPosition(finalPosition: number): void{
+    this._movingState = MovingState.FINISHED;
+    this._finalPosition = finalPosition;
+  }
+
   //////////////////////////////////////////////////////////
   // Methods
   //////////////////////////////////////////////////////////
@@ -280,6 +299,8 @@ class Character extends TransformNode{
     this._run.loopAnimation = true;
     this._idle.loopAnimation = true;
     this._runJump.loopAnimation = true;
+    this._victory.loopAnimation = true;
+    this._defeat.loopAnimation = true;
 
     // Set up animations speed
     this._idleJump.speedRatio = 2;
@@ -449,14 +470,12 @@ class Character extends TransformNode{
         break;
       // If the character has finished
       case MovingState.FINISHED:
-        this._currentAnim = this._victory;
+        this._currentAnim = this._finalPosition == 1 ? this._victory : this._defeat;
         break;
-        
       // Default case: play the run animation if moving, otherwise play the idle animation
       case MovingState.DEFAULT:
       default:
         this._currentAnim = this._isMoving ? this._run : this._idle;
-        this._run.speedRatio
         break;
       }
 
