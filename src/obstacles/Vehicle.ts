@@ -1,16 +1,16 @@
 import { Scene, Vector3, AbstractMesh, Animation, TransformNode, SceneLoader, Mesh, PhysicsShapeType, PhysicsMotionType, MeshBuilder, ActionManager, ExecuteCodeAction , PhysicsAggregate } from "@babylonjs/core";
-import Obstacle from "./Obstacle";
-import Modifier from "./Modifier";
-import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "./World";
+import Obstacle from "../Obstacle";
+import Modifier from "../Modifier";
+import World, { FILTER_GROUP_GROUND, FILTER_GROUP_OBSTACLE } from "../World";
 
-import mesh1 from '../assets/models/vehicles/voiture4.glb';
-import mesh2 from '../assets/models/vehicles/ambulance.glb';
-import mesh3 from '../assets/models/vehicles/bus.glb';
-import mesh4 from '../assets/models/vehicles/camion_pompier.glb';
-import mesh5 from '../assets/models/vehicles/camion2.glb';
-import mesh6 from '../assets/models/vehicles/policeCar.glb';
-import mesh7 from '../assets/models/vehicles/taxi.glb';
-import mesh8 from '../assets/models/vehicles/Tractor.glb';
+import mesh1 from '../../assets/models/vehicles/voiture4.glb';
+import mesh2 from '../../assets/models/vehicles/ambulance.glb';
+import mesh3 from '../../assets/models/vehicles/bus.glb';
+import mesh4 from '../../assets/models/vehicles/camion_pompier.glb';
+import mesh5 from '../../assets/models/vehicles/camion2.glb';
+import mesh6 from '../../assets/models/vehicles/policeCar.glb';
+import mesh7 from '../../assets/models/vehicles/taxi.glb';
+import mesh8 from '../../assets/models/vehicles/Tractor.glb';
 
 interface VehicleParameters {
     id: string;
@@ -238,7 +238,7 @@ class Vehicle extends Obstacle {
 
         
         
-       
+       this.setVehicleActionManager();
     
         this.setTangible(true);
         this.setParentNode(parent);
@@ -248,6 +248,22 @@ class Vehicle extends Obstacle {
     }
 
 
+    setVehicleActionManager(){
+        this.world.getPlayers().forEach(player =>{
+            this._hitbox.actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : player.getCharacter().getHitbox()
+                },
+                () => {
+                    player.getCharacter().setHitObstacle(true);
+                    setTimeout(function(){
+                        player.getCharacter().setHitObstacle(false);
+                    }, 2000)
+                }
+            ))
+        })
+    }
     
     
     

@@ -150,27 +150,28 @@ class App {
             const countdownContainers = [];
             const countdownDivs = [];
 
-            // Création des éléments html pour le compte à rebours
-            this._world.getPlayers().forEach(player =>{
-                const container = document.querySelector('#middle_container_'+player.getIdentifier()) as HTMLElement;
-                const countDownContainer = document.createElement('div')
-                countDownContainer.setAttribute('class', 'countdown');
-                container.appendChild(countDownContainer);
-                countdownContainers.push(container);
-                countdownDivs.push(countDownContainer)
-            })
-                
-                
-            // Lancer le décompte de 3 à 0
-            for (let i = 3; i >= 0; i--) {
-                countdownDivs.forEach(div => div.innerHTML = i.toString())
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
+        // Création des éléments html pour le compte à rebours
+        this._world.getPlayers().forEach(player =>{
+            const container = document.querySelector('#middle_container_'+player.getIdentifier()) as HTMLElement;
+            const countDownContainer = document.createElement('div')
+            countDownContainer.setAttribute('class', 'countdown');
+            container.appendChild(countDownContainer);
+            countdownContainers.push(container);
+            countdownDivs.push(countDownContainer)
+        })
+                     
+        this._world.getBiomes().at(0).setPlayerCount(this._world.getPlayers().length);
             
-            countdownDivs.forEach(div => div.innerHTML = "GO")
-                
-            // Supprimer la barrière du spawn
-            this._world.getStartWall().dispose();
+        // Lancer le décompte de 3 à 0
+        for (let i = 3; i >= 0; i--) {
+            countdownDivs.forEach(div => div.innerHTML = i.toString())
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+           
+        countdownDivs.forEach(div => div.innerHTML = "GO")
+            
+        // Supprimer la barrière du spawn
+        this._world.getStartWall().dispose();
 
             // Déclencher les timers des joueurs
             this._world.getPlayers().forEach(player =>{
@@ -191,6 +192,7 @@ class App {
         const ground = MeshBuilder.CreateGround("ground", {width: 300, height: 500}, this._scene);
         ground.position = new Vector3(85, -30, -180);
         ground.receiveShadows = true;
+        this._world.addDeathSurface(ground);
     
         //world.addDiffuseLight("diffuseLight1", new Vector3(0, 10, 0), new Color3(1, 1, 1));
         // world.addFreeCamera("cam1", new Vector3(0, 5, 8), true);
@@ -227,7 +229,7 @@ class App {
             await Promise.all(promiseList);
 
             // Set the collision between players
-            this._world.setCollisionWithPlayers();
+            this._world.setCollisionWithPlayers(); 
 
             // Hide the loading menu
             this._gui.setActiveMenu(Menu.NONE_MENU);

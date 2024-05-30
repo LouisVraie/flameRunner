@@ -1,10 +1,11 @@
 import { Scene, AbstractMesh, TransformNode, Vector3, ExecuteCodeAction, ActionManager } from "@babylonjs/core";
-import Vehicle from "./Vehicle";
-import FlyingAnimal from "./FlyingAnimal";
+import Vehicle from "./obstacles/Vehicle";
+import FlyingAnimal from "./obstacles/FlyingAnimal";
 import Player from "./Player";
-import Rock from "./Rock";
-import Fish from "./Fish";
+import Rock from "./obstacles/Rock";
+import Fish from "./obstacles/Fish";
 import World from "./World";
+import Cow from "./obstacles/Cow";
 
 class Spawner {
     private _spawnerNode: TransformNode;
@@ -18,6 +19,7 @@ class Spawner {
     private _rocksTab: Rock[] = [];
     private _playerList: Player[] = [];
     private _fishesTab: Fish[] = [];
+    private _cowsTab: Cow[] = [];
 
     private world: World;
 
@@ -57,7 +59,7 @@ class Spawner {
                 }
             });
 
-            if (minDistance < 60) {
+            if (minDistance < 65) {
                 this.spawnObstacle();
             } else {
                 this.clearObstacles();
@@ -104,6 +106,13 @@ class Spawner {
                     const fish = new Fish(this._scene, this._dispawnerTab, this._spawnerNode.position, this.world);
                     await fish.createObstacle();
                     this._fishesTab.push(fish);
+                }
+                break;
+            case "Cow":
+                if (this._cowsTab.length < 1) {
+                    const cow = new Cow(this._scene, this._dispawnerTab, this._spawnerNode.position, this.world);
+                    await cow.createObstacle();
+                    this._cowsTab.push(cow);
                 }
                 break;
         }

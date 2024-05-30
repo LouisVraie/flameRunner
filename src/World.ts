@@ -6,7 +6,7 @@ import Group from "./Group";
 import HavokPhysics from "@babylonjs/havok";
 import CubeModifier from "./CubeModifier";
 
-import Vehicle from "./Vehicle";
+import Vehicle from "./obstacles/Vehicle";
 import Spawner from "./Spawner";
 
 import flare from '../assets/textures/Flare.png';
@@ -28,9 +28,10 @@ interface RespawnNode {
 const MAP_URL = "https://dl.dropbox.com/scl/fi/pysghsn4n4xkk4fvv0ba1/MapDefinitive.glb?rlkey=9v6udxbr3kyxjzl94qhwnuwvj&st=6q4z8qg2"
 
 
-import Cow from "./Cow";
 import Biome from "./Biome";
 import { Climate } from "./enum/Climate";
+import Cactus from "./obstacles/Cactus";
+import Slower from "./obstacles/Slower";
 
 class World{
     private _scene: Scene;
@@ -53,6 +54,10 @@ class World{
     private _limitTab: AbstractMesh[] =[];
     private _deathTab: AbstractMesh[] =[];
     private _checkpointTab: AbstractMesh[] =[];
+
+    private _cameraDown : AbstractMesh = null;
+    private _cameraUp : AbstractMesh = null;
+    private _cowPathPoints: Vector3[] = [];
 
     private _biomes: Biome[] = [];
     private _cityDoors: AbstractMesh[] = [];
@@ -87,6 +92,10 @@ class World{
     private _snowSolidMeshes: AbstractMesh[] = [];
     private _snowMeshes: AbstractMesh[] = [];
 
+    private _slowingMeshes: AbstractMesh[]=[];
+    private _cactusMeshes: AbstractMesh[]=[];
+
+    private _biomeNames: string[] = ["Ville", "Campagne", "Desert", "Riviere", "Foret", "Volcan", "Montagne", "Neige"];
 
 
     private _fishCurve: Vector3[] = [];
@@ -139,6 +148,12 @@ class World{
     }
     public getBiomes(): Biome[]{
         return this._biomes;
+    }
+    public getBiomeNames(): string[]{
+        return this._biomeNames;
+    }
+    public getCowPathPoints(): Vector3[]{
+        return this._cowPathPoints;
     }
 
     constructor(scene: Scene) {
@@ -214,7 +229,12 @@ class World{
             this._countrysideSolidMeshes.push(childmesh)
         }                
         else if(childmesh.id.includes("Desert")){
-            this._desertSolidMeshes.push(childmesh);
+            if(childmesh.id.includes("Cactus")){
+                this._cactusMeshes.push(childmesh);
+            }
+            else{
+                this._desertSolidMeshes.push(childmesh);
+            }
         }
         else if(childmesh.id.includes("Riviere")){
             this._riverSolidMeshes.push(childmesh);
@@ -232,11 +252,14 @@ class World{
             this._snowSolidMeshes.push(childmesh);
         }
         else{
-            console.log("Exception : " + childmesh.id )
+            //console.log("Exception : " + childmesh.id )
         }
     }
 
     sortBiomeMeshes(childmesh: AbstractMesh){
+        if(childmesh.id.startsWith("Load")){
+            console.log("Loader trouvé pour ", childmesh.id)
+        }
         
         if(childmesh.id.includes("Ville")){
             this._cityMeshes.push(childmesh);
@@ -245,7 +268,12 @@ class World{
             this._countrysideMeshes.push(childmesh)
         }                
         else if(childmesh.id.includes("Desert")){
-            this._desertMeshes.push(childmesh);
+            if(childmesh.id.includes("Slow")){
+                this._slowingMeshes.push(childmesh);
+            }
+            else{
+                this._desertMeshes.push(childmesh);
+            }            
         }
         else if(childmesh.id.includes("Riviere")){
             this._riverMeshes.push(childmesh);
@@ -257,13 +285,18 @@ class World{
             this._vulcanMeshes.push(childmesh);
         }
         else if(childmesh.id.includes("Montagne")){
-            this._mountainMeshes.push(childmesh);
+            if(childmesh.id.includes("Slow")){
+                this._slowingMeshes.push(childmesh);
+            }
+            else{
+                this._mountainMeshes.push(childmesh);
+            }
         }
         else if(childmesh.id.includes("Neige")){
             this._snowMeshes.push(childmesh);
         }
         else{
-            console.log("Exception : " + childmesh.id )
+            //console.log("Exception : " + childmesh.id )
         }
     }
 
@@ -337,7 +370,12 @@ class World{
                     this._end = childMesh;
                     childMesh.isVisible = false;
                 }
-                
+                else if(childMesh.id == "Camera_Up"){
+                    this._cameraUp = childMesh;
+                }
+                else if(childMesh.id == "Camera_Down"){
+                    this._cameraDown = childMesh;
+                }               
 
                 else if(childMesh.id.startsWith("Biome")){
                     childMesh.isVisible = false;
@@ -413,9 +451,9 @@ class World{
                 }
                 else{
 
-                    childMesh.freezeWorldMatrix();
-                    childMesh.isPickable = false; 
-                    childMesh.doNotSyncBoundingInfo = true;
+                    // childMesh.freezeWorldMatrix();
+                    // childMesh.isPickable = false; 
+                    // childMesh.doNotSyncBoundingInfo = true;
 
                     this.sortBiomeMeshes(childMesh);
                     
@@ -442,7 +480,7 @@ class World{
             new Biome("Riviere", this._riverDoors, false, Climate.COLD_CLIMATE, this._riverSolidMeshes, this._riverMeshes, this),
             new Biome("Foret", this._forestDoors, false, Climate.MILD_CLIMATE, this._forestSolidMeshes, this._forestMeshes, this),
             new Biome("Volcan", this._vulcanDoors, false, Climate.HOT_CLIMATE, this._vulcanSolidMeshes, this._vulcanMeshes, this),
-            new Biome("Montagne", this._mountainDoors, false, Climate.MILD_CLIMATE, this._vulcanSolidMeshes, this._vulcanMeshes, this),
+            new Biome("Montagne", this._mountainDoors, false, Climate.MILD_CLIMATE, this._mountainSolidMeshes, this._mountainMeshes, this),
             new Biome("Neige", this._snowDoors, false, Climate.COLD_CLIMATE, this._snowSolidMeshes, this._snowMeshes, this),
         )
 
@@ -583,6 +621,9 @@ class World{
         await this.createScene();
     }
 
+    public addDeathSurface(mesh: AbstractMesh){
+        this._deathTab.push(mesh);
+    }
 
     // Fonction pour obtenir l'angle associé à un TransformNode (à adapter selon votre logique)
     getAngleForNode(node: TransformNode): number {
@@ -592,13 +633,14 @@ class World{
             "Respawn2": Math.PI,
             "Respawn3": Math.PI/2,
             "Respawn4": 0,
-            "Respawn5": -Math.PI/3,
+            "Respawn5": Math.PI/2,
+            "Respawn6": -Math.PI/2,
             // Ajoutez d'autres mappings ici
         };
         return angleMap[node.id] || 0; // Retourne l'angle associé ou 0 par défaut
     }
 
-    createCowPath() {
+    public createCowPath() {
         /*-----------------------Path------------------------------------------*/ 
         
         const pathGroup = new Mesh("cowPathGroup", this._scene);
@@ -633,35 +675,18 @@ class World{
             bi.isVisible = false;
         }
     
+        this._cowPathPoints = points;
         const valeur = curve[0];
         
         for(let a = 0; a < 10; a++){
-            const cow = new Cow(this._scene, this._dispawnerTab, new Vector3(valeur.x, valeur.y, valeur.z), this);
-            cow.createObstacle();
-    
-            /*----------------Animation Loop---------------------------*/
-            let i = Math.floor(Math.random() * points.length);
-            this._scene.registerAfterRender(() => {
-                const point = points[i];
-                const nextPoint = points[(i + 1) % points.length];
-    
-                // Update position
-                cow.getHitbox().position.x = point.x;
-                cow.getHitbox().position.z = point.z - 5 * a;
-    
-                // Calculate rotation
-                const direction = nextPoint.subtract(point).normalize();
-                const reverseDirection = direction.negate(); // Inverse the direction
-                const up = new Vector3(0, 1, 0);
-                const right = Vector3.Cross(up, reverseDirection).normalize();
-                const forward = Vector3.Cross(right, up).normalize();
-    
-                const rotationMatrix = Matrix.Identity();
-                Matrix.FromXYZAxesToRef(right, up, forward, rotationMatrix);
-                cow.getHitbox().rotationQuaternion = Quaternion.FromRotationMatrix(rotationMatrix);
-    
-                i = (i + 1) % (points.length - 1); // continuous looping
-            });
+
+            const node = new TransformNode("spawnerNode", this._scene);
+
+            // Définissez la position du TransformNode
+            node.position = new Vector3(valeur.x, valeur.y, valeur.z -5*a);
+
+            // Utilisez le TransformNode dans le constructeur de Spawner
+            const newSpawner = new Spawner(this._scene, node, "Forth", "Cow", this._dispawnerTab, this._players, this);
         }
     }
     
@@ -930,6 +955,30 @@ class World{
         })
     }
 
+    private _setCameraManager(player: Player){
+        player.getCharacter().getHitbox().actionManager.registerAction(
+            new ExecuteCodeAction(
+                {
+                    trigger: ActionManager.OnIntersectionEnterTrigger,
+                    parameter: this._cameraDown
+                },
+                () => {
+                    player.getCharacter().getCamera().heightOffset = -1;
+                }
+        ));
+
+        player.getCharacter().getHitbox().actionManager.registerAction(
+            new ExecuteCodeAction(
+                {
+                    trigger: ActionManager.OnIntersectionEnterTrigger,
+                    parameter: this._cameraUp
+                },
+                () => {
+                    player.getCharacter().getCamera().heightOffset = 1.5;
+                }
+        ));
+    }
+
     private _deathManager(player: Player){
         const hitbox = player.getCharacter().getHitbox();
         if (!hitbox.actionManager) {
@@ -1029,6 +1078,57 @@ class World{
         ))
     }
 
+    private _cactusBumperManager(player: Player){
+
+        this._cactusMeshes.forEach(cactus => {
+            const cactusObject = new Cactus(this._scene, cactus, this)
+            cactusObject.createObstacle();
+            player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : cactusObject.getMesh()
+                },
+                () => {
+                    player.getCharacter().setHitObstacle(true);
+                    setTimeout(function(){
+                        player.getCharacter().setHitObstacle(false);
+                    }, 2000)
+                    
+                }
+            ))
+        })       
+    }
+
+    private _slowManager(player: Player){
+        this._slowingMeshes.forEach(cactus => {
+            
+            const slowerObject = new Slower(this._scene, cactus, this)
+            slowerObject.createObstacle();
+
+            player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionEnterTrigger,
+                    parameter : slowerObject.getMesh()
+                },
+                () => {
+                    player.getCharacter().setIsSlowed(true)                 
+                }
+            ))
+
+            player.getCharacter().getHitbox().actionManager.registerAction(new ExecuteCodeAction(
+                {
+                    trigger : ActionManager.OnIntersectionExitTrigger,
+                    parameter : slowerObject.getMesh()
+                },
+                () => {
+                    player.getCharacter().setIsSlowed(false)                  
+                }
+            ))
+        })  
+
+    
+
+    }
 
     // private _biomeManager(player: Player, biome: Biome){
         
@@ -1086,7 +1186,11 @@ class World{
             this._biomes.forEach(biome =>{
                 biome.setEntryDoorManager(player);
                 biome.setExitDoorManager(player);
+                biome.setActiveBiomeManager(player);
             })
+            this._setCameraManager(player);
+            this._cactusBumperManager(player);
+            this._slowManager(player);
         }
     }
 }
