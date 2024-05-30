@@ -172,10 +172,21 @@ class PlayerInterface {
         classAbilityCooldownContainer.className = "class_ability_cooldown_container";
         classAbilityIconContainer.appendChild(classAbilityCooldownContainer);
 
-        const classAbilityCooldown = document.createElement('div');
-        classAbilityCooldown.id = "class_ability_cooldown_"+this._playerName;
-        classAbilityCooldown.className = "class_ability_cooldown";
-        classAbilityCooldownContainer.appendChild(classAbilityCooldown);
+        const classAbilityCooldownProgressBarContainer = document.createElement('div');
+        classAbilityCooldownProgressBarContainer.id = "class_ability_cooldown_progress_bar_container_"+this._playerName;
+        classAbilityCooldownProgressBarContainer.className = "class_ability_cooldown_progress_bar_container";
+        classAbilityCooldownContainer.appendChild(classAbilityCooldownProgressBarContainer);
+
+        const classAbilityCooldownProgressBar = document.createElement('div');
+        classAbilityCooldownProgressBar.id = "class_ability_cooldown_progress_bar_"+this._playerName;
+        classAbilityCooldownProgressBar.className = "class_ability_cooldown_progress_bar";
+        classAbilityCooldownProgressBarContainer.appendChild(classAbilityCooldownProgressBar);
+
+        // Cooldown timer
+        const classAbilityCooldownTimer = document.createElement('div');
+        classAbilityCooldownTimer.id = "class_ability_cooldown_timer_"+this._playerName;
+        classAbilityCooldownTimer.className = "class_ability_cooldown_timer";
+        classAbilityCooldownContainer.appendChild(classAbilityCooldownTimer);
 
         // Name
         const classAbilityName = document.createElement('div');
@@ -267,15 +278,24 @@ class PlayerInterface {
         // Update the player class ability cooldown
         public updateClassAbilityCooldown(currentCooldown: number, baseCooldown: number) : void {
             if (baseCooldown != null) {
-                const classAbilityCooldown = document.querySelector('#class_ability_cooldown_'+this._playerName) as HTMLDivElement;
-                
+                const classAbilityCooldownProgressBar = document.querySelector('#class_ability_cooldown_progress_bar_'+this._playerName) as HTMLDivElement;
+                const classAbilityCooldownTimer = document.querySelector('#class_ability_cooldown_timer_'+this._playerName) as HTMLDivElement;
+                // Set the cooldown timer
                 if (currentCooldown < 0) {
                     currentCooldown = 0;
                 }
+
+                if (currentCooldown != 0) {
+                    const seconds = Math.floor((currentCooldown % 60000) / 1000);
+                    classAbilityCooldownTimer.innerHTML = this.padLeft(seconds, 1);
+                } else {
+                    classAbilityCooldownTimer.innerHTML = "";
+                }
+
                 // Set the cooldown time in secondes in percentage
                 const cooldownPercentage = (currentCooldown / baseCooldown) * 100;
                 
-                classAbilityCooldown.style.height = cooldownPercentage + "%";
+                classAbilityCooldownProgressBar.style.height = cooldownPercentage + "%";
             }
         }
 
