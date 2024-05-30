@@ -175,7 +175,7 @@ class Vehicle extends Obstacle {
         this._hitbox.isPickable = false;
         this._hitbox.scaling = new Vector3(Vehicle.VEHICLE_SCALING, Vehicle.VEHICLE_SCALING, Vehicle.VEHICLE_SCALING);
         this._hitbox.actionManager = new ActionManager(this._scene);
-        this._hitboxAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.BOX, { mass: 1000, friction:0, restitution: 0 }, this._scene);
+        this._hitboxAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.BOX, { mass: 1000, friction:0, restitution: 0.5 }, this._scene);
         this._hitboxAggregate.body.disablePreStep = false;
         this._hitboxAggregate.body.setMassProperties({
             inertia: new Vector3(0, 0, 0)

@@ -45,7 +45,7 @@ class Fish extends Obstacle {
         meshPath: mesh2,
         size: 2.2,
         width: 0.4,
-        height: 0.8 
+        height: 0.6
     }
 
     
@@ -113,7 +113,7 @@ class Fish extends Obstacle {
         this._mesh = assets.meshes[0] as Mesh;
         
         
-        this._mesh.scaling = new Vector3(Fish.FISH_SCALING, Fish.FISH_SCALING, Fish.FISH_SCALING);
+        //this._mesh.scaling = new Vector3(Fish.FISH_SCALING, Fish.FISH_SCALING, Fish.FISH_SCALING);
         
         this._mesh.parent = this._hitbox;
         this._mesh.position = new Vector3(0, fish.width/3, 0);
@@ -121,10 +121,10 @@ class Fish extends Obstacle {
         this._mesh.isPickable = false; 
         this._mesh.doNotSyncBoundingInfo = true;
 
-        this._mesh.rotate(new Vector3(0, 1, 0), Math.PI)
+        this._mesh.rotate(new Vector3(0, 0, 1), Math.PI)
 
         this._hitbox.isPickable = false;
-        this._hitbox.scaling = new Vector3(Fish.FISH_SCALING, Fish.FISH_SCALING, Fish.FISH_SCALING);
+        //this._hitbox.scaling = new Vector3(Fish.FISH_SCALING, Fish.FISH_SCALING, Fish.FISH_SCALING);
         this._hitbox.actionManager = new ActionManager(this._scene);
         
         this._hitboxAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.BOX, { mass: 1000, friction:0, restitution: 2 }, this._scene);

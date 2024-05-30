@@ -122,7 +122,7 @@ class Cow extends Obstacle {
         this._hitbox.actionManager = new ActionManager(this._scene);
         
 
-        this._hitboxAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.BOX, { mass: 1000, friction:0, restitution: 3 }, this._scene);
+        this._hitboxAggregate = new PhysicsAggregate(this._hitbox, PhysicsShapeType.BOX, { mass: 1000, friction:0, restitution: 2.5 }, this._scene);
         this._hitboxAggregate.body.setMotionType(PhysicsMotionType.STATIC)
         this._hitboxAggregate.body.disablePreStep = false;
 

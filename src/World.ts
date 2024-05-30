@@ -10,7 +10,7 @@ import Vehicle from "./obstacles/Vehicle";
 import Spawner from "./Spawner";
 
 import flare from '../assets/textures/Flare.png';
-// import map from '../assets/models/Map.glb';
+import map from '../assets/models/MapDefinitive.glb';
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
 export const WORLD_SCALE: number = 0.3;
@@ -25,7 +25,7 @@ interface RespawnNode {
     angle: number;
 }
 
-const MAP_URL = "https://dl.dropbox.com/scl/fi/pysghsn4n4xkk4fvv0ba1/MapDefinitive.glb?rlkey=9v6udxbr3kyxjzl94qhwnuwvj&st=6q4z8qg2"
+const MAP_URL = "https://dl.dropbox.com/scl/fi/w37zjc5tlmd3f7g7ug6pz/MapDefinitive.glb?rlkey=s6y40ktt03aji6tytg4m4vfg4&st=9r9nfha8"
 
 
 import Biome from "./Biome";
@@ -631,10 +631,11 @@ class World{
         const angleMap: { [id: string]: number } = {
             "Respawn1": Math.PI/2,
             "Respawn2": Math.PI,
-            "Respawn3": Math.PI/2,
-            "Respawn4": 0,
-            "Respawn5": Math.PI/2,
-            "Respawn6": -Math.PI/2,
+            "Respawn3": -Math.PI/2,
+            "Respawn4": Math.PI/2,
+            "Respawn5": 0,
+            "Respawn6": Math.PI/2,
+            "Respawn7": -Math.PI/2,
             // Ajoutez d'autres mappings ici
         };
         return angleMap[node.id] || 0; // Retourne l'angle associé ou 0 par défaut

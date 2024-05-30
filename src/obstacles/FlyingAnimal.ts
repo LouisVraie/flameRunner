@@ -103,7 +103,7 @@ class FlyingAnimal extends Obstacle {
         const assets = await SceneLoader.ImportMeshAsync("", "", animal.meshPath, this._scene);
     
         this._hitbox = MeshBuilder.CreateBox("flyingAnimalHitbox", { size: animal.size, width: animal.width, height: animal.height}, this._scene);
-        this._hitbox.visibility = 0.4/*.4*/;
+        this._hitbox.isVisible = false;
         this._hitbox.position = new Vector3(this._lastPosition.x, this._lastPosition.y, this._lastPosition.z);
 
         this._mesh = assets.meshes[0] as Mesh;
