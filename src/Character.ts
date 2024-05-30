@@ -393,7 +393,6 @@ class Character extends TransformNode{
           this._isJumpKeyPressed = true;
           this._jumpCount++;
           this._movingState = MovingState.JUMPING;
-          console.log(Character.JUMP_FORCE, this._capsuleAggregate.body.getMassProperties().mass, modifier.getJumpForceDelta());
           const jumpImpulse = Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass * modifier.getJumpForceDelta());
           this._capsuleAggregate.body.applyImpulse(jumpImpulse, this._capsuleAggregate.transformNode.getAbsolutePosition());
           this._isGrounded = false;
