@@ -1,6 +1,6 @@
 import { AnimationGroup, Mesh, MeshBuilder, FollowCamera, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType, Scene, SceneLoader, TransformNode, Vector3, AbstractMesh, Viewport, Ray, RayHelper, Color3, Skeleton, Nullable, ActionManager } from "@babylonjs/core";
 
-import player1 from "../assets/models/player1.glb";
+import player1 from "../assets/models/player.glb";
 import Controller from "./Controller";
 import Modifier from "./Modifier";
 import { MovingState } from "./enum/MovingState";
@@ -34,13 +34,10 @@ class Character extends TransformNode{
   private _idleJump: AnimationGroup;
   private _run: AnimationGroup;
   private _runJump: AnimationGroup;
-  private _runSlide: AnimationGroup;
-  private _climbUpWall: AnimationGroup;
-  private _climbEnd: AnimationGroup;
   private _stunBack: AnimationGroup;
-  private _fallIdle: AnimationGroup;
-  private _fallRoll: AnimationGroup;
   private _death: AnimationGroup;
+  private _victory: AnimationGroup;
+  private _defeat: AnimationGroup;
 
   // animation trackers
   private _currentAnim: AnimationGroup = null;
@@ -67,8 +64,6 @@ class Character extends TransformNode{
   private static readonly GROUND_THRESHOLD: number = 0.05;
   private static readonly SLIDE_FACTOR: number = 2.5;
   private static readonly SLIDE_TIME: number = 10; //how many frames the slide lasts
-
-  private _jumpKeyPressed: boolean = false;
 
   constructor(scene: Scene, name: string, spawnLocation : Vector3) {
     super("character", scene);
@@ -121,18 +116,14 @@ class Character extends TransformNode{
 
   // Animations
   private _setAnimations(assets: any): void {
-    // Idle animations is a blend of assets.animationGroups[5] and assets.animationGroups[7]
-    this._idle = assets.animationGroups[5]; 
-    this._idleJump = assets.animationGroups[6];
-    this._run = assets.animationGroups[8];
-    this._runJump = assets.animationGroups[9];
-    this._runSlide = assets.animationGroups[10];
-    this._climbUpWall = assets.animationGroups[1];
-    this._climbEnd = assets.animationGroups[0];
-    this._stunBack = assets.animationGroups[11];
-    this._fallIdle = assets.animationGroups[3];
-    this._fallRoll = assets.animationGroups[4];
-    this._death = assets.animationGroups[2];
+    this._idle = assets.animationGroups[2]; 
+    this._idleJump = assets.animationGroups[3];
+    this._run = assets.animationGroups[4];
+    this._runJump = assets.animationGroups[5];
+    this._stunBack = assets.animationGroups[6];
+    this._death = assets.animationGroups[0];
+    this._victory = assets.animationGroups[7];
+    this._defeat = assets.animationGroups[1];
   }
 
   // Position
@@ -261,12 +252,17 @@ class Character extends TransformNode{
 
   private _setUpAnimations(): void {
     this._scene.stopAllAnimations();
+    // Set up loop animations
     this._run.loopAnimation = true;
     this._idle.loopAnimation = true;
+    this._runJump.loopAnimation = true;
+
+    // Set up animations speed
+    this._idleJump.speedRatio = 2;
 
     //initialize current and previous
     this._currentAnim = this._idle;
-    this._prevAnim = this._fallIdle;
+    this._prevAnim = this._idle;
   }
 
   // Create the follow camera
@@ -319,7 +315,6 @@ class Character extends TransformNode{
       const hit = this._scene.pickWithRay(ray);
       // Check if the ray hit an object and if the distance to the object is less than a threshold (considered as touching ground)
       if (!this._isGrounded && hit.hit) {
-        console.log("grounded");
         this._jumpCount = 0;
         this._movingState = MovingState.DEFAULT;
         this._isGrounded = true; // Character is grounded
@@ -350,18 +345,12 @@ class Character extends TransformNode{
     const inputMap = controller.getInputMap();
 
     // Gérer l'état de la touche de saut
-    if (controller.getJumpKeyPressed() && !this._jumpKeyPressed) {
-        this._jumpKeyPressed = true;
-        if (this._jumpCount < Character.JUMP_NUMBER && this._isGrounded) {
-            console.log("jump");
-            this._jumpCount++;
-            this._movingState = MovingState.JUMPING;
-            const jumpImpulse = Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass * modifier.getJumpForceDelta());
-            this._capsuleAggregate.body.applyImpulse(jumpImpulse, this._capsuleAggregate.transformNode.getAbsolutePosition());
-            this._isGrounded = false;
-        }
-    } else if (!controller.getJumpKeyPressed()) {
-        this._jumpKeyPressed = false;
+    if (controller.getJumpKeyPressed() && this._jumpCount < Character.JUMP_NUMBER && this._isGrounded) {
+        this._jumpCount++;
+        this._movingState = MovingState.JUMPING;
+        const jumpImpulse = Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass * modifier.getJumpForceDelta());
+        this._capsuleAggregate.body.applyImpulse(jumpImpulse, this._capsuleAggregate.transformNode.getAbsolutePosition());
+        this._isGrounded = false;
     }
 
     if (inputMap.get(controller.getForward())) {
@@ -420,25 +409,13 @@ class Character extends TransformNode{
     }
 }
 
-
-
   // Animate the character
   public animateCharacter(): void {
-    
     // Determine the appropriate animation based on the character's moving state
     switch (this._movingState) {
       // If the character is jumping, play the run jump animation
       case MovingState.JUMPING:
         this._currentAnim = this._isMoving ? this._runJump : this._idleJump;
-        break;
-      // If the character is sliding, play the slide animation
-      case MovingState.SLIDING:
-        this._currentAnim = this._runSlide;
-        break;
-      // If the character is climbing, play the climbing animation
-      case MovingState.CLIMBING:
-        this._currentAnim = this._climbUpWall;
-        // this._currentAnim = this._climbEnd;
         break;
       // If the character is stunned, play the stunned animation
       case MovingState.STUNNED:
@@ -446,11 +423,15 @@ class Character extends TransformNode{
         break;
       // If the character is falling, play the fall animation
       case MovingState.FALLING:
-        this._currentAnim = this._isGrounded ? this._fallRoll : this._fallIdle;
+        this._currentAnim = this._isGrounded ? this._runJump : this._idle;
         break;
       // If the character is dead, play the death animation
       case MovingState.DEAD:
         this._currentAnim = this._death;
+        break;
+      // If the character has finished
+      case MovingState.FINISHED:
+        this._currentAnim = this._victory;
         break;
         
       // Default case: play the run animation if moving, otherwise play the idle animation

@@ -221,7 +221,7 @@ class Group {
     capacity.setDescription(description);
     capacity.setIcon(icon);
     capacity.setDuration(capacityDuration);
-    capacity.setJumpForceDelta(1.75);
+    capacity.setJumpForceDelta(2);
 
     const group = new Group(name, description, icon, capacityName, capacity, capacityDuration, capacityCooldown);
   
