@@ -57,6 +57,7 @@ class CubeModifier extends Obstacle{
     box.edgesWidth = 2.0;
     box.edgesColor = this._gradientColor.toColor4(0.6);
     box.parent = parent;
+    box.isPickable = false;
     
     this._mesh = box;
     this.world._setShadows(this._mesh)
