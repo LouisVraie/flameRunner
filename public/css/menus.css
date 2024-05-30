@@ -15,7 +15,7 @@
   font-size: 4rem;
   margin-top: 0;
   margin-bottom: var(--gap);
-  color: var(--primary-color);
+  color: var(--secondary-background-color);
   text-shadow: 1px 1px 2px var(--shadow-color);
 }
 
@@ -23,7 +23,7 @@
   font-size: 2rem;
   margin-top: 0;
   margin-bottom: var(--gap);
-  color: var(--secondary-color);
+  color: var(--secondary-background-color);
   text-shadow: 1px 1px 1px var(--shadow-color);
 }
 
@@ -326,6 +326,7 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--gap);
+  text-shadow: 1px 1px 1px var(--shadow-color);
 }
 
 .key_container {

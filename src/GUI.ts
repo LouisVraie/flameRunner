@@ -249,6 +249,14 @@ class GUI {
     return this._isInGame;
   }
 
+  private _setFullBackgroundColor(element: HTMLDivElement): void {
+    if (!this._isInGame) {
+      element.classList.add("full_background_color");
+    } else {
+      element.classList.remove("full_background_color");
+    }
+  }
+
   // ActiveMenu
   public setActiveMenu(newMenu: Menu): void {
     switch (this._activeMenu) {
@@ -280,6 +288,7 @@ class GUI {
     switch (newMenu) {
       case Menu.LOADING_MENU:
         this._loadingMenuContainer.style.display = 'flex';
+        this._setFullBackgroundColor(this._loadingMenuContainer);
         gameCanvas.classList.add("remove_cursor");
         break;
       case Menu.MAIN_MENU:
@@ -287,10 +296,12 @@ class GUI {
         this._isPaused = true;
         this._numberOfPlayers = 0;
         this._playersSelection = [];
+        this._setFullBackgroundColor(this._mainMenuContainer);
         gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.CLASS_MENU:
         this._classMenuContainer.style.display = 'flex';
+        this._setFullBackgroundColor(this._classMenuContainer);
         gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.PAUSE_MENU:
@@ -299,10 +310,12 @@ class GUI {
         break;
       case Menu.HELP_MENU:
         this._helpMenuContainer.style.display = 'flex';
+        this._setFullBackgroundColor(this._helpMenuContainer);
         gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.SETTINGS_MENU:
         this._settingsMenuContainer.style.display = 'flex';
+        this._setFullBackgroundColor(this._settingsMenuContainer);
         gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.NONE_MENU:
@@ -714,7 +727,6 @@ class GUI {
     parent.appendChild(keyContainer);
   }
   
-
   private _createSettingsMenu(): void {
     this._addSubtitle(this._settingsMenuContainer, "Settings");
 

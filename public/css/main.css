@@ -15,6 +15,7 @@
 
   --default-text-color: whitesmoke;
   --default-background-color: rgba(0, 0, 0, 0.5);
+  --full-background-color: #7f7f7f;
 
   --shadow-color: rgba(0, 0, 0, 1);
 
@@ -73,4 +74,9 @@ body {
 
 .remove_cursor{
   cursor: none !important;
+}
+
+.full_background_color{
+  /* background-color: var(--full-background-color) !important; */
+  background: radial-gradient(var(--primary-background-color), var(--tertiary-background-color)) !important;
 }
