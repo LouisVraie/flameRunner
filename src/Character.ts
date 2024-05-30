@@ -53,6 +53,10 @@ class Character extends TransformNode{
   private _hitObstacle: boolean = false;
   private _isSlowed: boolean = false;
 
+  private _finalPosition: number = 0;
+
+  private _isJumpKeyPressed: boolean = false;
+
   // Constants
   private static readonly PLAYER_HEIGHT: number = 1.5;
   private static readonly PLAYER_RADIUS: number = 0.25;
@@ -138,6 +142,14 @@ class Character extends TransformNode{
     this._isSlowed = isSlowed;
   }
 
+  // Jump Key Pressed
+  public getJumpKeyPressed(): boolean{
+    return this._isJumpKeyPressed;
+  }
+  public setJumpKeyPressed(isJumpKeyPressed: boolean): void{
+    this._isJumpKeyPressed = isJumpKeyPressed;
+  }
+
   // Animations
   private _setAnimations(assets: any): void {
     this._idle = assets.animationGroups[2]; 
@@ -203,6 +215,23 @@ class Character extends TransformNode{
   }
   public setCapsuleAggregate(capsuleAggregate: PhysicsAggregate): void{
     this._capsuleAggregate = capsuleAggregate;
+  }
+
+  // Moving State
+  public getMovingState(): MovingState{
+    return this._movingState;
+  }
+  public setMovingState(movingState: MovingState): void{
+    this._movingState = movingState;
+  }
+
+  // Final Position
+  public getFinalPosition(): number{
+    return this._finalPosition;
+  }
+  public setFinalPosition(finalPosition: number): void{
+    this._movingState = MovingState.FINISHED;
+    this._finalPosition = finalPosition;
   }
 
   //////////////////////////////////////////////////////////
@@ -280,9 +309,12 @@ class Character extends TransformNode{
     this._run.loopAnimation = true;
     this._idle.loopAnimation = true;
     this._runJump.loopAnimation = true;
+    this._victory.loopAnimation = true;
+    this._defeat.loopAnimation = true;
 
     // Set up animations speed
     this._idleJump.speedRatio = 2;
+    this._stunBack.speedRatio = 2;
 
     //initialize current and previous
     this._currentAnim = this._idle;
@@ -314,37 +346,24 @@ class Character extends TransformNode{
   // Update the character's grounded state
   public updateGrounded(): void {
 
-    const radius = Character.PLAYER_RADIUS / 2;
     const originY = -Character.PLAYER_HEIGHT / 2;
 
     // Define a ray from the character's position downward to check for ground collision
-    // create 4 rays at bottom of capsule place in a square
-    const ray1 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, originY, radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
-    const ray2 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, originY, radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
-    const ray3 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(radius, originY, -radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
-    const ray4 = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(-radius, originY, -radius)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
-
-    // list of rays
-    const rays = [ray1, ray2, ray3, ray4];
+    const ray = new Ray(this._capsuleAggregate.transformNode.getAbsolutePosition().add(new Vector3(0, originY, 0)), new Vector3(0, -1, 0), Character.GROUND_THRESHOLD);
 
     // create ray helpers with a foreach loop
-    // rays.forEach((ray) => {
-    //   const rayHelper = new RayHelper(ray);
-    //   rayHelper.show(this._scene, Color3.Red());
-    // });
+    // const rayHelper = new RayHelper(ray);
+    // rayHelper.show(this._scene, Color3.Red());
 
     // Perform a raycast to check for collisions with the ground with ray list
-    // If one of the rays hits the ground, the character is considered grounded
-    rays.forEach((ray) => {
-      const hit = this._scene.pickWithRay(ray);
-      // Check if the ray hit an object and if the distance to the object is less than a threshold (considered as touching ground)
-      if (!this._isGrounded && hit.hit) {
-        this._jumpCount = 0;
-        this._movingState = MovingState.DEFAULT;
-        this._isGrounded = true; // Character is grounded
-        return;
-      }
-    });
+    const hit = this._scene.pickWithRay(ray);
+    // Check if the ray hit an object and if the distance to the object is less than a threshold (considered as touching ground)
+    if (!this._isGrounded && hit.hit && !this._isJumpKeyPressed) {
+      this._jumpCount = 0;
+      this._movingState = MovingState.DEFAULT;
+      this._isGrounded = true; // Character is grounded
+      return;
+    }
   }
 
   // Update the character's position
@@ -371,11 +390,14 @@ class Character extends TransformNode{
     if(!this._hitObstacle){
       // Gérer l'état de la touche de saut
       if (controller.getJumpKeyPressed() && this._jumpCount < Character.JUMP_NUMBER && this._isGrounded) {
+          this._isJumpKeyPressed = true;
           this._jumpCount++;
           this._movingState = MovingState.JUMPING;
           const jumpImpulse = Vector3.Up().scale(Character.JUMP_FORCE * this._capsuleAggregate.body.getMassProperties().mass * modifier.getJumpForceDelta());
           this._capsuleAggregate.body.applyImpulse(jumpImpulse, this._capsuleAggregate.transformNode.getAbsolutePosition());
           this._isGrounded = false;
+      } else {
+          this._isJumpKeyPressed = false;
       }
 
       if (inputMap.get(controller.getForward())) {
@@ -449,14 +471,12 @@ class Character extends TransformNode{
         break;
       // If the character has finished
       case MovingState.FINISHED:
-        this._currentAnim = this._victory;
+        this._currentAnim = this._finalPosition == 1 ? this._victory : this._defeat;
         break;
-        
       // Default case: play the run animation if moving, otherwise play the idle animation
       case MovingState.DEFAULT:
       default:
         this._currentAnim = this._isMoving ? this._run : this._idle;
-        this._run.speedRatio
         break;
       }
 

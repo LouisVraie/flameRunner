@@ -13,6 +13,8 @@ class GUI {
   private _pauseMenuContainer: HTMLDivElement;
   private _helpMenuContainer: HTMLDivElement;
   private _settingsMenuContainer: HTMLDivElement;
+
+  private _creditsContainer: HTMLDivElement;
   
   private _isPaused: boolean;
   private _isInGame: boolean;
@@ -78,6 +80,14 @@ class GUI {
     this._globalGUI = document.createElement("div");
     this._globalGUI.id = "gui";
     document.body.appendChild(this._globalGUI);
+
+    // Credits
+    // Get the current year
+    const currentYear = new Date().getFullYear();
+    const creditsContainer = document.createElement('div');
+    creditsContainer.className = "credits_container";
+    creditsContainer.innerHTML = `© 2024-${currentYear} Flame Runner - All rights reserved - Developed by Louis Vraie & Adrien Escoubeyrou`;
+    this._creditsContainer = creditsContainer;
 
     // Create the loading menu container
     this._loadingMenuContainer = this._buildBaseMenuElement("loading_menu_container", "menu_container");
@@ -488,6 +498,7 @@ class GUI {
     loadingContainer.appendChild(loadingSpinnerContainer);
     loadingContainer.appendChild(loadingBar);
     this._loadingMenuContainer.appendChild(loadingContainer);
+    this._loadingMenuContainer.appendChild(this._creditsContainer.cloneNode(true));
   }
 
   private _createMainMenu(): void {
@@ -527,6 +538,7 @@ class GUI {
     }, "tertiary_btn");
 
     this._mainMenuContainer.appendChild(buttonContainer);
+    this._mainMenuContainer.appendChild(this._creditsContainer.cloneNode(true));
   }
 
   private _createClassMenu(): void {

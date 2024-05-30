@@ -261,11 +261,9 @@ class Player {
         this._modifierTimer -= this._scene.getEngine().getDeltaTime();
       }
 
-      // update the character
-      this._character.updateCharacter(this._controller, Modifier.combineModifiers(currentModifier, currentGroupModifier));
-    } else {
-      this._character.updateCharacter(this._controller, Modifier.combineModifiers(currentModifier, currentGroupModifier));
     }
+    // update the character
+    this._character.updateCharacter(this._controller, Modifier.combineModifiers(currentModifier, currentGroupModifier));
   }
 
   // Update before render interface
