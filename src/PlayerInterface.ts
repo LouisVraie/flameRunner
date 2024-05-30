@@ -62,34 +62,12 @@ class PlayerInterface {
         topRightContainer.className = "top_right_container";
         topContainer.appendChild(topRightContainer);
 
-        const topLeftSubContainer = document.createElement('div');
-        topLeftSubContainer.className = "top_left_sub_container";
-        topLeftContainer.appendChild(topLeftSubContainer);
-
-        const topLeftSubLifeContainer = document.createElement('div');
-        topLeftSubLifeContainer.className = "top_left_sub_life_container";
-        topLeftSubContainer.appendChild(topLeftSubLifeContainer);
-
-        for(let i = 0; i < 3; i++){
-            const life = document.createElement('img');
-            life.className = "life";
-            life.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABKUlEQVR4nO3WO0oEQRDG8b+aKMIKPhDP4QY+LqKJ4A3EE5ho6qqJLBj5yow8gBgoYiCIJ9AN19wV9JNmRhiXndp5VeR8UMlMMb9puqAb6vzbCFYEF4KOoCd4E5wKFgf0NgVnfb3nguU84JjgUKCU+hLsCkbi2hN8p/SG563wzSywhSYr9B1l7N0fhi4Zf1+2Vi340glVmAEL7jjCrxb86Qj3LPjdEe5a8K0jfGPB247wlgXPCD489lcwlwrHeNsBPjbRxKq7FaJhYGeHwjG+WSG8kQlN4CcVoO1caIhgQnBfAr0TjFMkginBUwH0WTBdCP2NYEHwkhOdp4oomvTHDOhD6ZX2RzApuDLQa0EDjyi66uwMuCwcCEZd0GQE6/HZHWrtz8s6dYjyAzhREZF5NroFAAAAAElFTkSuQmCC';
-            topLeftSubLifeContainer.appendChild(life);
-        }
-
-        // for(let i = 0; i < 3; i++) {
-        //     // const iframe = document.createElement('iframe');
-        //     // iframe.className = "life";
-        //     // iframe.src = '../assets/svg/heart.svg';
-        //     // iframe.style.border = "none"; // Pour enlever la bordure par défaut de l'iframe
-        //     // topLeftSubLifeContainer.appendChild(iframe);
-        //     topLeftSubLifeContainer.innerHTML = '<img src="../assets/heart2.svg" alt="" srcset="">'
-        // }
-
-        const topLeftSubNameContainer = document.createElement('div');
-        topLeftSubNameContainer.className = "top_left_sub_name_container";
-        topLeftSubNameContainer.innerHTML = this._playerName;
-        topLeftSubContainer.appendChild(topLeftSubNameContainer);
+        // Player name
+        const nameContainer = document.createElement('div');
+        nameContainer.id = "name_container_"+this._playerName;
+        nameContainer.className = "name_container";
+        nameContainer.innerHTML = this._playerName;
+        topLeftContainer.appendChild(nameContainer);
 
         // Stamina
         const staminaContainer = document.createElement('div');
@@ -106,11 +84,6 @@ class PlayerInterface {
         timerContainer.className = "timer_container";
         timerContainer.innerHTML = "Time : "+ this._playerTime;
         topLeftContainer.appendChild(timerContainer);
-
-        const topLeftSubScoreContainer = document.createElement('div');
-        topLeftSubScoreContainer.className = "top_left_sub_score_container";
-        topLeftSubScoreContainer.innerHTML = "Score : "+this._playerScore;
-        topLeftContainer.appendChild(topLeftSubScoreContainer);
 
         /////////////////////////////////////////////
         // Modifier
@@ -275,21 +248,41 @@ class PlayerInterface {
         classAbilityName.innerHTML = group.getName();
     }
 
+    private _setClassAbilityColor(isAbilityActive: boolean, isPassive: boolean, cooldown: number) : boolean {
+        const classAbilityIconContainer = document.querySelector('#class_ability_icon_container_'+this._playerName) as HTMLDivElement;
+        
+        if (isPassive) {
+            if(isAbilityActive){
+                classAbilityIconContainer.style.borderColor = "green";
+                return true;
+            } else {
+                classAbilityIconContainer.style.borderColor = "red";
+            }
+        } else {
+            // If the ability is active, the cooldown is not displayed
+            if(isAbilityActive && cooldown > 0){
+                classAbilityIconContainer.style.borderColor = "green";
+                return true;
+            } else if (!isAbilityActive && cooldown > 0) {
+                classAbilityIconContainer.style.borderColor = "red";
+            } else {
+                classAbilityIconContainer.style.borderColor = "white";
+            }
+        }
+        return false;
+    }
+
     // Update the player class ability cooldown
-    public updateClassAbilityCooldown(isAbilityActive: boolean, currentCooldown: number, baseCooldown: number) : void {
-        if (baseCooldown != null) {
-            const classAbilityIconContainer = document.querySelector('#class_ability_icon_container_'+this._playerName) as HTMLDivElement;
+    public updateClassAbilityCooldown(isAbilityActive: boolean, currentCooldown: number, group: Group) : void {
+        const cooldown = group.getCapacityCooldown() * 1000;
+        
+        if (!group.isPassive()) {
             const classAbilityCooldownProgressBar = document.querySelector('#class_ability_cooldown_progress_bar_'+this._playerName) as HTMLDivElement;
             const classAbilityCooldownTimer = document.querySelector('#class_ability_cooldown_timer_'+this._playerName) as HTMLDivElement;
             
             // If the ability is active, the cooldown is not displayed
-            if(isAbilityActive && currentCooldown > 0){
-                classAbilityIconContainer.style.borderColor = "green";
+            if(this._setClassAbilityColor(isAbilityActive, group.isPassive(), currentCooldown)){
                 return;
-            } else if (!isAbilityActive && currentCooldown > 0) {
-                classAbilityIconContainer.style.borderColor = "red";
-            } else {
-                classAbilityIconContainer.style.borderColor = "white";
             }
 
             // Set the cooldown timer
@@ -305,9 +298,11 @@ class PlayerInterface {
             }
 
             // Set the cooldown time in secondes in percentage
-            const cooldownPercentage = (currentCooldown / baseCooldown) * 100;
+            const cooldownPercentage = (currentCooldown / cooldown) * 100;
             
             classAbilityCooldownProgressBar.style.height = cooldownPercentage + "%";
+        } else {
+            this._setClassAbilityColor(isAbilityActive, group.isPassive(), cooldown);
         }
     }
 

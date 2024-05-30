@@ -16,17 +16,10 @@ class Player {
 
   private _score: number;
 
-  private _health: number;
-
   private _controller: Controller;
   private _character: Character;
   
   private _interface: PlayerInterface;
-
-  // camera variables
-  private _camRoot: TransformNode;
-  private _yTilt: TransformNode;
-  private _camera: UniversalCamera;
 
   private _modifier: Modifier;
   private _isModifierActive: boolean;
@@ -40,13 +33,11 @@ class Player {
   private _modifierTimer: number;
   private _groupModifierDurationTimer: number;
   private _groupModifierCooldownTimer: number;
-  private _startTime: number;
 
   private _isArrived: boolean = true;
 
   //const values
   private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.45, 0, 0);
-  private static readonly MAX_HEALTH: number = 3;
 
   constructor(
     scene: Scene,
@@ -58,9 +49,6 @@ class Player {
     this._identifier = identifier || "No identifier";
     this._score = 0;
 
-    this._health = Player.MAX_HEALTH;
-    
-    this._attachCamera();
     this._attachController(isPlayer1);
 
     this._interface = new PlayerInterface(identifier);
@@ -72,7 +60,6 @@ class Player {
     this._deathCounter = 0;
 
     // Get the current time
-    this._startTime = Date.now();
     this._modifierTimer = 0;
     this._groupModifierDurationTimer = 0;
     this._groupModifierCooldownTimer = 0;
@@ -121,14 +108,6 @@ class Player {
     this._score = score;
   }
 
-  // Health
-  public getHealth(): number {
-    return this._health;
-  }
-  public setHealth(health: number): void {
-    this._health = health;
-  }
-
   // Stamina
   public getStamina(): number {
     return this._character.getStamina();
@@ -153,14 +132,6 @@ class Player {
   }
   public setCharacter(character: Character): void {
     this._character = character;
-  }
-
-  // Camera
-  public getCamera(): UniversalCamera {
-    return this._camera;
-  }
-  public setCamera(camera: UniversalCamera): void {
-    this._camera = camera;
   }
 
   // Modifier
@@ -222,33 +193,6 @@ class Player {
   // Attach controller to the player
   private _attachController(isPlayer1: boolean): void {
     this._controller = new Controller(this._scene, isPlayer1);
-  }
-
-  // Attach camera to the player
-  private _attachCamera(): void {
-    //root camera parent that handles positioning of the camera to follow the player
-    this._camRoot = new TransformNode("root");
-    this._camRoot.position = Vector3.Zero(); //initialized at (0,0,0)
-
-    //rotations along the x-axis (up/down tilting)
-    const yTilt = new TransformNode("ytilt");
-    //adjustments to camera view to point down at our player
-    yTilt.rotation = Player.ORIGINAL_TILT;
-    this._yTilt = yTilt;
-    yTilt.parent = this._camRoot;
-
-    //our actual camera that's pointing at our root's position
-    this._camera = new UniversalCamera("cam", new Vector3(0, 0, -200), this._scene);
-    this._camera.lockedTarget = this._camRoot.position;
-    this._camera.fov = 0.47350045992678597;
-    this._camera.parent = yTilt;
-
-    this._scene.activeCamera = this._camera;
-  }
-
-  private _updateCamera(): void {
-    const centerPlayer = this._character.getMesh().position.y + 2;
-    this._camRoot.position = Vector3.Lerp(this._camRoot.position, new Vector3(this._character.getMesh().position.x, centerPlayer, this._character.getMesh().position.z), 0.4);
   }
 
   private _setGroupInfo(): void {
@@ -360,9 +304,6 @@ class Player {
     // Update modifier time
     this._interface.updateModifierTime(this._modifierTimer);
 
-    // Update health
-
-
     // Update stamina
     this._interface.updateStamina(this._character.getStamina());
 
@@ -372,14 +313,13 @@ class Player {
     }
 
     // Update class ability cooldown
-    this._interface.updateClassAbilityCooldown(this._isGroupModifierActive, this._groupModifierCooldownTimer, this._group.getCapacityCooldown() * 1000);
+    this._interface.updateClassAbilityCooldown(this._isGroupModifierActive, this._groupModifierCooldownTimer, this._group);
   }
 
   // Update player
   public updatePlayer(): void {
     this._scene.registerBeforeRender(() => {
       this._beforeRenderUpdate();
-      this._updateCamera();
 
       this._updateBeforeRenderInterface();
       this._updatePlayerInterface();

@@ -25,7 +25,7 @@ interface RespawnNode {
     angle: number;
 }
 
-const MAP_URL = "https://dl.dropbox.com/scl/fi/k9o9qtival694d7o8alwq/Map.glb?rlkey=t2upl2yyzvvi9gizqdqqtrxqs&st=00kwxyyv"
+const MAP_URL = "https://dl.dropbox.com/scl/fi/pysghsn4n4xkk4fvv0ba1/MapDefinitive.glb?rlkey=9v6udxbr3kyxjzl94qhwnuwvj&st=6q4z8qg2"
 
 
 import Cow from "./Cow";
