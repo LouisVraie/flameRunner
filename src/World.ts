@@ -25,7 +25,7 @@ interface RespawnNode {
     angle: number;
 }
 
-const MAP_URL = "https://dl.dropbox.com/scl/fi/pysghsn4n4xkk4fvv0ba1/MapDefinitive.glb?rlkey=9v6udxbr3kyxjzl94qhwnuwvj&st=6q4z8qg2"
+const MAP_URL = "https://dl.dropbox.com/scl/fi/w37zjc5tlmd3f7g7ug6pz/MapDefinitive.glb?rlkey=s6y40ktt03aji6tytg4m4vfg4&st=9r9nfha8"
 
 
 import Biome from "./Biome";
