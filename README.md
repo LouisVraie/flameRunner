@@ -79,7 +79,29 @@ Celui qui possède le temps de course le plus court l'emporte.
 3. Diminue la récupération d'endurance pendant 10 secondes.  
 ![staminaRegenMalus](https://github.com/LouisVraie/flameRunner/assets/91614537/c976e530-4adb-4839-9f59-21d78a59944b)
 
+**Classes**
 
+* Endurance : Résistance au froid  
+
+Réduit de façon passive la consommation d'endurance dans les biomes froids (Rivière & Neige)
+
+![endurance](https://github.com/LouisVraie/flameRunner/assets/91614537/19725635-a69a-48e9-a025-b71259a1ef61) ![enduranceCold](https://github.com/LouisVraie/flameRunner/assets/91614537/0ab1b290-3a76-4900-9765-655566af0d50)
+
+* Endurance : Résistance à la chaleur  
+
+Réduit de façon passive la consommation d'endurance dans les biomes chauds (Désert & Lave)  
+![endurance](https://github.com/LouisVraie/flameRunner/assets/91614537/19725635-a69a-48e9-a025-b71259a1ef61) ![enduranceHot](https://github.com/LouisVraie/flameRunner/assets/91614537/bafba643-d390-444c-9c74-a76092d6d7aa)
+
+* Sprinter
+
+Permet de courir très vite pendant 5 secondes. Le délais de rechargement est de 30 secondes.  
+![sprinter](https://github.com/LouisVraie/flameRunner/assets/91614537/19915a5f-d909-4cea-a95a-a06fa82d82e7)
+
+
+* Gymnaste
+
+Permet de sauter plus haut et plus loin pendant 5 secondes. Le délais de rechargement est de 30 secondes.  
+![gymnast](https://github.com/LouisVraie/flameRunner/assets/91614537/8e84f2db-8083-42cf-add1-6beed77fde29)
 
 ## État d'avancement
 
