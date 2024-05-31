@@ -103,7 +103,6 @@ Permet de courir très vite pendant 5 secondes. Le délais de rechargement est d
 Permet de sauter plus haut et plus loin pendant 5 secondes. Le délais de rechargement est de 30 secondes.  
 ![gymnast](https://github.com/LouisVraie/flameRunner/assets/91614537/8e84f2db-8083-42cf-add1-6beed77fde29)
 
-![image](https://github.com/LouisVraie/flameRunner/assets/91614537/dee00f55-abfc-44a1-b2ef-b5e2ad9e4dec)
 
 **Jouabilité**
 
