@@ -55,6 +55,11 @@ Celui qui possède le temps de course le plus court l'emporte.
     npm start
     ```
 
+## Guide
+
+![defaultIcon](https://github.com/LouisVraie/flameRunner/assets/91614537/e48d30a5-2bb1-406c-8ee5-007d2d595ea5) test
+
+
 ## État d'avancement
 
 **Au `30 mars 2024`**
