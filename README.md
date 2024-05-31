@@ -140,7 +140,9 @@ Le jeu est jouable sur clavier AZERTY et QWERTY.
 
 Les touches sont modifiables dans le menu **Settings** et sont enregistrées dans le cache de votre ordinateurs.
 
-![image](https://github.com/LouisVraie/flameRunner/assets/91614537/dee00f55-abfc-44a1-b2ef-b5e2ad9e4dec)
+![image](https://github.com/LouisVraie/flameRunner/assets/91614537/dee00f55-abfc-44a1-b2ef-b5e2ad9e4dec)  
+La touche **Modifier** permet d'utiliser le bonus/malus.  
+La touche **Capacity** permet d'utiliser la capacité de votre classe (la classe Endurance n'est pas concerné par cette touche).
 
 > [!NOTE]
 > Appuyer sur la touche **Echap** permet de revenir au menu précédent. En jeu, cette touche permet de mettre le jeu en pause et d'afficher les menus.
