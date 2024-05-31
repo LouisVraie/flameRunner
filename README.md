@@ -103,6 +103,20 @@ Permet de courir très vite pendant 5 secondes. Le délais de rechargement est d
 Permet de sauter plus haut et plus loin pendant 5 secondes. Le délais de rechargement est de 30 secondes.  
 ![gymnast](https://github.com/LouisVraie/flameRunner/assets/91614537/8e84f2db-8083-42cf-add1-6beed77fde29)
 
+![image](https://github.com/LouisVraie/flameRunner/assets/91614537/dee00f55-abfc-44a1-b2ef-b5e2ad9e4dec)
+
+**Jouabilité**
+
+Le jeu est jouable sur clavier AZERTY et QWERTY.
+
+Les touches sont modifiables dans le menu **Settings** et sont enregistrées dans le cache de votre ordinateurs.
+
+![image](https://github.com/LouisVraie/flameRunner/assets/91614537/dee00f55-abfc-44a1-b2ef-b5e2ad9e4dec)
+
+> [!NOTE]
+> Appuyer sur la touche **Echap** permet de revenir au menu précédent. En jeu, cette touche permet de mettre le jeu en pause et d'afficher les menus.
+
+
 ## État d'avancement
 
 **Au `30 mars 2024`**
