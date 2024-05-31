@@ -115,6 +115,46 @@
   pointer-events: none;
 }
 
+.credits_list_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  text-shadow: 1px 1px 1px var(--shadow-color);
+  overflow: auto;
+}
+
+.credits_list {
+  cursor: auto;
+  pointer-events: visible;
+}
+
+a {
+  color: var(--default-text-color);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-color);
+}
+
+a:visited {
+  color: var(--primary-color);
+}
+
+li {
+  list-style-type: none;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+li > ul li {
+  padding-left: 20px;
+  font-size: 1.2rem;
+  color: var(--default-text-color);
+}
+
 .credits_container {
   position: fixed;
   padding: 5px;

@@ -10,7 +10,7 @@ import Vehicle from "./obstacles/Vehicle";
 import Spawner from "./Spawner";
 
 import flare from '../assets/textures/Flare.png';
-import map from '../assets/models/MapDefinitive.glb';
+// import map from '../assets/models/MapDefinitive.glb';
 
 export const WORLD_GRAVITY: Vector3 = new Vector3(0, -9.81, 0);
 export const WORLD_SCALE: number = 0.3;

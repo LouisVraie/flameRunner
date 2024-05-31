@@ -8,6 +8,7 @@ import "@babylonjs/loaders/";
 import GUI from "./GUI";
 import World, { WORLD_SCALE } from "./World";
 import { Menu } from "./enum/Menu";
+import Music from "./Music";
 class App {
 
     private _canvas: HTMLCanvasElement;
@@ -187,8 +188,10 @@ class App {
 
     // Create the scene
     public async createScene(): Promise<Scene>{
-        
-    
+
+        // Add Sound
+        Music.playMenuMusic(this._scene);
+            
         const ground = MeshBuilder.CreateGround("ground", {width: 300, height: 500}, this._scene);
         ground.position = new Vector3(85, -30, -180);
         ground.receiveShadows = true;

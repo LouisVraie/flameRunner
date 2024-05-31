@@ -11,7 +11,7 @@ class GUI {
   private _mainMenuContainer: HTMLDivElement;
   private _classMenuContainer: HTMLDivElement;
   private _pauseMenuContainer: HTMLDivElement;
-  private _helpMenuContainer: HTMLDivElement;
+  private _helpCreditsMenuContainer: HTMLDivElement;
   private _settingsMenuContainer: HTMLDivElement;
 
   private _creditsContainer: HTMLDivElement;
@@ -110,9 +110,9 @@ class GUI {
     this._globalGUI.appendChild(this._pauseMenuContainer);
 
     // Create the help menu container
-    this._helpMenuContainer = this._buildBaseMenuElement("help_menu_container", "menu_container");
-    this._helpMenuContainer.style.display = 'none';
-    this._globalGUI.appendChild(this._helpMenuContainer);
+    this._helpCreditsMenuContainer = this._buildBaseMenuElement("help_menu_container", "menu_container");
+    this._helpCreditsMenuContainer.style.display = 'none';
+    this._globalGUI.appendChild(this._helpCreditsMenuContainer);
 
     // Create the settings menu container
     this._settingsMenuContainer = this._buildBaseMenuElement("settings_menu_container", "menu_container");
@@ -132,7 +132,7 @@ class GUI {
     this._createPauseMenu();
 
     // Create the help menu
-    this._createHelpMenu();
+    this._createHelpCreditsMenu();
 
     // Create local storage for key bindings
     this._createSettingsKeyBindings();
@@ -283,7 +283,7 @@ class GUI {
         this._pauseMenuContainer.style.display = 'none';
         break;
       case Menu.HELP_MENU:
-        this._helpMenuContainer.style.display = 'none';
+        this._helpCreditsMenuContainer.style.display = 'none';
         break;
       case Menu.SETTINGS_MENU:
         this._settingsMenuContainer.style.display = 'none';
@@ -319,8 +319,8 @@ class GUI {
         gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.HELP_MENU:
-        this._helpMenuContainer.style.display = 'flex';
-        this._setFullBackgroundColor(this._helpMenuContainer);
+        this._helpCreditsMenuContainer.style.display = 'flex';
+        this._setFullBackgroundColor(this._helpCreditsMenuContainer);
         gameCanvas.classList.remove("remove_cursor");
         break;
       case Menu.SETTINGS_MENU:
@@ -523,7 +523,7 @@ class GUI {
       this.setActiveMenu(Menu.CLASS_MENU);
 
     }, "primary_btn");
-    this._addButtonMenu(buttonContainer, "Help", () => { 
+    this._addButtonMenu(buttonContainer, "Help & Credits", () => { 
       // Set the active menu
       this.setActiveMenu(Menu.HELP_MENU);
 
@@ -647,7 +647,7 @@ class GUI {
       // Set the active menu
       this.setActiveMenu(Menu.NONE_MENU);
     }, "primary_btn");
-    this._addButtonMenu(buttonContainer, "Help", () => {
+    this._addButtonMenu(buttonContainer, "Help & Credits", () => {
       // Set the active menu
       this.setActiveMenu(Menu.HELP_MENU);
     }, "secondary_btn");
@@ -661,8 +661,43 @@ class GUI {
     this._pauseMenuContainer.appendChild(buttonContainer);
   }
 
-  private _createHelpMenu(): void {
-    this._addSubtitle(this._helpMenuContainer, "Help");
+  private _createHelpCreditsMenu(): void {
+    // Help
+    this._addSubtitle(this._helpCreditsMenuContainer, "Help");
+    
+    // Credits
+    this._addSubtitle(this._helpCreditsMenuContainer, "Credits");
+
+    const creditsContainer = document.createElement('div');
+    creditsContainer.className = "credits_list_container";
+
+    const creditsList = document.createElement('ul');
+    creditsList.className = "credits_list";
+    creditsList.innerHTML = `
+      <li>Developers :
+        <ul>
+          <li>Louis Vraie</li>
+          <li>Adrien Escoubeyrou</li>
+        </ul>
+      </li>
+      <li>3D Models :
+        <ul>
+          <li>Character mesh and animations from <a href="https://www.mixamo.com/" target="_blank">Mixamo</a></li>
+          <li>World meshes from <a href="https://www.cgtrader.com/" target="_blank">CGTrader</a></li>
+          <li>World meshes from <a href="https://www.turbosquid.com/" target="_blank">TurboSquid</a></li>
+        </ul>
+      </li>
+      <li> Musics :
+        <ul>
+          <li>Game Music by <a href="https://pixabay.com/fr/users/matthewalanmusic-27361020/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=111050">Matthew Knesal</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=111050">Pixabay</a></li>
+        </ul>
+      </li>
+    `
+
+    creditsContainer.appendChild(creditsList);
+    this._helpCreditsMenuContainer.appendChild(creditsContainer);
+
+    // Buttons
     const buttonContainer = document.createElement('div');
     buttonContainer.className = "menu_btn_container";
 
@@ -674,7 +709,8 @@ class GUI {
         this.setActiveMenu(Menu.MAIN_MENU);
       }
     }, "primary_btn");
-    this._helpMenuContainer.appendChild(buttonContainer);
+
+    this._helpCreditsMenuContainer.appendChild(buttonContainer);
   }
 
   private _createSettingsKeyBindings(): void {
