@@ -1,5 +1,13 @@
 # Flame Runner
 
+## Bande annonce
+
+https://youtu.be/3I5FaNAnaLY
+
+## Tutoriel
+
+https://youtu.be/uiI-DI9plR0
+
 ## Description du jeu
 
 Jeu de course à pied avec un style low poly dans lequel vous traversez différents environnements (Ville, Campagne, Désert, ...) où l'objectif est d'arriver au bout du chemin en terminant par l'ascension de la montagne sacrée avec à son sommet la flamme olympique.
@@ -11,9 +19,7 @@ De plus, chaque joueur choisit une classe avant la course qui lui permet de déb
 ## But du jeu
 
 Atteindre le sommet de la montagne le plus rapidement possible tout en ayant le 
-plus grand nombre de points.
-
-Une score élevé réduit le temps final de la course. 
+meilleur temps de course.
 
 Celui qui possède le temps de course le plus court l'emporte.
 
