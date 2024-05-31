@@ -14,7 +14,7 @@
   --error-background-color: #e06666;
 
   --default-text-color: whitesmoke;
-  --default-background-color: rgba(0, 0, 0, 0.5);
+  --default-background-color: rgba(0, 0, 0, 0.75);
   --full-background-color: #7f7f7f;
 
   --shadow-color: rgba(0, 0, 0, 1);
@@ -211,7 +211,7 @@ body {
   justify-content: center;
   text-shadow: 1px 1px 1px var(--shadow-color);
   text-wrap: wrap;
-  padding: 20px;
+  padding: 20px 0;
 }
 
 .help_credits_container_left {
@@ -220,6 +220,7 @@ body {
   align-items: start;
   justify-content: start;
   width: 100%;
+  padding: 0 20px;
 }
 
 .help_credits_container_right {
@@ -228,6 +229,7 @@ body {
   align-items: start;
   justify-content: start;
   width: 100%;
+  padding: 0 20px;
 }
 
 h3, p, ul {
