@@ -110,7 +110,7 @@ class GUI {
     this._globalGUI.appendChild(this._pauseMenuContainer);
 
     // Create the help menu container
-    this._helpCreditsMenuContainer = this._buildBaseMenuElement("help_menu_container", "menu_container");
+    this._helpCreditsMenuContainer = this._buildBaseMenuElement("help_credits_menu_container", "menu_container");
     this._helpCreditsMenuContainer.style.display = 'none';
     this._globalGUI.appendChild(this._helpCreditsMenuContainer);
 
@@ -663,39 +663,62 @@ class GUI {
 
   private _createHelpCreditsMenu(): void {
     // Help
-    this._addSubtitle(this._helpCreditsMenuContainer, "Help");
+    const helpCreditsContainer = document.createElement('div');
+    helpCreditsContainer.className = "help_credits_container";
+
+    const helpCreditsContainerLeft = document.createElement('div');
+    helpCreditsContainerLeft.className = "help_credits_container_left";
+
+    helpCreditsContainerLeft.innerHTML = ` 
+      <h2 class="menu_subtitle">Help</h2>
+
+      <h3>Controls</h3>
+      <p>Check the settings menu to see the key bindings.</p>
+
+      <h3>Classes</h3>
+      <p>Each class has its own strengths. It can be active or passive.</p>
+      <ul>
+        <li>If it is active, it will have a duration and a cooldown. Use the "Capacity" key to activate it</li>
+        <li>If it is passive, it will have a automatic effect according to the class</li>
+      </ul>
+
+      <h3>Obstacles</h3>
+      <p>Obstacles are present on the track, they can bounce you back or slow you down. Try to avoid them!</p>
+
+      <h3>Bonus/Malus cubes</h3>
+      <p>These cubes can have positive or negative effects you need to choose the right 
+      strategy. More the precentage of the cube is high, more the effect has a chance to be positive.</p>
+      <p>Use the "Modifier" key to activate the effect.</p>
+    `;
     
-    // Credits
-    this._addSubtitle(this._helpCreditsMenuContainer, "Credits");
+    const helpCreditsContainerRight = document.createElement('div');
+    helpCreditsContainerRight.className = "help_credits_container_right";
+    helpCreditsContainerRight.innerHTML = `
+      <h2 class="menu_subtitle">Credits</h2>
+    
+      <h3>Developers</h3>
+      <ul>
+        <li>Louis Vraie</li>
+        <li>Adrien Escoubeyrou</li>
+      </ul>
 
-    const creditsContainer = document.createElement('div');
-    creditsContainer.className = "credits_list_container";
+      <h3>3D Models</h3>
+      <ul>
+        <li>Character mesh and animations from <a href="https://www.mixamo.com/" target="_blank">Mixamo</a></li>
+        <li>World meshes from <a href="https://www.cgtrader.com/" target="_blank">CGTrader</a></li>
+        <li>World meshes from <a href="https://www.turbosquid.com/" target="_blank">TurboSquid</a></li>
+      </ul>
 
-    const creditsList = document.createElement('ul');
-    creditsList.className = "credits_list";
-    creditsList.innerHTML = `
-      <li>Developers :
-        <ul>
-          <li>Louis Vraie</li>
-          <li>Adrien Escoubeyrou</li>
-        </ul>
-      </li>
-      <li>3D Models :
-        <ul>
-          <li>Character mesh and animations from <a href="https://www.mixamo.com/" target="_blank">Mixamo</a></li>
-          <li>World meshes from <a href="https://www.cgtrader.com/" target="_blank">CGTrader</a></li>
-          <li>World meshes from <a href="https://www.turbosquid.com/" target="_blank">TurboSquid</a></li>
-        </ul>
-      </li>
-      <li> Musics :
-        <ul>
-          <li>Game Music by <a href="https://pixabay.com/fr/users/matthewalanmusic-27361020/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=111050">Matthew Knesal</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=111050">Pixabay</a></li>
-        </ul>
-      </li>
+      <h3>Music</h3>
+      <ul>
+        <li>Game Music by <a href="https://pixabay.com/fr/users/matthewalanmusic-27361020/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=111050">Matthew Knesal</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=111050">Pixabay</a></li>
+      </ul>
     `
 
-    creditsContainer.appendChild(creditsList);
-    this._helpCreditsMenuContainer.appendChild(creditsContainer);
+    helpCreditsContainer.appendChild(helpCreditsContainerLeft);
+    helpCreditsContainer.appendChild(helpCreditsContainerRight);
+
+    this._helpCreditsMenuContainer.appendChild(helpCreditsContainer);
 
     // Buttons
     const buttonContainer = document.createElement('div');
