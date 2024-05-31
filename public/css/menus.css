@@ -128,7 +128,7 @@
   justify-content: center;
   text-shadow: 1px 1px 1px var(--shadow-color);
   text-wrap: wrap;
-  padding: 20px;
+  padding: 20px 0;
 }
 
 .help_credits_container_left {
@@ -137,6 +137,7 @@
   align-items: start;
   justify-content: start;
   width: 100%;
+  padding: 0 20px;
 }
 
 .help_credits_container_right {
@@ -145,6 +146,7 @@
   align-items: start;
   justify-content: start;
   width: 100%;
+  padding: 0 20px;
 }
 
 h3, p, ul {
