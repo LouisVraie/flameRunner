@@ -58,18 +58,20 @@ Celui qui possède le temps de course le plus court l'emporte.
 ## Guide
 
 **Bonus** 
-![speedBonus](https://github.com/LouisVraie/flameRunner/assets/91614537/e4afcef5-0c01-4d98-8c87-5854e8902fc9) Octroie un boost de vitesse pendan 10 secondes.
 
-![staminaBonus](https://github.com/LouisVraie/flameRunner/assets/91614537/71fd839a-29e3-4210-a05e-9c638d6567ad) Remplie instantanément une partie de votre jauge d'endurance.
+1. ![speedBonus](https://github.com/LouisVraie/flameRunner/assets/91614537/e4afcef5-0c01-4d98-8c87-5854e8902fc9) Octroie un boost de vitesse pendan 10 secondes.
 
-![staminaRegenBonus](https://github.com/LouisVraie/flameRunner/assets/91614537/72e45815-5fce-4137-b495-4946e428945d) Accélère la récupération d'endurance pandant 10 secondes.
+2. ![staminaBonus](https://github.com/LouisVraie/flameRunner/assets/91614537/71fd839a-29e3-4210-a05e-9c638d6567ad) Remplie instantanément une partie de votre jauge d'endurance.
+
+3. ![staminaRegenBonus](https://github.com/LouisVraie/flameRunner/assets/91614537/72e45815-5fce-4137-b495-4946e428945d) Accélère la récupération d'endurance pandant 10 secondes.
 
 **Malus**
-![speedMalus](https://github.com/LouisVraie/flameRunner/assets/91614537/0fbf7180-6fb7-4c06-b10c-7bc08d8b8653) Réduit la vitesse de déplacement pendant 10 secondes.
 
-![staminaMalus](https://github.com/LouisVraie/flameRunner/assets/91614537/a966eefd-0bfb-42b3-84c4-d4df424217ef) Supprime une partie de l'endurance accumulée instantanément.
+1. ![speedMalus](https://github.com/LouisVraie/flameRunner/assets/91614537/0fbf7180-6fb7-4c06-b10c-7bc08d8b8653) Réduit la vitesse de déplacement pendant 10 secondes.
 
-![staminaRegenMalus](https://github.com/LouisVraie/flameRunner/assets/91614537/c976e530-4adb-4839-9f59-21d78a59944b) Diminue la récupération d'endurance pendant 10 secondes.
+2. ![staminaMalus](https://github.com/LouisVraie/flameRunner/assets/91614537/a966eefd-0bfb-42b3-84c4-d4df424217ef) Supprime une partie de l'endurance accumulée instantanément.
+
+3. ![staminaRegenMalus](https://github.com/LouisVraie/flameRunner/assets/91614537/c976e530-4adb-4839-9f59-21d78a59944b) Diminue la récupération d'endurance pendant 10 secondes.
 
 
 
