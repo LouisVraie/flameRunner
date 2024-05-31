@@ -8,6 +8,10 @@ Accédez à la bande annonce du jeu en **[cliquant ici](https://youtu.be/3I5FaNA
 
 Pour avoir un aperçu du gameplay, **[cliquez ici](https://youtu.be/uiI-DI9plR0)**.
 
+## Histoire
+
+"En vue de l'ouverture imminente des **Jeux Olympiques 2024**, tout le monde est à pied d'œuvre. Mais avec toute cette frénésie, les organisateurs ont oublié la **flamme olympique** ! Soyez le plus rapide à rapporter la flamme à Paris pour l'ouverture des jeux ! Mais prenez garde, la route est semée d'embuches…"
+
 ## Description du jeu
 
 Jeu de course à pied avec un style low poly dans lequel vous traversez différents environnements (Ville, Campagne, Désert, ...) où l'objectif est d'arriver au bout du chemin en terminant par l'ascension de la montagne sacrée avec à son sommet la flamme olympique.
