@@ -2,11 +2,11 @@
 
 ## Bande annonce
 
-https://youtu.be/3I5FaNAnaLY
+Accédez à la bande annonce du jeu en **[cliquant ici](https://youtu.be/3I5FaNAnaLY)**.
 
 ## Tutoriel
 
-https://youtu.be/uiI-DI9plR0
+Pour avoir un aperçu du gameplay, **[cliquez ici](https://youtu.be/uiI-DI9plR0)**.
 
 ## Description du jeu
 
