@@ -124,6 +124,16 @@ Permet de courir très vite pendant 5 secondes. Le délais de rechargement est d
 Permet de sauter plus haut et plus loin pendant 5 secondes. Le délais de rechargement est de 30 secondes.  
 ![gymnast](https://github.com/LouisVraie/flameRunner/assets/91614537/8e84f2db-8083-42cf-add1-6beed77fde29)
 
+**Jauge d'endurance**
+
+Elle se situe en haut à gauche de votre écran. Elle diminue lorsque vous maintenez votre touche de **sprint**. Si votre jauge est vide, vous ne pourrez plus courir rapidement.  
+
+Relacher la touche de sprint pour récupérer de l'endurance. Elle se régénère automatiquement si vous ne courrez pas.
+
+> [!TIP]
+> La plupart des bonus et malus influent sur votre endurance. Tâcher de les utiliser au moment opportun.
+
+
 **Jouabilité**
 
 Le jeu est jouable sur clavier AZERTY et QWERTY.
