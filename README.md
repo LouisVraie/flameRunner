@@ -29,8 +29,8 @@ Celui qui possède le temps de course le plus court l'emporte.
 
 ## Modes de jeu
 
-- **Solo** : Contre la montre pour battre ces records.
-- **Duo** : Affronter ces amis en local (écran scindé en 2).
+- **Solo** : Contre la montre pour battre vos records.
+- **Duo** : Affronter vos amis en local (écran scindé en 2).
 
 > #### Détails 
 >Pour plus de détails sur le projet vous trouverez l'ensemble de nos idées de : 
